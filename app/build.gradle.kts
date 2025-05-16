@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")  // Apply the Compose Compiler plugin
 }
 
 android {
@@ -10,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.alfacomics"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 35  // Update to match compileSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -41,7 +42,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10" // Adjust based on your Android Studio Ladybug version
+        kotlinCompilerExtensionVersion = "1.5.15"  // Update to the latest compatible version
     }
 
     packaging {
@@ -52,22 +53,29 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx.v1120)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom.v20240200))
+    implementation(libs.androidx.core.ktx)  // Update to the latest version (e.g., 1.13.1)
+    implementation(libs.androidx.lifecycle.runtime.ktx)  // Update to the latest version (e.g., 2.8.6)
+    implementation(libs.androidx.activity.compose)  // Update to the latest version (e.g., 1.9.2)
+    implementation(platform(libs.androidx.compose.bom))  // Update to the latest version (e.g., 2025.06.00)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.coil.compose)
-    implementation(libs.support.annotations) // For image loading
+    implementation(libs.androidx.navigation.compose)  // Update to the latest version (e.g., 2.7.7)
+    implementation(libs.coil.compose)  // Update to the latest version (e.g., 2.7.0)
+    implementation(libs.androidx.material3.android)  // For image loading
     debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.annotation)
     debugImplementation(libs.androidx.ui.test.manifest)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit.v121)
-    androidTestImplementation(libs.androidx.espresso.core.v361)
+    testImplementation(libs.junit)  // Update to the latest version (e.g., 4.13.2)
+    androidTestImplementation(libs.androidx.junit)  // Update to the latest version (e.g., 1.2.1)
+    androidTestImplementation(libs.androidx.espresso.core)  // Update to the latest version (e.g., 3.6.1)
     androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.compose.material.material.icons.extended)
+    implementation(libs.material.icons.extended)  // For Group icon
+    implementation(libs.androidx.navigation.compose.v290)
+    implementation(libs.androidx.material3)
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.compose.material.material.icons.extended2)  // Use the latest version compatible with your Compose setup
 }
