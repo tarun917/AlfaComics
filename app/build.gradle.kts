@@ -1,7 +1,9 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")  // Apply the Compose Compiler plugin
+    id("org.jetbrains.kotlin.plugin.compose") // Apply the Compose Compiler plugin
 }
 
 android {
@@ -11,7 +13,7 @@ android {
     defaultConfig {
         applicationId = "com.alfacomics"
         minSdk = 24
-        targetSdk = 35  // Update to match compileSdk
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -27,27 +29,19 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
-
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
-
     buildFeatures {
         compose = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"  // Update to the latest compatible version
-    }
-
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL-2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
@@ -76,6 +70,9 @@ dependencies {
     implementation(libs.material.icons.extended)  // For Group icon
     implementation(libs.androidx.navigation.compose.v290)
     implementation(libs.androidx.material3)
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.material.material.icons.extended2)  // Use the latest version compatible with your Compose setup
+    //noinspection BomWithoutPlatform
+    androidTestImplementation(libs.compose.bom)
+    implementation(platform(libs.androidx.compose.bom.v20240903))
 }
