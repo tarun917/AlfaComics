@@ -1,107 +1,444 @@
 package com.alfacomics.presentation.ui.screens.community
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.alfacomics.data.repository.CommunityPost
+import androidx.compose.ui.unit.sp
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.Poll
+import com.alfacomics.data.repository.PollOption
 
-@SuppressLint("UnrememberedMutableState")
 @Composable
 fun CommunityScreen() {
-    var postContent by remember { mutableStateOf("") }
-    val posts: List<CommunityPost> by derivedStateOf { DummyData.getCommunityPosts() }  // Explicitly specify type
+    var newPostContent by remember { mutableStateOf(TextFieldValue("")) }
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
+    var wordCount by remember { mutableStateOf(0) }
+    var showWordLimitError by remember { mutableStateOf(false) }
+    var showUserDropdown by remember { mutableStateOf(false) }
+    var tagStartIndex by remember { mutableStateOf(-1) }
+    var currentTagQuery by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf("") }
+    var showPollDialog by remember { mutableStateOf(false) }
+    var pollQuestion by remember { mutableStateOf("") }
+    // Dynamic list for poll options
+    var pollOptions by remember { mutableStateOf(mutableListOf("", "")) } // Start with 2 options
+    val posts = DummyData.getCommunityPosts() // Directly use the mutableStateListOf
+    val maxWordLimit = 512
+    val maxPollOptions = 6
+    val mockUsernames = DummyData.getMockUsernames()
+
+    // Calculate word count and detect tagging
+    LaunchedEffect(newPostContent) {
+        // Word count
+        val words = newPostContent.text.trim().split("\\s+".toRegex())
+        wordCount = if (newPostContent.text.isBlank()) 0 else words.size
+        showWordLimitError = wordCount > maxWordLimit
+
+        // Detect if user is typing a tag (starting with #)
+        val cursorPosition = newPostContent.selection.start
+        val lastHashIndex = newPostContent.text.lastIndexOf('#', cursorPosition - 1)
+        if (lastHashIndex >= 0 && (cursorPosition == lastHashIndex + 1 || !newPostContent.text.substring(lastHashIndex + 1, cursorPosition).contains(" "))) {
+            // User is typing a tag
+            tagStartIndex = lastHashIndex
+            currentTagQuery = newPostContent.text.substring(lastHashIndex + 1, cursorPosition)
+            showUserDropdown = true
+        } else {
+            // User is not typing a tag
+            tagStartIndex = -1
+            currentTagQuery = ""
+            showUserDropdown = false
+            searchQuery = "" // Reset search query when dropdown closes
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        // Post Input Section
-        Row(
+        // Post Creation Section
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(top = 16.dp, bottom = 8.dp)
         ) {
-            OutlinedTextField(
-                value = postContent,
-                onValueChange = { postContent = it },
+            Box {
+                OutlinedTextField(
+                    value = newPostContent,
+                    onValueChange = { newText ->
+                        val words = newText.text.trim().split("\\s+".toRegex())
+                        val newWordCount = if (newText.text.isBlank()) 0 else words.size
+                        if (newWordCount <= maxWordLimit) {
+                            newPostContent = newText
+                            showWordLimitError = false
+                        } else {
+                            showWordLimitError = true
+                        }
+                    },
+                    label = { Text("What's on your mind?", color = Color.White) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    textStyle = LocalTextStyle.current.copy(
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                    ),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                if (newPostContent.text.isNotBlank() && !showWordLimitError) {
+                                    DummyData.addCommunityPost(newPostContent.text, selectedImageUrl, null)
+                                    newPostContent = TextFieldValue("")
+                                    selectedImageUrl = null
+                                }
+                            },
+                            enabled = newPostContent.text.isNotBlank() && !showWordLimitError
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Post",
+                                tint = if (newPostContent.text.isNotBlank() && !showWordLimitError) Color(0xFF00BE1A) else Color.Gray
+                            )
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFFBB86FC),
+                        unfocusedBorderColor = Color.Gray
+                    )
+                )
+
+                // Dropdown for User Tagging Suggestions
+                DropdownMenu(
+                    expanded = showUserDropdown,
+                    onDismissRequest = {
+                        showUserDropdown = false
+                        searchQuery = ""
+                    },
+                    modifier = Modifier
+                        .background(Color(0xFF1E1E1E))
+                        .width(200.dp)
+                ) {
+                    // Search Field in Dropdown
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search users...", color = Color.Gray) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFFBB86FC),
+                            unfocusedBorderColor = Color.Gray,
+                            focusedContainerColor = Color(0xFF2A2A2A),
+                            unfocusedContainerColor = Color(0xFF2A2A2A)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    val filteredUsernames = if (currentTagQuery.isEmpty() && searchQuery.isEmpty()) {
+                        mockUsernames
+                    } else if (searchQuery.isNotEmpty()) {
+                        mockUsernames.filter { it.lowercase().contains(searchQuery.lowercase()) }
+                    } else {
+                        mockUsernames.filter { it.lowercase().contains(currentTagQuery.lowercase()) }
+                    }
+
+                    if (filteredUsernames.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("No users found", color = Color.White) },
+                            onClick = { showUserDropdown = false }
+                        )
+                    } else {
+                        filteredUsernames.forEach { username ->
+                            DropdownMenuItem(
+                                text = { Text("#$username", color = Color.White) },
+                                onClick = {
+                                    // Replace the current tag query with the selected username
+                                    val newText = newPostContent.text.substring(0, tagStartIndex + 1) + username + " "
+                                    newPostContent = TextFieldValue(
+                                        text = newText,
+                                        selection = TextRange(newText.length) // Move cursor to the end
+                                    )
+                                    showUserDropdown = false
+                                    searchQuery = ""
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Image Selection, Tagging, and Poll Icons (Down Left Corner)
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp),
-                placeholder = { Text("Share your thoughts...", color = Color.White.copy(alpha = 0.7f)) },
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = {
-                    if (postContent.isNotBlank()) {
-                        DummyData.addCommunityPost(postContent)
-                        postContent = ""
-                    }
-                }),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color(0xFFBB86FC),
-                    unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f)
-                )
-            )
-            IconButton(
-                onClick = {
-                    if (postContent.isNotBlank()) {
-                        DummyData.addCommunityPost(postContent)
-                        postContent = ""
-                    }
-                },
-                modifier = Modifier.size(48.dp),
-                enabled = postContent.isNotBlank()
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Post",
-                    tint = if (postContent.isNotBlank()) Color(0xFFBB86FC) else Color.Gray
-                )
+                // Image Selection Icon
+                IconButton(
+                    onClick = {
+                        // Mock image selection: toggle between adding and removing an image
+                        selectedImageUrl = if (selectedImageUrl == null) "mock_image_url_${System.currentTimeMillis()}" else null
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Image,
+                        contentDescription = "Add Image",
+                        tint = if (selectedImageUrl == null) Color.White else Color(0xFFBB86FC)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Tagging Button (# Symbol)
+                TextButton(
+                    onClick = {
+                        // Append # to the post content and open dropdown
+                        val newText = newPostContent.text + "#"
+                        newPostContent = TextFieldValue(
+                            text = newText,
+                            selection = TextRange(newText.length) // Move cursor to the end
+                        )
+                        showUserDropdown = true
+                    }
+                ) {
+                    Text(
+                        text = "#",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Poll Creation Button
+                IconButton(
+                    onClick = {
+                        showPollDialog = true
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BarChart,
+                        contentDescription = "Add Poll",
+                        tint = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Word Count and Error Message
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Words: $wordCount/$maxWordLimit",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (showWordLimitError) Color.Red else Color.Gray
+                    )
+
+                    if (showWordLimitError) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Word limit exceeded!",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Red
+                        )
+                    }
+                }
             }
         }
 
-        // Community Feed
-        if (posts.isEmpty()) {
-            Text(
-                text = "No posts yet. Be the first to share!",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(posts) { post ->
-                    CommunityPostItem(
-                        post = post,
-                        onAddComment = { postId: Int, comment: String ->
-                            DummyData.addCommentToPost(postId, comment)
+        // Poll Creation Dialog
+        if (showPollDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showPollDialog = false
+                    pollQuestion = ""
+                    pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                },
+                title = { Text("Create a Poll", color = Color.White) },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = pollQuestion,
+                            onValueChange = { pollQuestion = it },
+                            label = { Text("Question", color = Color.White) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedBorderColor = Color(0xFFBB86FC),
+                                unfocusedBorderColor = Color.Gray,
+                                focusedContainerColor = Color(0xFF1E1E1E),
+                                unfocusedContainerColor = Color(0xFF1E1E1E)
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Dynamic Poll Options
+                        pollOptions.forEachIndexed { index, option ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = option,
+                                    onValueChange = { newValue ->
+                                        val updatedOptions = pollOptions.toMutableList()
+                                        updatedOptions[index] = newValue
+                                        pollOptions = updatedOptions
+                                    },
+                                    label = { Text("Option ${index + 1}", color = Color.White) },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 4.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White,
+                                        focusedBorderColor = Color(0xFFBB86FC),
+                                        unfocusedBorderColor = Color.Gray,
+                                        focusedContainerColor = Color(0xFF1E1E1E),
+                                        unfocusedContainerColor = Color(0xFF1E1E1E)
+                                    )
+                                )
+                                // Show delete icon only for third and subsequent options
+                                if (index >= 2) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    IconButton(
+                                        onClick = {
+                                            val updatedOptions = pollOptions.toMutableList()
+                                            updatedOptions.removeAt(index)
+                                            pollOptions = updatedOptions
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close, // Proper delete icon
+                                            contentDescription = "Remove Option",
+                                            tint = Color.Red
+                                        )
+                                    }
+                                }
+                            }
                         }
+
+                        // Add Option Button (if less than max options)
+                        if (pollOptions.size < maxPollOptions) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = {
+                                    val updatedOptions = pollOptions.toMutableList()
+                                    updatedOptions.add("")
+                                    pollOptions = updatedOptions
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFBB86FC),
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Add Option (${pollOptions.size}/$maxPollOptions)")
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // Ensure question and at least 2 options are filled
+                            if (pollQuestion.isNotBlank() && pollOptions.size >= 2 && pollOptions.all { it.isNotBlank() }) {
+                                val poll = Poll(
+                                    question = pollQuestion,
+                                    options = pollOptions.map { PollOption(it, 0) }
+                                )
+                                DummyData.addCommunityPost(newPostContent.text, selectedImageUrl, poll)
+                                newPostContent = TextFieldValue("")
+                                selectedImageUrl = null
+                                showPollDialog = false
+                                pollQuestion = ""
+                                pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                            }
+                        },
+                        enabled = pollQuestion.isNotBlank() && pollOptions.size >= 2 && pollOptions.all { it.isNotBlank() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFBB86FC),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Create")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            showPollDialog = false
+                            pollQuestion = ""
+                            pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Gray,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
+                },
+                containerColor = Color(0xFF1E1E1E)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Community Feed
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(posts) { post ->
+                CommunityPostItem(
+                    post = post,
+                    onAddComment = { postId, comment ->
+                        DummyData.addCommentToPost(postId, comment)
+                    }
+                )
+            }
+
+            // Empty State
+            if (posts.isEmpty()) {
+                item {
+                    Text(
+                        text = "No posts yet! Be the first to share something.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }

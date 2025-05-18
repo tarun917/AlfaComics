@@ -1,6 +1,7 @@
 package com.alfacomics.data.repository
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.alfacomics.R
@@ -57,7 +58,27 @@ data class EpisodeSocialData(
 data class CommunityPost(
     val id: Int,
     val content: String,
-    val comments: MutableList<String> = mutableListOf()
+    val username: String,
+    val timestamp: String,
+    val imageUrl: String? = null,
+    val poll: Poll? = null,
+    val comments: MutableList<Comment> = mutableListOf()
+)
+
+data class Comment(
+    val username: String,
+    val content: String,
+    val timestamp: String
+)
+
+data class Poll(
+    val question: String,
+    val options: List<PollOption>
+)
+
+data class PollOption(
+    val text: String,
+    val votes: Int // Mock votes for now
 )
 
 data class UserProfile(
@@ -119,7 +140,7 @@ object DummyData {
         Comic(39, "Mystery Classic 9", "placeholder_url_67", 4.1f, "Mystery", "Classic", 289, 900),
         Comic(40, "Mystery Classic 10", "placeholder_url_68", 4.6f, "Mystery", "Classic", 329, 1250),
 
-        // Fantasy (Classic) - Already 10 comics
+        // Fantasy (Classic)
         Comic(41, "Fantasy Classic 1", "placeholder_url_15", 4.8f, "Fantasy", "Classic", 399, 1700),
         Comic(42, "Fantasy Classic 2", "placeholder_url_16", 4.2f, "Fantasy", "Classic", 339, 950),
         Comic(43, "Fantasy Classic 3", "placeholder_url_21", 4.5f, "Fantasy", "Classic", 369, 1300),
@@ -180,7 +201,7 @@ object DummyData {
         Comic(89, "SciFi Modern 9", "placeholder_url_99", 4.1f, "SciFi", "Modern", 419, 1300),
         Comic(90, "SciFi Modern 10", "placeholder_url_100", 4.7f, "SciFi", "Modern", 479, 1950),
 
-        // Fantasy (Modern) - Already 10 comics
+        // Fantasy (Modern)
         Comic(91, "Fantasy Modern 1", "placeholder_url_19", 4.6f, "Fantasy", "Modern", 499, 1900),
         Comic(92, "Fantasy Modern 2", "placeholder_url_20", 4.4f, "Fantasy", "Modern", 459, 1250),
         Comic(93, "Fantasy Modern 3", "placeholder_url_29", 4.8f, "Fantasy", "Modern", 479, 1700),
@@ -196,9 +217,13 @@ object DummyData {
     private val episodeSocialDataMap = mutableMapOf<String, EpisodeSocialData>()
     private var isSubscribed = false
     private val purchaseConfirmations = mutableMapOf<Int, Boolean>()
-    private val communityPosts = mutableListOf<CommunityPost>()
+    private val communityPosts = mutableStateListOf<CommunityPost>()
     private var postIdCounter = 1
     private val favoriteComicIds: SnapshotStateList<Int> = mutableStateListOf()
+    // Map to store votes for each poll post (postId -> votes list)
+    private val pollVotesMap = mutableStateMapOf<Int, MutableList<Int>>()
+    // Map to store the voted option index for each poll post (postId -> votedOptionIndex)
+    private val votedOptionMap = mutableStateMapOf<Int, Int>()
 
     private val userProfile = UserProfile(
         username = "ComicFan123",
@@ -209,6 +234,42 @@ object DummyData {
     )
 
     private val userAboutMeState = mutableStateOf(userProfile.aboutMe)
+
+    // Mock list of all usernames (for reference)
+    private val allUsernames = listOf(
+        "ComicFan123",
+        "SuperheroLover",
+        "FantasyReader",
+        "ActionHero",
+        "AdventureSeeker",
+        "MysterySolver",
+        "SciFiGeek"
+    )
+
+    // Mock list of usernames that the current user (ComicFan123) follows
+    private val followedUsernames = listOf(
+        "SuperheroLover",
+        "FantasyReader",
+        "ActionHero",
+        "AdventureSeeker"
+    )
+
+    // Initialize some sample community posts with timestamps, images, and polls
+    init {
+        addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1")
+        addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null)
+        addCommunityPost(
+            "Which comic genre do you prefer?",
+            null,
+            Poll(
+                question = "Which comic genre do you prefer?",
+                options = listOf(
+                    PollOption("Superhero", 0),
+                    PollOption("Fantasy", 0)
+                )
+            )
+        )
+    }
 
     fun getComicsByCategory(category: String): List<Comic> {
         return comics.filter { it.category == category }
@@ -265,16 +326,46 @@ object DummyData {
     }
 
     fun getCommunityPosts(): List<CommunityPost> {
-        return communityPosts.toList()
+        // Sort posts by id in descending order (newest first)
+        return communityPosts.sortedByDescending { it.id }
     }
 
-    fun addCommunityPost(content: String) {
-        communityPosts.add(CommunityPost(postIdCounter++, content))
+    fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
+        // Mock timestamp (in real app, use actual date/time)
+        val timestamp = "2025-05-18 12:00 PM"
+        val postId = postIdCounter++
+        communityPosts.add(
+            CommunityPost(
+                id = postId,
+                content = content,
+                username = userProfile.username,
+                timestamp = timestamp,
+                imageUrl = imageUrl,
+                poll = poll
+            )
+        )
+        // Initialize votes for the new poll post
+        if (poll != null) {
+            pollVotesMap[postId] = MutableList(poll.options.size) { 0 }
+        }
     }
 
     fun addCommentToPost(postId: Int, comment: String) {
+        // Mock timestamp (in real app, use actual date/time)
+        val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
-        post?.comments?.add(comment)
+        post?.comments?.add(
+            Comment(
+                username = userProfile.username,
+                content = comment,
+                timestamp = timestamp
+            )
+        )
+    }
+
+    fun getMockUsernames(): List<String> {
+        // Return only the usernames that the current user follows
+        return followedUsernames
     }
 
     fun toggleFavoriteComic(comicId: Int) {
@@ -311,5 +402,22 @@ object DummyData {
 
     fun getCommunityPostsCount(): Int {
         return communityPosts.size
+    }
+
+    // Methods to manage poll votes
+    fun getPollVotes(postId: Int): MutableList<Int> {
+        return pollVotesMap[postId] ?: mutableListOf()
+    }
+
+    fun setPollVotes(postId: Int, votes: MutableList<Int>) {
+        pollVotesMap[postId] = votes
+    }
+
+    fun getVotedOptionIndex(postId: Int): Int {
+        return votedOptionMap[postId] ?: -1
+    }
+
+    fun setVotedOptionIndex(postId: Int, index: Int) {
+        votedOptionMap[postId] = index
     }
 }
