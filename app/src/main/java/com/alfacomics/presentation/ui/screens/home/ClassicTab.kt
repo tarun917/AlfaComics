@@ -35,7 +35,7 @@ fun ClassicTab(
         // Header Item (Title)
         item {
             Text(
-                text = "Classic Comics",
+                text = "Comics", // Renamed from "Classic Comics" to "Comics"
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
                 modifier = Modifier

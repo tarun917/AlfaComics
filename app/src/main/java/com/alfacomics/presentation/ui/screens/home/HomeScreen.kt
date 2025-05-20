@@ -21,7 +21,7 @@ fun HomeScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val tabs = listOf("Classic", "Modern")
+    val tabs = listOf("Comics", "Motion Comics") // Updated tab labels
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Column(
@@ -48,8 +48,8 @@ fun HomeScreen(
 
         // Content based on selected tab
         when (selectedTabIndex) {
-            0 -> ClassicTab(navController = navController)
-            1 -> ModernTab(navController = navController)
+            0 -> ClassicTab(navController = navController) // Still points to ClassicTab (now Comics)
+            1 -> ModernTab(navController = navController) // Still points to ModernTab (now Motion Comics)
         }
     }
 }
