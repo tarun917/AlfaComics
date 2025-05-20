@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.alfacomics.data.repository.BuyerDetails
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.Review
 
@@ -36,6 +37,8 @@ fun ComicPurchaseScreen(
     val readCount = DummyData.getReadCountForHardCopyComic(comicId) // Placeholder for total buyers
     var showDescriptionModal by remember { mutableStateOf(false) }
     var showReviewsModal by remember { mutableStateOf(false) }
+    var showPaymentModal by remember { mutableStateOf(false) }
+    var pendingBuyerDetails by remember { mutableStateOf<BuyerDetails?>(null) }
 
     if (comic == null) {
         Box(
@@ -101,30 +104,34 @@ fun ComicPurchaseScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         // Truncate description to ~256 words (approximated by character count)
-                        val truncatedDescription = if (comic.description.length > 500) {
-                            comic.description.take(500) + "..."
+                        val isLongDescription = comic.description.length > 50 // Updated to 50 characters
+                        val truncatedDescription = if (isLongDescription) {
+                            comic.description.take(500)
                         } else {
                             comic.description
                         }
-                        Text(
-                            text = truncatedDescription,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White,
-                            maxLines = 6, // Limit the number of lines to prevent overflow
-                            overflow = TextOverflow.Ellipsis,
+                        Column(
                             modifier = Modifier
-                                .weight(1f, fill = false) // Ensure the content doesn't stretch the card
-                                .wrapContentHeight(align = Alignment.Top) // Align content to the top
-                        )
-                        if (comic.description.length > 500) {
+                                .weight(1f, fill = false)
+                                .wrapContentHeight(align = Alignment.Top)
+                        ) {
                             Text(
-                                text = "More...",
+                                text = truncatedDescription,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Cyan,
-                                modifier = Modifier
-                                    .clickable { showDescriptionModal = true }
-                                    .padding(top = 0.dp)
+                                color = Color.White,
+                                maxLines = 6,
+                                overflow = TextOverflow.Ellipsis
                             )
+                            if (isLongDescription) {
+                                Text(
+                                    text = "More...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Cyan,
+                                    modifier = Modifier
+                                        .clickable { showDescriptionModal = true }
+                                        .padding(top = 0.dp)
+                                )
+                            }
                         }
                     }
 
@@ -189,23 +196,13 @@ fun ComicPurchaseScreen(
         // Purchase Form
         item {
             PurchaseForm(
-                onBuyClicked = {
-                    if (comic.stockQuantity <= 0) {
-                        purchaseError = "Out of stock!"
-                        return@PurchaseForm
-                    }
-                    if (userProfile.alfaCoins < comic.price) {
-                        purchaseError = "Not enough AlfaCoins!"
-                        return@PurchaseForm
-                    }
-
-                    // Deduct AlfaCoins and confirm purchase
-                    val newBalance = userProfile.alfaCoins - comic.price
-                    DummyData.updateAlfaCoins(newBalance)
-                    DummyData.confirmPurchase(comicId)
-                    isPurchased = true
-                    purchaseError = null
-                    navController.navigate("order_confirmation")
+                comicId = comicId,
+                onBuyClicked = { buyerDetails ->
+                    // Save buyer details
+                    DummyData.saveBuyerDetails(buyerDetails)
+                    // Store pending buyer details and show payment options modal
+                    pendingBuyerDetails = buyerDetails
+                    showPaymentModal = true
                 }
             )
         }
@@ -234,19 +231,6 @@ fun ComicPurchaseScreen(
             }
         }
 
-        // Back Button
-        item {
-            Button(
-                onClick = {
-                    navController.popBackStack()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                Text(text = "Back")
-            }
-        }
     }
 
     // Description Modal
@@ -341,5 +325,34 @@ fun ComicPurchaseScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    // Payment Options Modal
+    if (showPaymentModal) {
+        PaymentOptionsModal(
+            onDismiss = { showPaymentModal = false },
+            onPaymentSelected = { paymentMethod ->
+                // For now, we'll simulate a successful payment
+                if (comic.stockQuantity <= 0) {
+                    purchaseError = "Out of stock!"
+                    showPaymentModal = false
+                    return@PaymentOptionsModal
+                }
+                if (userProfile.alfaCoins < comic.price) {
+                    purchaseError = "Not enough AlfaCoins!"
+                    showPaymentModal = false
+                    return@PaymentOptionsModal
+                }
+
+                // Deduct AlfaCoins and confirm purchase
+                val newBalance = userProfile.alfaCoins - comic.price
+                DummyData.updateAlfaCoins(newBalance)
+                DummyData.confirmPurchase(comicId)
+                isPurchased = true
+                purchaseError = null
+                showPaymentModal = false
+                navController.navigate("order_confirmation")
+            }
+        )
     }
 }

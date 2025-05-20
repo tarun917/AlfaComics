@@ -6,16 +6,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.alfacomics.data.repository.BuyerDetails
+import java.util.regex.Pattern
 
 @Composable
 fun PurchaseForm(
-    onBuyClicked: () -> Unit
+    comicId: Int,
+    onBuyClicked: (BuyerDetails) -> Unit // Callback to show payment options modal with buyer details
 ) {
     var buyerName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var mobileNumber by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var pinCode by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -106,11 +110,37 @@ fun PurchaseForm(
             )
         )
 
+        // Error Message (if any)
+        errorMessage?.let { error ->
+            Text(
+                text = error,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Buy Button (Placeholder for future functionality)
+        // Buy Button
         Button(
-            onClick = { onBuyClicked() },
+            onClick = {
+                // Form validation
+                errorMessage = validateForm(buyerName, email, mobileNumber, address, pinCode)
+                if (errorMessage == null) {
+                    // Save buyer details and proceed to payment options
+                    val buyerDetails = BuyerDetails(
+                        comicId = comicId,
+                        buyerName = buyerName,
+                        email = email,
+                        mobileNumber = mobileNumber,
+                        address = address,
+                        pinCode = pinCode,
+                        purchaseTimestamp = "2025-05-20 02:37 PM" // Mock timestamp (current date/time)
+                    )
+                    onBuyClicked(buyerDetails)
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -118,4 +148,50 @@ fun PurchaseForm(
             Text(text = "Buy")
         }
     }
+}
+
+private fun validateForm(
+    buyerName: String,
+    email: String,
+    mobileNumber: String,
+    address: String,
+    pinCode: String
+): String? {
+    // Validate Buyer Name
+    if (buyerName.isBlank()) {
+        return "Buyer Name is required"
+    }
+
+    // Validate Email
+    val emailPattern = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"
+    )
+    if (email.isBlank()) {
+        return "Email is required"
+    } else if (!emailPattern.matcher(email).matches()) {
+        return "Invalid email format"
+    }
+
+    // Validate Mobile Number
+    val mobilePattern = Pattern.compile("^[0-9]{10}\$")
+    if (mobileNumber.isBlank()) {
+        return "Mobile Number is required"
+    } else if (!mobilePattern.matcher(mobileNumber).matches()) {
+        return "Mobile Number must be 10 digits"
+    }
+
+    // Validate Address
+    if (address.isBlank()) {
+        return "Address is required"
+    }
+
+    // Validate Pin Code
+    val pinCodePattern = Pattern.compile("^[0-9]{6}\$")
+    if (pinCode.isBlank()) {
+        return "Pin Code is required"
+    } else if (!pinCodePattern.matcher(pinCode).matches()) {
+        return "Pin Code must be 6 digits"
+    }
+
+    return null // No errors
 }

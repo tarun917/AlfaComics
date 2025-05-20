@@ -32,18 +32,10 @@ data class HardCopyComic(
     val price: Int,
     val stockQuantity: Int,
     val rating: Float,
-    val ratingsCount: Int, // Added: Number of users who rated
-    val pages: Int, // Added: Number of pages
-    val reviews: List<Review>, // Added: List of reviews
-    val description: String = "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts! " +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts!This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!" +
-            "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!",
-
+    val ratingsCount: Int,
+    val pages: Int,
+    val reviews: List<Review>,
+    val description: String = "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!",
     val dimensions: String = "8.5 x 11 inches",
     val weight: String = "300g"
 )
@@ -117,6 +109,16 @@ data class UserProfile(
     val profilePictureResourceId: Int,
     val aboutMe: String,
     val alfaCoins: Int
+)
+
+data class BuyerDetails(
+    val comicId: Int,
+    val buyerName: String,
+    val email: String,
+    val mobileNumber: String,
+    val address: String,
+    val pinCode: String,
+    val purchaseTimestamp: String
 )
 
 object DummyData {
@@ -256,9 +258,7 @@ object DummyData {
             120, // pages
             listOf(
                 Review("Amit Sharma", "Amazing comic with great artwork!", "2025-05-15 10:00 AM"),
-                Review("Tarun Daharwal", "Amazing comic with great artwork!", "2025-05-15 10:00 AM"),
-                Review("Gagan Sharma", "Amazing comic with great artwork!", "2025-05-15 10:00 AM"),
-                Review("Priya Singh", "Loved the story, a must-buy for collectors!", "2025-05-16 02:30 PM"),
+                Review("Priya Singh", "Loved the story, a must-buy for collectors!", "2025-05-16 02:30 PM")
             )
         ),
         HardCopyComic(
@@ -393,6 +393,8 @@ object DummyData {
     private val pollVotesMap = mutableStateMapOf<Int, MutableList<Int>>()
     // Map to store the voted option index for each poll post (postId -> votedOptionIndex)
     private val votedOptionMap = mutableStateMapOf<Int, Int>()
+    // List to store buyer details for purchases
+    private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
 
     private val userProfile = UserProfile(
         username = "ComicFan123",
@@ -635,5 +637,15 @@ object DummyData {
     // Method to get readCount for a hard copy comic by mapping to the corresponding Comic
     fun getReadCountForHardCopyComic(hardCopyComicId: Int): Int {
         return comics.find { it.id == hardCopyComicId }?.readCount ?: 0
+    }
+
+    // Method to save buyer details
+    fun saveBuyerDetails(details: BuyerDetails) {
+        buyerDetailsList.add(details)
+    }
+
+    // Method to get buyer details for a specific comic purchase
+    fun getBuyerDetailsForComic(comicId: Int): List<BuyerDetails> {
+        return buyerDetailsList.filter { it.comicId == comicId }
     }
 }
