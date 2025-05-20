@@ -62,7 +62,8 @@ data class CommunityPost(
     val timestamp: String,
     val imageUrl: String? = null,
     val poll: Poll? = null,
-    val comments: MutableList<Comment> = mutableListOf()
+    val comments: MutableList<Comment> = mutableListOf(),
+    val reactions: Map<String, List<String>> = emptyMap() // Added reactions field
 )
 
 data class Comment(
@@ -78,7 +79,7 @@ data class Poll(
 
 data class PollOption(
     val text: String,
-    val votes: Int // Mock votes for now
+    val votes: Int = 0
 )
 
 data class UserProfile(
@@ -125,7 +126,7 @@ object DummyData {
         Comic(26, "Adventure Classic 6", "placeholder_url_56", 4.6f, "Adventure", "Classic", 319, 1300),
         Comic(27, "Adventure Classic 7", "placeholder_url_57", 4.3f, "Adventure", "Classic", 329, 1200),
         Comic(28, "Adventure Classic 8", "placeholder_url_58", 4.9f, "Adventure", "Classic", 369, 1500),
-        Comic(29, "Adventure Classic 9", "placeholder_url_59", 4.5f, "Adventure", "Classic", 309, 1000),
+        Comic(29, "Adventure Classic 9", "placeholder_url_59", 4.1f, "Adventure", "Classic", 289, 900),
         Comic(30, "Adventure Classic 10", "placeholder_url_60", 4.7f, "Adventure", "Classic", 349, 1350),
 
         // Mystery (Classic)
@@ -256,12 +257,12 @@ object DummyData {
 
     // Initialize some sample community posts with timestamps, images, and polls
     init {
-        addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1")
-        addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null)
+        addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1", null)
+        addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null, null)
         addCommunityPost(
-            "Which comic genre do you prefer?",
-            null,
-            Poll(
+            content = "Which comic genre do you prefer?",
+            imageUrl = null,
+            poll = Poll(
                 question = "Which comic genre do you prefer?",
                 options = listOf(
                     PollOption("Superhero", 0),
@@ -272,21 +273,21 @@ object DummyData {
     }
 
     fun getComicsByCategory(category: String): List<Comic> {
-        return comics.filter { it.category == category }
+        return comics.filter { comic -> comic.category == category }
     }
 
     fun getComicsByGenreAndCategory(genre: String, category: String): List<Comic> {
-        return comics.filter { it.genre == genre && it.category == category }
+        return comics.filter { comic -> comic.genre == genre && comic.category == category }
     }
 
     fun getGenresByCategory(category: String): List<String> {
-        return comics.filter { it.category == category }
-            .map { it.genre }
+        return comics.filter { comic -> comic.category == category }
+            .map { comic -> comic.genre }
             .distinct()
     }
 
     fun getComicById(id: Int): Comic? {
-        return comics.find { it.id == id }
+        return comics.find { comic -> comic.id == id }
     }
 
     fun getEpisodeSocialData(comicId: Int, episodeId: Int): EpisodeSocialData {
@@ -307,7 +308,7 @@ object DummyData {
     fun getEpisodesWithSubscription(comicId: Int): List<Episode> {
         val comic = getComicById(comicId) ?: return emptyList()
         return if (isSubscribed) {
-            comic.episodes.map { it.copy(isFree = true) }
+            comic.episodes.map { episode -> episode.copy(isFree = true) }
         } else {
             comic.episodes
         }
@@ -327,7 +328,7 @@ object DummyData {
 
     fun getCommunityPosts(): List<CommunityPost> {
         // Sort posts by id in descending order (newest first)
-        return communityPosts.sortedByDescending { it.id }
+        return communityPosts.sortedByDescending { post -> post.id }
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
@@ -341,7 +342,9 @@ object DummyData {
                 username = userProfile.username,
                 timestamp = timestamp,
                 imageUrl = imageUrl,
-                poll = poll
+                poll = poll,
+                comments = mutableListOf(),
+                reactions = emptyMap()
             )
         )
         // Initialize votes for the new poll post
@@ -385,7 +388,7 @@ object DummyData {
     }
 
     fun getFavoriteComics(): List<Comic> {
-        return comics.filter { favoriteComicIds.contains(it.id) }
+        return comics.filter { comic -> favoriteComicIds.contains(comic.id) }
     }
 
     fun getUserProfile(): UserProfile {
@@ -406,7 +409,7 @@ object DummyData {
 
     // Methods to manage poll votes
     fun getPollVotes(postId: Int): MutableList<Int> {
-        return pollVotesMap[postId] ?: mutableListOf()
+        return pollVotesMap[postId]?.toMutableList() ?: mutableListOf()
     }
 
     fun setPollVotes(postId: Int, votes: MutableList<Int>) {
@@ -419,5 +422,27 @@ object DummyData {
 
     fun setVotedOptionIndex(postId: Int, index: Int) {
         votedOptionMap[postId] = index
+    }
+
+    fun addReactionToPost(postId: Int, reactionType: String, userId: String) {
+        val post = communityPosts.find { it.id == postId }
+        post?.let {
+            val currentReactions = it.reactions.toMutableMap()
+            val userReactions = currentReactions[reactionType]?.toMutableList() ?: mutableListOf()
+
+            // Toggle reaction: if user already reacted, remove their reaction; otherwise, add it
+            if (userId in userReactions) {
+                userReactions.remove(userId)
+            } else {
+                userReactions.add(userId)
+            }
+            currentReactions[reactionType] = userReactions
+
+            // Update the post in the list
+            val index = communityPosts.indexOf(it)
+            if (index != -1) {
+                communityPosts[index] = it.copy(reactions = currentReactions)
+            }
+        }
     }
 }

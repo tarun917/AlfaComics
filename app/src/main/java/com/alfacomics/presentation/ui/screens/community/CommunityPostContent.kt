@@ -13,11 +13,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alfacomics.data.repository.CommunityPost
 import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.PollOption
 
 @Composable
 fun CommunityPostContent(
     post: CommunityPost,
+    onImageClick: () -> Unit, // Added callback for image click
     modifier: Modifier = Modifier
 ) {
     var pollVotes by remember(post.id) {
@@ -45,23 +45,11 @@ fun CommunityPostContent(
         )
 
         // Post Image (if available)
-        if (post.imageUrl != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Image Placeholder\n(${post.imageUrl})",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
-        }
+        ImageHandler(
+            imageUrl = post.imageUrl,
+            onImageClick = onImageClick, // Pass the click callback
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // Poll (if available)
         if (post.poll != null) {

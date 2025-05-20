@@ -75,4 +75,36 @@ dependencies {
     //noinspection BomWithoutPlatform
     androidTestImplementation(libs.compose.bom)
     implementation(platform(libs.androidx.compose.bom.v20240903))
+
+    // Lifecycle and ViewModel
+    implementation(libs.lifecycle.runtime.ktx.v286)
+    implementation(libs.androidx.lifecycle.viewmodel.compose) // For viewModel()
+
+// Navigation
+    implementation(libs.navigation.compose.v277)
+
+// Compose Dependencies (managed by BOM for consistency)
+     // Latest BOM as of May 2025
+    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.compose.ui.ui)
+    implementation(libs.androidx.compose.ui.ui.graphics)
+    implementation(libs.androidx.compose.ui.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3.material3)
+    implementation(libs.androidx.compose.material.material.icons.extended3) // For icons like MoreVert
+    debugImplementation(libs.androidx.compose.ui.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.ui.test.manifest)
+
+// Coil for image loading (used in ImageHandler.kt if you implement actual image loading)
+
+
+
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.activity.compose)
+    implementation(libs.annotation)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.navigation.compose)
+
+
 }

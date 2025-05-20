@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -8,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.alfacomics.presentation.ui.screens.community.CommunityScreen
+import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
 import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
@@ -18,10 +20,12 @@ import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 
+@SuppressLint("ComposableDestinationInComposeScope")
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    communityViewModel: CommunityViewModel // Added parameter
 ) {
     NavHost(
         navController = navController,
@@ -32,7 +36,7 @@ fun NavGraph(
             HomeScreen(navController = navController)
         }
         composable("community") {
-            CommunityScreen()
+            CommunityScreen(viewModel = communityViewModel)
         }
         composable("store") {
             AlfaStoreScreen()

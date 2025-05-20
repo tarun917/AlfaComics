@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.screens.community
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +25,12 @@ import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.Poll
 import com.alfacomics.data.repository.PollOption
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
-fun CommunityScreen() {
+fun CommunityScreen(
+    viewModel: CommunityViewModel
+) {
     var newPostContent by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
     var wordCount by remember { mutableStateOf(0) }
     var showWordLimitError by remember { mutableStateOf(false) }
     var showUserDropdown by remember { mutableStateOf(false) }
@@ -36,12 +39,14 @@ fun CommunityScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var showPollDialog by remember { mutableStateOf(false) }
     var pollQuestion by remember { mutableStateOf("") }
-    // Dynamic list for poll options
     var pollOptions by remember { mutableStateOf(mutableListOf("", "")) } // Start with 2 options
-    val posts = DummyData.getCommunityPosts() // Directly use the mutableStateListOf
+    val posts = DummyData.getCommunityPosts()
     val maxWordLimit = 512
     val maxPollOptions = 6
     val mockUsernames = DummyData.getMockUsernames()
+
+    // Image selection launcher
+    val imagePickerLauncher = LocalActivityResultLauncher.current
 
     // Calculate word count and detect tagging
     LaunchedEffect(newPostContent) {
@@ -54,16 +59,14 @@ fun CommunityScreen() {
         val cursorPosition = newPostContent.selection.start
         val lastHashIndex = newPostContent.text.lastIndexOf('#', cursorPosition - 1)
         if (lastHashIndex >= 0 && (cursorPosition == lastHashIndex + 1 || !newPostContent.text.substring(lastHashIndex + 1, cursorPosition).contains(" "))) {
-            // User is typing a tag
             tagStartIndex = lastHashIndex
             currentTagQuery = newPostContent.text.substring(lastHashIndex + 1, cursorPosition)
             showUserDropdown = true
         } else {
-            // User is not typing a tag
             tagStartIndex = -1
             currentTagQuery = ""
             showUserDropdown = false
-            searchQuery = "" // Reset search query when dropdown closes
+            searchQuery = ""
         }
     }
 
@@ -104,9 +107,9 @@ fun CommunityScreen() {
                         IconButton(
                             onClick = {
                                 if (newPostContent.text.isNotBlank() && !showWordLimitError) {
-                                    DummyData.addCommunityPost(newPostContent.text, selectedImageUrl, null)
+                                    DummyData.addCommunityPost(newPostContent.text, viewModel.selectedImageUrl, null)
                                     newPostContent = TextFieldValue("")
-                                    selectedImageUrl = null
+                                    viewModel.selectedImageUrl = null
                                 }
                             },
                             enabled = newPostContent.text.isNotBlank() && !showWordLimitError
@@ -137,7 +140,6 @@ fun CommunityScreen() {
                         .background(Color(0xFF1E1E1E))
                         .width(200.dp)
                 ) {
-                    // Search Field in Dropdown
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -176,11 +178,10 @@ fun CommunityScreen() {
                             DropdownMenuItem(
                                 text = { Text("#$username", color = Color.White) },
                                 onClick = {
-                                    // Replace the current tag query with the selected username
                                     val newText = newPostContent.text.substring(0, tagStartIndex + 1) + username + " "
                                     newPostContent = TextFieldValue(
                                         text = newText,
-                                        selection = TextRange(newText.length) // Move cursor to the end
+                                        selection = TextRange(newText.length)
                                     )
                                     showUserDropdown = false
                                     searchQuery = ""
@@ -201,14 +202,14 @@ fun CommunityScreen() {
                 // Image Selection Icon
                 IconButton(
                     onClick = {
-                        // Mock image selection: toggle between adding and removing an image
-                        selectedImageUrl = if (selectedImageUrl == null) "mock_image_url_${System.currentTimeMillis()}" else null
+                        // Launch image picker
+                        imagePickerLauncher?.launch("image/*")
                     }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Image,
                         contentDescription = "Add Image",
-                        tint = if (selectedImageUrl == null) Color.White else Color(0xFFBB86FC)
+                        tint = if (viewModel.selectedImageUrl == null) Color.White else Color(0xFFBB86FC)
                     )
                 }
 
@@ -217,11 +218,10 @@ fun CommunityScreen() {
                 // Tagging Button (# Symbol)
                 TextButton(
                     onClick = {
-                        // Append # to the post content and open dropdown
                         val newText = newPostContent.text + "#"
                         newPostContent = TextFieldValue(
                             text = newText,
-                            selection = TextRange(newText.length) // Move cursor to the end
+                            selection = TextRange(newText.length)
                         )
                         showUserDropdown = true
                     }
@@ -280,7 +280,7 @@ fun CommunityScreen() {
                 onDismissRequest = {
                     showPollDialog = false
                     pollQuestion = ""
-                    pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                    pollOptions = mutableListOf("", "")
                 },
                 title = { Text("Create a Poll", color = Color.White) },
                 text = {
@@ -301,7 +301,6 @@ fun CommunityScreen() {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Dynamic Poll Options
                         pollOptions.forEachIndexed { index, option ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -327,7 +326,6 @@ fun CommunityScreen() {
                                         unfocusedContainerColor = Color(0xFF1E1E1E)
                                     )
                                 )
-                                // Show delete icon only for third and subsequent options
                                 if (index >= 2) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                     IconButton(
@@ -338,7 +336,7 @@ fun CommunityScreen() {
                                         }
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Close, // Proper delete icon
+                                            imageVector = Icons.Default.Close,
                                             contentDescription = "Remove Option",
                                             tint = Color.Red
                                         )
@@ -347,7 +345,6 @@ fun CommunityScreen() {
                             }
                         }
 
-                        // Add Option Button (if less than max options)
                         if (pollOptions.size < maxPollOptions) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(
@@ -370,18 +367,17 @@ fun CommunityScreen() {
                 confirmButton = {
                     Button(
                         onClick = {
-                            // Ensure question and at least 2 options are filled
                             if (pollQuestion.isNotBlank() && pollOptions.size >= 2 && pollOptions.all { it.isNotBlank() }) {
                                 val poll = Poll(
                                     question = pollQuestion,
                                     options = pollOptions.map { PollOption(it, 0) }
                                 )
-                                DummyData.addCommunityPost(newPostContent.text, selectedImageUrl, poll)
+                                DummyData.addCommunityPost(newPostContent.text, viewModel.selectedImageUrl, poll)
                                 newPostContent = TextFieldValue("")
-                                selectedImageUrl = null
+                                viewModel.selectedImageUrl = null
                                 showPollDialog = false
                                 pollQuestion = ""
-                                pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                                pollOptions = mutableListOf("", "")
                             }
                         },
                         enabled = pollQuestion.isNotBlank() && pollOptions.size >= 2 && pollOptions.all { it.isNotBlank() },
@@ -398,7 +394,7 @@ fun CommunityScreen() {
                         onClick = {
                             showPollDialog = false
                             pollQuestion = ""
-                            pollOptions = mutableListOf("", "") // Reset to initial 2 options
+                            pollOptions = mutableListOf("", "")
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Gray,
@@ -428,7 +424,6 @@ fun CommunityScreen() {
                 )
             }
 
-            // Empty State
             if (posts.isEmpty()) {
                 item {
                     Text(
