@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.Episode // Corrected import for Episode
+import com.alfacomics.data.repository.Episode
 
 @Composable
 fun ComicDetailScreen(
@@ -29,6 +32,7 @@ fun ComicDetailScreen(
     val comic = DummyData.getComicById(comicId)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var isSubscribed by remember { mutableStateOf(DummyData.isUserSubscribed()) }
+    var isFavorite by remember { mutableStateOf(DummyData.isFavoriteComic(comicId)) }
     val episodes by remember { derivedStateOf { DummyData.getEpisodesWithSubscription(comicId) } }
 
     LazyColumn(
@@ -39,21 +43,58 @@ fun ComicDetailScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            // Placeholder for cover image
+            // Cover Image with Favourite Button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
+                    .background(Color.Gray)
             ) {
-                Text(
-                    text = "Cover\nPlaceholder",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
+                // Placeholder for cover image
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cover\nPlaceholder",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Favourite Button at Top-Right Corner
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            Color(0xFF1E1E1E).copy(alpha = 0.8f),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Favourite",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Check else Icons.Default.Add,
+                        contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                        tint = Color(0xFFBB86FC),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                DummyData.toggleFavoriteComic(comicId)
+                                isFavorite = DummyData.isFavoriteComic(comicId)
+                            }
+                    )
+                }
             }
         }
 
@@ -137,7 +178,7 @@ fun ComicDetailScreen(
 
 @Composable
 fun EpisodeItem(
-    episode: Episode, // Now resolves correctly with the proper import
+    episode: Episode,
     isLocked: Boolean,
     onClick: () -> Unit
 ) {
@@ -178,7 +219,7 @@ fun EpisodeItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = episode.title, // Now resolves correctly
+                    text = episode.title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
