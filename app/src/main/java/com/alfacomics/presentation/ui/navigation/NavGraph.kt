@@ -19,13 +19,16 @@ import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
 import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
+import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
+import com.alfacomics.presentation.ui.screens.store.OrderConfirmationScreen
+import com.alfacomics.presentation.ui.screens.store.OrderHistoryScreen
 
 @SuppressLint("ComposableDestinationInComposeScope")
 @Composable
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    communityViewModel: CommunityViewModel // Added parameter
+    communityViewModel: CommunityViewModel
 ) {
     NavHost(
         navController = navController,
@@ -39,7 +42,7 @@ fun NavGraph(
             CommunityScreen(viewModel = communityViewModel)
         }
         composable("store") {
-            AlfaStoreScreen()
+            AlfaStoreScreen(navController = navController)
         }
         composable("favourite") {
             FavouriteScreen(navController = navController)
@@ -82,6 +85,22 @@ fun NavGraph(
                 comicId = comicId,
                 episodeId = episodeId
             )
+        }
+        composable(
+            route = "comic_purchase/{comicId}",
+            arguments = listOf(navArgument("comicId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
+            ComicPurchaseScreen(
+                navController = navController,
+                comicId = comicId
+            )
+        }
+        composable("order_confirmation") {
+            OrderConfirmationScreen(navController = navController)
+        }
+        composable("order_history") {
+            OrderHistoryScreen(navController = navController)
         }
     }
 }
