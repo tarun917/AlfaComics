@@ -5,7 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
@@ -22,6 +23,7 @@ import coil.compose.AsyncImage
 import com.alfacomics.data.repository.BuyerDetails
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.Review
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,6 +32,8 @@ fun ComicPurchaseScreen(
     navController: NavController,
     comicId: Int
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     val comic = remember { DummyData.getHardCopyComicById(comicId) }
     val userProfile = remember { DummyData.getUserProfile() }
     var purchaseError by remember { mutableStateOf<String?>(null) }
@@ -60,11 +64,13 @@ fun ComicPurchaseScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
+            .imePadding() // Adjusts for keyboard height
             .padding(16.dp),
+        state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Comic Cover Image
-        item {
+        item(key = "cover_image") {
             AsyncImage(
                 model = comic.coverImageUrl,
                 contentDescription = "Comic Cover: ${comic.title}",
@@ -76,7 +82,7 @@ fun ComicPurchaseScreen(
         }
 
         // Two-Column Layout for Details
-        item {
+        item(key = "details") {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -104,7 +110,7 @@ fun ComicPurchaseScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         // Truncate description to ~256 words (approximated by character count)
-                        val isLongDescription = comic.description.length > 50 // Updated to 50 characters
+                        val isLongDescription = comic.description.length > 50
                         val truncatedDescription = if (isLongDescription) {
                             comic.description.take(500)
                         } else {
@@ -194,7 +200,7 @@ fun ComicPurchaseScreen(
         }
 
         // Purchase Form
-        item {
+        item(key = "purchase_form") {
             PurchaseForm(
                 comicId = comicId,
                 onBuyClicked = { buyerDetails ->
@@ -209,7 +215,7 @@ fun ComicPurchaseScreen(
 
         // Purchase Error Message (if any)
         purchaseError?.let { error ->
-            item {
+            item(key = "purchase_error") {
                 Text(
                     text = error,
                     color = Color.Red,
@@ -221,7 +227,7 @@ fun ComicPurchaseScreen(
 
         // Already Purchased Message
         if (isPurchased) {
-            item {
+            item(key = "already_purchased") {
                 Text(
                     text = "You have already purchased this comic!",
                     style = MaterialTheme.typography.bodyLarge,
@@ -230,7 +236,6 @@ fun ComicPurchaseScreen(
                 )
             }
         }
-
     }
 
     // Description Modal
@@ -310,8 +315,8 @@ fun ComicPurchaseScreen(
                             .heightIn(max = 300.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(comic.reviews) { review ->
-                            ReviewItem(review)
+                        itemsIndexed(comic.reviews) { _, review ->
+                            ReviewItem(review = review)
                         }
                     }
                 } else {

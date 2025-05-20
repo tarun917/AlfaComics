@@ -1,9 +1,12 @@
 package com.alfacomics.presentation.ui.screens.store
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.alfacomics.data.repository.BuyerDetails
@@ -20,6 +23,13 @@ fun PurchaseForm(
     var address by remember { mutableStateOf("") }
     var pinCode by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Focus requesters for each text field
+    val buyerNameFocusRequester = remember { FocusRequester() }
+    val emailFocusRequester = remember { FocusRequester() }
+    val mobileNumberFocusRequester = remember { FocusRequester() }
+    val addressFocusRequester = remember { FocusRequester() }
+    val pinCodeFocusRequester = remember { FocusRequester() }
 
     Column(
         modifier = Modifier
@@ -40,7 +50,10 @@ fun PurchaseForm(
             value = buyerName,
             onValueChange = { buyerName = it },
             label = { Text("Buyer Name", color = Color.White) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(buyerNameFocusRequester)
+                .focusable(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
@@ -55,7 +68,10 @@ fun PurchaseForm(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email", color = Color.White) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(emailFocusRequester)
+                .focusable(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
@@ -70,7 +86,10 @@ fun PurchaseForm(
             value = mobileNumber,
             onValueChange = { mobileNumber = it },
             label = { Text("Mobile Number", color = Color.White) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(mobileNumberFocusRequester)
+                .focusable(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
@@ -85,7 +104,10 @@ fun PurchaseForm(
             value = address,
             onValueChange = { address = it },
             label = { Text("Address", color = Color.White) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(addressFocusRequester)
+                .focusable(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
@@ -100,7 +122,10 @@ fun PurchaseForm(
             value = pinCode,
             onValueChange = { pinCode = it },
             label = { Text("Pin Code", color = Color.White) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(pinCodeFocusRequester)
+                .focusable(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
@@ -136,7 +161,7 @@ fun PurchaseForm(
                         mobileNumber = mobileNumber,
                         address = address,
                         pinCode = pinCode,
-                        purchaseTimestamp = "2025-05-20 02:37 PM" // Mock timestamp (current date/time)
+                        purchaseTimestamp = "2025-05-20 03:45 PM" // Updated to current date/time
                     )
                     onBuyClicked(buyerDetails)
                 }

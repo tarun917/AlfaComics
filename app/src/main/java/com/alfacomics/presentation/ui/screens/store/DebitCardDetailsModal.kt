@@ -23,8 +23,19 @@ fun DebitCardDetailsModal(
     var cvv by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Create a ModalBottomSheetState to control the sheet's state
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true // Skip the partially expanded state
+    )
+
+    // Automatically expand the sheet when it opens
+    LaunchedEffect(Unit) {
+        sheetState.expand()
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = Color(0xFF121212)
     ) {
         Column(
