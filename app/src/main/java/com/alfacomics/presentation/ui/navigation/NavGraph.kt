@@ -12,7 +12,6 @@ import com.alfacomics.presentation.ui.screens.community.CommunityScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
-import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
@@ -87,20 +86,6 @@ fun NavGraph(
         composable("order_history") {
             OrderHistoryScreen(navController = navController)
         }
-        composable(
-            route = "episode_player/{motionComicId}/{episodeId}",
-            arguments = listOf(
-                navArgument("motionComicId") { type = NavType.IntType },
-                navArgument("episodeId") { type = NavType.IntType }
-            )
-        ) { backStackEntry ->
-            val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
-            val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
-            EpisodePlayerScreen(
-                navController = navController,
-                motionComicId = motionComicId,
-                episodeId = episodeId
-            )
-        }
+        // Removed episode_player route as it's no longer needed
     }
 }

@@ -24,6 +24,7 @@ fun FavouriteScreen(
     navController: NavHostController
 ) {
     val favoriteComics by remember { derivedStateOf { DummyData.getFavoriteComics() } }
+    val favoriteMotionComics by remember { derivedStateOf { DummyData.getFavoriteMotionComics() } } // Added to fetch favorited motion comics
     val comicsListState = rememberLazyListState()
     val motionComicsListState = rememberLazyListState()
 
@@ -95,53 +96,35 @@ fun FavouriteScreen(
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
             )
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight(),
-                state = motionComicsListState,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Placeholder items for testing independent scrolling
-                items(10) { index ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(152.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF1E1E1E)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            // Placeholder for motion comic thumbnail
-                            Box(
-                                modifier = Modifier
-                                    .size(120.dp, 120.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(Color.Gray),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Thumb",
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    textAlign = TextAlign.Center
-                                )
+            if (favoriteMotionComics.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight(),
+                    state = motionComicsListState,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(favoriteMotionComics) { motionComic ->
+                        FavoriteMotionComicItem(
+                            motionComicId = motionComic.id,
+                            title = motionComic.title,
+                            onClick = {
+                                navController.navigate("motion_comic_detail/${motionComic.id}")
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            // Motion Comic Title (below thumbnail)
-                            Text(
-                                text = "Motion Comic ${index + 1}\n(Coming Soon)",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        )
                     }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No favorite motion comics yet.\nAdd some from the Home tab!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
@@ -157,7 +140,7 @@ fun FavoriteComicItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp) // Adjusted height to accommodate title below thumbnail
+            .height(180.dp)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1E1E1E)
@@ -172,7 +155,7 @@ fun FavoriteComicItem(
             // Placeholder for comic thumbnail
             Box(
                 modifier = Modifier
-                    .size(120.dp, 120.dp) // Thumbnail size remains the same
+                    .size(120.dp, 120.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(Color.Gray),
                 contentAlignment = Alignment.Center
@@ -186,6 +169,55 @@ fun FavoriteComicItem(
             }
             Spacer(modifier = Modifier.height(8.dp))
             // Comic Title (below thumbnail)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+fun FavoriteMotionComicItem(
+    motionComicId: Int,
+    title: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp) // Matching height with FavoriteComicItem
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E1E1E)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Placeholder for motion comic thumbnail
+            Box(
+                modifier = Modifier
+                    .size(120.dp, 120.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Gray),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Thumb",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Motion Comic Title (below thumbnail)
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
