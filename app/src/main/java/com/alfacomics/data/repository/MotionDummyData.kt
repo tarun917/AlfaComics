@@ -5,11 +5,18 @@ import com.alfacomics.R
 data class MotionComic(
     val id: Int,
     val title: String,
-    val thumbnailUrl: Int, // Drawable resource ID (not used directly in UI for now)
+    val thumbnailUrl: Int,
     val videoUrl: String,
     val genre: String,
     val rating: Float,
-    val views: Int
+    val views: Int,
+    val description: String = "This is a sample description for the motion comic. It includes thrilling animations, engaging stories, and dynamic visuals that bring the comic to life in an exciting new way!",
+    val episodes: List<MotionEpisode> = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}") }
+)
+
+data class MotionEpisode(
+    val id: Int,
+    val title: String
 )
 
 object MotionDummyData {
@@ -22,7 +29,9 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_1",
             genre = "Romance",
             rating = 4.8f,
-            views = 2500
+            views = 2500,
+            description = "A timeless tale of two lovers separated by fate, only to be reunited through magical circumstances in a world filled with romance and mystery. Their journey is one of passion and heartbreak, as they overcome obstacles to be together forever.",
+            episodes = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}") }
         ),
         MotionComic(
             id = 2,
@@ -31,7 +40,8 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_2",
             genre = "Romance",
             rating = 4.5f,
-            views = 1800
+            views = 1800,
+            description = "A young florist discovers love in the most unexpected place when a mysterious stranger visits her shop. Their budding romance faces challenges, but the power of love helps them bloom together in a heartwarming story."
         ),
         MotionComic(
             id = 3,
@@ -78,7 +88,8 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_7",
             genre = "Horror",
             rating = 4.2f,
-            views = 1500
+            views = 1500,
+            description = "In a haunted mansion, a group of friends uncovers dark secrets that awaken shadowy creatures. As fear takes over, they must confront their deepest nightmares to survive the night in this chilling horror motion comic."
         ),
         MotionComic(
             id = 8,
@@ -134,7 +145,8 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_13",
             genre = "Fantasy",
             rating = 4.9f,
-            views = 3000
+            views = 3000,
+            description = "A brave adventurer steps into a mystical realm where magic reigns supreme. Joined by a band of enchanted creatures, they embark on a quest to defeat an ancient evil and restore peace to the land in this fantastical journey."
         ),
         MotionComic(
             id = 14,
@@ -190,7 +202,8 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_19",
             genre = "Sci-Fi",
             rating = 4.7f,
-            views = 2800
+            views = 2800,
+            description = "In a distant galaxy, a team of heroes fights against an alien invasion threatening humanity. With advanced technology and unwavering courage, they embark on a mission to save the universe in this thrilling sci-fi motion comic adventure."
         ),
         MotionComic(
             id = 20,
@@ -246,7 +259,8 @@ object MotionDummyData {
             videoUrl = "placeholder_motion_video_25",
             genre = "Adventure",
             rating = 4.5f,
-            views = 2000
+            views = 2000,
+            description = "An explorer ventures into the cosmos, discovering uncharted planets and facing thrilling challenges. Along the way, they uncover ancient secrets that could change the fate of the universe in this epic adventure motion comic."
         ),
         MotionComic(
             id = 26,

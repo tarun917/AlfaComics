@@ -25,12 +25,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController // Added import
 import com.alfacomics.R
 import com.alfacomics.data.repository.DummyData
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    navController: NavHostController // Added navController parameter
+) {
     val userProfile = DummyData.getUserProfile()
     val favoriteComicsCount by derivedStateOf { DummyData.getFavoriteComicsCount() }
     val communityPostsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
@@ -325,7 +328,7 @@ fun ProfileOptionCard(
                 color = Color.White
             )
             Icon(
-                painter = painterResource(id = R.drawable.ic_launcher_background), // Use ic_launcher_background instead
+                painter = painterResource(id = R.drawable.ic_launcher_background),
                 contentDescription = "Option Icon",
                 tint = Color(0xFFBB86FC),
                 modifier = Modifier.size(24.dp)

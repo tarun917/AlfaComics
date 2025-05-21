@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.HardCopyComic
 import com.alfacomics.presentation.ui.components.HardCopyComicBox
@@ -24,7 +25,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun AlfaStoreScreen(
-    navController: NavController
+    navController: NavHostController // Updated type to NavHostController
 ) {
     // State to hold the list of hard copy comics
     var hardCopyComics by remember { mutableStateOf<List<HardCopyComic>?>(null) }

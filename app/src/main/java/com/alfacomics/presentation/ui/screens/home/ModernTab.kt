@@ -30,7 +30,6 @@ fun ModernTab(
     val groupedMotionComics = genres.associateWith { genre ->
         MotionDummyData.getMotionComicsByGenre(genre)
     }
-    var showPlayingMessage by remember { mutableStateOf<String?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -39,7 +38,7 @@ fun ModernTab(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header Item (Title)
+// Header Item (Title)
         item {
             Text(
                 text = "Motion Comics",
@@ -52,7 +51,7 @@ fun ModernTab(
             )
         }
 
-        // Grouped Motion Comics by Genre
+// Grouped Motion Comics by Genre
         items(groupedMotionComics.entries.toList()) { (genre, genreMotionComics) ->
             Column {
                 Text(
@@ -75,26 +74,11 @@ fun ModernTab(
                             rating = motionComic.rating,
                             views = motionComic.views,
                             onWatchClick = {
-                                showPlayingMessage = "Playing ${motionComic.title}..."
+                                navController.navigate("motion_comic_detail/${motionComic.id}")
                             }
                         )
                     }
                 }
-            }
-        }
-
-        // Show Playing Message (if any)
-        showPlayingMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Green,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                )
             }
         }
     }
@@ -109,7 +93,7 @@ fun MotionComicItem(
 ) {
     Card(
         modifier = Modifier
-            .width(150.dp) // Fixed width to match ComicBox.kt
+            .width(150.dp)
             .padding(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1E1E1E)
@@ -120,13 +104,13 @@ fun MotionComicItem(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Thumbnail with Overlays
+// Thumbnail with Overlays
             Box(
                 modifier = Modifier
                     .size(120.dp, 180.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
-                // Static placeholder for cover image (same as ComicBox.kt)
+// Static placeholder for cover image (same as ComicBox.kt)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -141,7 +125,7 @@ fun MotionComicItem(
                     )
                 }
 
-                // Overlay for Rating (Top-Left)
+// Overlay for Rating (Top-Left)
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -168,7 +152,7 @@ fun MotionComicItem(
                     }
                 }
 
-                // Overlay for Views (Top-Right)
+// Overlay for Views (Top-Right)
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -195,7 +179,7 @@ fun MotionComicItem(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Title
+// Title
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodySmall,
@@ -207,7 +191,7 @@ fun MotionComicItem(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Watch Button
+// Watch Button
             Button(
                 onClick = onWatchClick,
                 colors = ButtonDefaults.buttonColors(
@@ -227,7 +211,6 @@ fun MotionComicItem(
     }
 }
 
-// Utility function to format views (e.g., 1200 -> "1.2K")
 private fun formatViews(count: Int): String {
     return when {
         count >= 1_000_000 -> "${count / 1_000_000}M"

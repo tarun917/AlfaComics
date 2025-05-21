@@ -254,8 +254,8 @@ object DummyData {
             599,
             10,
             4.5f,
-            1200, // ratingsCount
-            120, // pages
+            1200,
+            120,
             listOf(
                 Review("Amit Sharma", "Amazing comic with great artwork!", "2025-05-15 10:00 AM"),
                 Review("Priya Singh", "Loved the story, a must-buy for collectors!", "2025-05-16 02:30 PM")
@@ -389,11 +389,9 @@ object DummyData {
     private val communityPosts = mutableStateListOf<CommunityPost>()
     private var postIdCounter = 1
     private val favoriteComicIds: SnapshotStateList<Int> = mutableStateListOf()
-    // Map to store votes for each poll post (postId -> votes list)
+    private val favoriteMotionComicIds: SnapshotStateList<Int> = mutableStateListOf()
     private val pollVotesMap = mutableStateMapOf<Int, MutableList<Int>>()
-    // Map to store the voted option index for each poll post (postId -> votedOptionIndex)
     private val votedOptionMap = mutableStateMapOf<Int, Int>()
-    // List to store buyer details for purchases
     private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
 
     private val userProfile = UserProfile(
@@ -406,7 +404,6 @@ object DummyData {
 
     private val userAboutMeState = mutableStateOf(userProfile.aboutMe)
 
-    // Mock list of all usernames (for reference)
     private val allUsernames = listOf(
         "ComicFan123",
         "SuperheroLover",
@@ -417,7 +414,6 @@ object DummyData {
         "SciFiGeek"
     )
 
-    // Mock list of usernames that the current user (ComicFan123) follows
     private val followedUsernames = listOf(
         "SuperheroLover",
         "FantasyReader",
@@ -425,7 +421,6 @@ object DummyData {
         "AdventureSeeker"
     )
 
-    // Initialize some sample community posts with timestamps, images, and polls
     init {
         addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1", null)
         addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null, null)
@@ -493,7 +488,6 @@ object DummyData {
     }
 
     fun getAllHardCopyComics(): List<HardCopyComic> {
-        // TODO: Replace with actual backend call to fetch hard copy comics
         return hardCopyComics
     }
 
@@ -506,12 +500,10 @@ object DummyData {
     }
 
     fun getCommunityPosts(): List<CommunityPost> {
-        // Sort posts by id in descending order (newest first)
         return communityPosts.sortedByDescending { post -> post.id }
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
-        // Mock timestamp (in real app, use actual date/time)
         val timestamp = "2025-05-18 12:00 PM"
         val postId = postIdCounter++
         communityPosts.add(
@@ -526,14 +518,12 @@ object DummyData {
                 reactions = emptyMap()
             )
         )
-        // Initialize votes for the new poll post
         if (poll != null) {
             pollVotesMap[postId] = MutableList(poll.options.size) { 0 }
         }
     }
 
     fun addCommentToPost(postId: Int, comment: String) {
-        // Mock timestamp (in real app, use actual date/time)
         val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
         post?.comments?.add(
@@ -546,7 +536,6 @@ object DummyData {
     }
 
     fun getMockUsernames(): List<String> {
-        // Return only the usernames that the current user follows
         return followedUsernames
     }
 
@@ -562,12 +551,32 @@ object DummyData {
         return favoriteComicIds.contains(comicId)
     }
 
+    fun toggleFavoriteMotionComic(motionComicId: Int) {
+        if (favoriteMotionComicIds.contains(motionComicId)) {
+            favoriteMotionComicIds.remove(motionComicId)
+        } else {
+            favoriteMotionComicIds.add(motionComicId)
+        }
+    }
+
+    fun isFavoriteMotionComic(motionComicId: Int): Boolean {
+        return favoriteMotionComicIds.contains(motionComicId)
+    }
+
     fun getFavoriteComicIds(): SnapshotStateList<Int> {
         return favoriteComicIds
     }
 
+    fun getFavoriteMotionComicIds(): SnapshotStateList<Int> {
+        return favoriteMotionComicIds
+    }
+
     fun getFavoriteComics(): List<Comic> {
         return comics.filter { comic -> favoriteComicIds.contains(comic.id) }
+    }
+
+    fun getFavoriteMotionComics(): List<MotionComic> {
+        return MotionDummyData.getMotionComics().filter { motionComic -> favoriteMotionComicIds.contains(motionComic.id) }
     }
 
     fun getUserProfile(): UserProfile {
@@ -582,11 +591,14 @@ object DummyData {
         return favoriteComicIds.size
     }
 
+    fun getFavoriteMotionComicsCount(): Int {
+        return favoriteMotionComicIds.size
+    }
+
     fun getCommunityPostsCount(): Int {
         return communityPosts.size
     }
 
-    // Methods to manage poll votes
     fun getPollVotes(postId: Int): MutableList<Int> {
         return pollVotesMap[postId]?.toMutableList() ?: mutableListOf()
     }
@@ -608,16 +620,12 @@ object DummyData {
         post?.let {
             val currentReactions = it.reactions.toMutableMap()
             val userReactions = currentReactions[reactionType]?.toMutableList() ?: mutableListOf()
-
-            // Toggle reaction: if user already reacted, remove their reaction; otherwise, add it
             if (userId in userReactions) {
                 userReactions.remove(userId)
             } else {
                 userReactions.add(userId)
             }
             currentReactions[reactionType] = userReactions
-
-            // Update the post in the list
             val index = communityPosts.indexOf(it)
             if (index != -1) {
                 communityPosts[index] = it.copy(reactions = currentReactions)
@@ -625,26 +633,21 @@ object DummyData {
         }
     }
 
-    // Method to update alfaCoins after a purchase
     fun updateAlfaCoins(newBalance: Int) {
         val updatedProfile = userProfile.copy(alfaCoins = newBalance)
-        // Update the userProfile in DummyData (in a real app, this would be a backend update)
         val userProfileField = this::class.java.getDeclaredField("userProfile")
         userProfileField.isAccessible = true
         userProfileField.set(this, updatedProfile)
     }
 
-    // Method to get readCount for a hard copy comic by mapping to the corresponding Comic
     fun getReadCountForHardCopyComic(hardCopyComicId: Int): Int {
         return comics.find { it.id == hardCopyComicId }?.readCount ?: 0
     }
 
-    // Method to save buyer details
     fun saveBuyerDetails(details: BuyerDetails) {
         buyerDetailsList.add(details)
     }
 
-    // Method to get buyer details for a specific comic purchase
     fun getBuyerDetailsForComic(comicId: Int): List<BuyerDetails> {
         return buyerDetailsList.filter { it.comicId == comicId }
     }

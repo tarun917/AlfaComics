@@ -22,7 +22,7 @@ import com.alfacomics.presentation.ui.theme.AlfaComicsTheme
 
 class MainActivity : ComponentActivity() {
     // Create the ViewModel instance using ViewModelProvider
-    private val communityViewModel: CommunityViewModel by viewModels()
+    private val viewModel: CommunityViewModel by viewModels() // Renamed from communityViewModel to viewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,14 +30,14 @@ class MainActivity : ComponentActivity() {
         // Register the ActivityResultLauncher before setContent
         val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             // Update the selectedImageUrl property directly
-            communityViewModel.selectedImageUrl = uri?.toString()
+            viewModel.selectedImageUrl = uri?.toString()
         }
 
         setContent {
             AlfaComicsTheme {
                 // Provide the launcher to the composable tree
                 CompositionLocalProvider(LocalActivityResultLauncher provides imagePickerLauncher) {
-                    AlfaComicsApp(communityViewModel)
+                    AlfaComicsApp(viewModel)
                 }
             }
         }
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AlfaComicsApp(communityViewModel: CommunityViewModel) {
+fun AlfaComicsApp(viewModel: CommunityViewModel) { // Renamed from communityViewModel to viewModel
     val navController = rememberNavController()
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -70,7 +70,7 @@ fun AlfaComicsApp(communityViewModel: CommunityViewModel) {
         NavGraph(
             navController = navController,
             modifier = Modifier.padding(innerPadding),
-            communityViewModel = communityViewModel
+            viewModel = viewModel // Renamed from communityViewModel to viewModel
         )
     }
 }

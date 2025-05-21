@@ -1,6 +1,6 @@
 package com.alfacomics.presentation.ui.navigation
 
-import android.annotation.SuppressLint
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -12,23 +12,21 @@ import com.alfacomics.presentation.ui.screens.community.CommunityScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
-import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
+import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
-import com.alfacomics.presentation.ui.screens.notification.NotificationScreen
+import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
 import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
-import com.alfacomics.presentation.ui.screens.store.OrderConfirmationScreen
 import com.alfacomics.presentation.ui.screens.store.OrderHistoryScreen
 
-@SuppressLint("ComposableDestinationInComposeScope")
 @Composable
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    communityViewModel: CommunityViewModel
+    viewModel: CommunityViewModel
 ) {
     NavHost(
         navController = navController,
@@ -38,26 +36,17 @@ fun NavGraph(
         composable("home") {
             HomeScreen(navController = navController)
         }
-        composable("community") {
-            CommunityScreen(viewModel = communityViewModel)
-        }
-        composable("store") {
+        composable("alfaStore") {
             AlfaStoreScreen(navController = navController)
+        }
+        composable("community") {
+            CommunityScreen(navController = navController, viewModel = viewModel)
         }
         composable("favourite") {
             FavouriteScreen(navController = navController)
         }
         composable("profile") {
-            ProfileScreen()
-        }
-        composable("search") {
-            SearchScreen(navController = navController)
-        }
-        composable("notifications") {
-            NotificationScreen()
-        }
-        composable("premium") {
-            PremiumScreen(navController = navController)
+            ProfileScreen(navController = navController)
         }
         composable(
             route = "comic_detail/{comicId}",
@@ -68,39 +57,50 @@ fun NavGraph(
                 navController = navController,
                 comicId = comicId,
                 onEpisodeClick = { episodeId ->
-                    navController.navigate("comic_reader/$comicId/$episodeId")
+                    println("Episode $episodeId clicked for comic $comicId")
                 }
             )
         }
         composable(
-            route = "comic_reader/{comicId}/{episodeId}",
-            arguments = listOf(
-                navArgument("comicId") { type = NavType.IntType },
-                navArgument("episodeId") { type = NavType.IntType }
-            )
+            route = "motion_comic_detail/{motionComicId}",
+            arguments = listOf(navArgument("motionComicId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
-            val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
-            ComicReaderScreen(
-                comicId = comicId,
-                episodeId = episodeId
-            )
+            val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
+            MotionComicDetailScreen(navController = navController, motionComicId = motionComicId)
+        }
+        composable("premium") {
+            PremiumScreen(navController = navController)
+        }
+        composable("search") {
+            SearchScreen(navController = navController)
+        }
+        composable("notifications") {
+            Text("Notifications Screen Placeholder")
         }
         composable(
             route = "comic_purchase/{comicId}",
             arguments = listOf(navArgument("comicId") { type = NavType.IntType })
         ) { backStackEntry ->
             val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
-            ComicPurchaseScreen(
-                navController = navController,
-                comicId = comicId
-            )
-        }
-        composable("order_confirmation") {
-            OrderConfirmationScreen(navController = navController)
+            ComicPurchaseScreen(navController = navController, comicId = comicId)
         }
         composable("order_history") {
             OrderHistoryScreen(navController = navController)
+        }
+        composable(
+            route = "episode_player/{motionComicId}/{episodeId}",
+            arguments = listOf(
+                navArgument("motionComicId") { type = NavType.IntType },
+                navArgument("episodeId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
+            val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
+            EpisodePlayerScreen(
+                navController = navController,
+                motionComicId = motionComicId,
+                episodeId = episodeId
+            )
         }
     }
 }

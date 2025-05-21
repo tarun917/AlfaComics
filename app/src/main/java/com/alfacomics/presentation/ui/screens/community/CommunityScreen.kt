@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController // Added import
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.Poll
 import com.alfacomics.data.repository.PollOption
@@ -28,6 +29,7 @@ import com.alfacomics.data.repository.PollOption
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun CommunityScreen(
+    navController: NavHostController, // Added navController parameter
     viewModel: CommunityViewModel
 ) {
     var newPostContent by remember { mutableStateOf(TextFieldValue("")) }
