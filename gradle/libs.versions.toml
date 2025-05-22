@@ -31,6 +31,7 @@ androidxJunit = "1.2.1"
 espressoCore = "3.6.1"
 material3Android = "1.3.2"
 exoplayer = "2.19.1"
+media3Exoplayer = "1.7.1"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose" }
@@ -108,3 +109,4 @@ ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 exoplayer = { module = "com.google.android.exoplayer:exoplayer", version.ref = "exoplayer" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }

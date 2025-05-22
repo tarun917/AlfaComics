@@ -58,7 +58,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)  // Update to the latest version (e.g., 2.7.7)
     implementation(libs.coil.compose)  // Update to the latest version (e.g., 2.7.0)
-    implementation(libs.androidx.material3.android)  // For image loading
+    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.media3.exoplayer)  // For image loading
     debugImplementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.annotation)
     debugImplementation(libs.androidx.ui.test.manifest)

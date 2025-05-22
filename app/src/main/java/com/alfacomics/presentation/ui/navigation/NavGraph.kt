@@ -12,7 +12,8 @@ import com.alfacomics.presentation.ui.screens.community.CommunityScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
-import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen // Added import for ComicReaderScreen
+import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
+import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen // Added import for new screen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
@@ -57,7 +58,6 @@ fun NavGraph(
                 navController = navController,
                 comicId = comicId,
                 onEpisodeClick = { episodeId ->
-                    // Navigate to ComicReaderScreen instead of printing a message
                     navController.navigate("comic_reader/$comicId/$episodeId")
                 }
             )
@@ -89,7 +89,7 @@ fun NavGraph(
             OrderHistoryScreen(navController = navController)
         }
         composable(
-            route = "comic_reader/{comicId}/{episodeId}", // New route for ComicReaderScreen
+            route = "comic_reader/{comicId}/{episodeId}",
             arguments = listOf(
                 navArgument("comicId") { type = NavType.IntType },
                 navArgument("episodeId") { type = NavType.IntType }
@@ -100,6 +100,21 @@ fun NavGraph(
             ComicReaderScreen(
                 comicId = comicId,
                 episodeId = episodeId
+            )
+        }
+        composable(
+            route = "episode_player/{motionComicId}/{episodeId}", // New route for EpisodePlayerScreen
+            arguments = listOf(
+                navArgument("motionComicId") { type = NavType.IntType },
+                navArgument("episodeId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
+            val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
+            EpisodePlayerScreen(
+                navController = navController,
+                motionComicId = motionComicId,
+                initialEpisodeId = episodeId
             )
         }
     }

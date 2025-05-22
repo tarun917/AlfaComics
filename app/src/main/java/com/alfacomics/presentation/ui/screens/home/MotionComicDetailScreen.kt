@@ -32,7 +32,6 @@ fun MotionComicDetailScreen(
     val motionComic = MotionDummyData.getMotionComicById(motionComicId)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var isFavorite by remember { mutableStateOf(DummyData.isFavoriteMotionComic(motionComicId)) }
-    var playingMessage by remember { mutableStateOf<String?>(null) } // Added to show playing message
 
     if (motionComic == null) {
         Box(
@@ -166,25 +165,11 @@ fun MotionComicDetailScreen(
         items(motionComic.episodes) { episode ->
             EpisodeItem(
                 episode = episode,
-                onPlayClick = { // Renamed from onWatchClick to onPlayClick
-                    playingMessage = "Playing ${episode.title} of ${motionComic.title}..."
+                onPlayClick = {
+                    // Navigate to EpisodePlayerScreen instead of playing directly
+                    navController.navigate("episode_player/$motionComicId/${episode.id}")
                 }
             )
-        }
-
-        // Show Playing Message (if any)
-        playingMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Green,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                )
-            }
         }
     }
 }
@@ -192,7 +177,7 @@ fun MotionComicDetailScreen(
 @Composable
 fun EpisodeItem(
     episode: MotionEpisode,
-    onPlayClick: () -> Unit // Renamed from onWatchClick to onPlayClick
+    onPlayClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -223,7 +208,7 @@ fun EpisodeItem(
                 modifier = Modifier.height(32.dp)
             ) {
                 Text(
-                    text = "Play", // Changed from "Watch" to "Play"
+                    text = "Play",
                     style = MaterialTheme.typography.labelSmall
                 )
             }
