@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.debugImplementation
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
@@ -105,6 +106,11 @@ dependencies {
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.navigation.compose)
+
+    // Add ExoPlayer dependency
+    implementation(libs.exoplayer)
+
+
 
 
 }

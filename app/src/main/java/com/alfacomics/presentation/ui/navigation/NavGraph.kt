@@ -12,6 +12,7 @@ import com.alfacomics.presentation.ui.screens.community.CommunityScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
+import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen // Added import for ComicReaderScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
@@ -56,7 +57,8 @@ fun NavGraph(
                 navController = navController,
                 comicId = comicId,
                 onEpisodeClick = { episodeId ->
-                    println("Episode $episodeId clicked for comic $comicId")
+                    // Navigate to ComicReaderScreen instead of printing a message
+                    navController.navigate("comic_reader/$comicId/$episodeId")
                 }
             )
         }
@@ -86,6 +88,19 @@ fun NavGraph(
         composable("order_history") {
             OrderHistoryScreen(navController = navController)
         }
-        // Removed episode_player route as it's no longer needed
+        composable(
+            route = "comic_reader/{comicId}/{episodeId}", // New route for ComicReaderScreen
+            arguments = listOf(
+                navArgument("comicId") { type = NavType.IntType },
+                navArgument("episodeId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
+            val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
+            ComicReaderScreen(
+                comicId = comicId,
+                episodeId = episodeId
+            )
+        }
     }
 }

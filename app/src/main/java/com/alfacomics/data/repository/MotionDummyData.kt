@@ -11,12 +11,13 @@ data class MotionComic(
     val rating: Float,
     val views: Int,
     val description: String = "This is a sample description for the motion comic. It includes thrilling animations, engaging stories, and dynamic visuals that bring the comic to life in an exciting new way!",
-    val episodes: List<MotionEpisode> = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}") }
+    val episodes: List<MotionEpisode> = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}", videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") }
 )
 
 data class MotionEpisode(
     val id: Int,
-    val title: String
+    val title: String,
+    val videoUrl: String
 )
 
 object MotionDummyData {
@@ -26,18 +27,18 @@ object MotionDummyData {
             id = 1,
             title = "Motion Comic: Eternal Love",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_1",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             genre = "Romance",
             rating = 4.8f,
             views = 2500,
             description = "A timeless tale of two lovers separated by fate, only to be reunited through magical circumstances in a world filled with romance and mystery. Their journey is one of passion and heartbreak, as they overcome obstacles to be together forever.",
-            episodes = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}") }
+            episodes = List(5) { index -> MotionEpisode(id = index + 1, title = "Episode ${index + 1}", videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") }
         ),
         MotionComic(
             id = 2,
             title = "Motion Comic: Hearts in Bloom",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_2",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             genre = "Romance",
             rating = 4.5f,
             views = 1800,
@@ -47,7 +48,7 @@ object MotionDummyData {
             id = 3,
             title = "Motion Comic: Love Across Time",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_3",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
             genre = "Romance",
             rating = 4.7f,
             views = 2200
@@ -56,7 +57,7 @@ object MotionDummyData {
             id = 4,
             title = "Motion Comic: Whisper of Hearts",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_4",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
             genre = "Romance",
             rating = 4.6f,
             views = 2000
@@ -65,7 +66,7 @@ object MotionDummyData {
             id = 5,
             title = "Motion Comic: Forever Yours",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_5",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             genre = "Romance",
             rating = 4.9f,
             views = 2700
@@ -74,7 +75,7 @@ object MotionDummyData {
             id = 6,
             title = "Motion Comic: Sunset Promises",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_6",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
             genre = "Romance",
             rating = 4.4f,
             views = 1900
@@ -85,7 +86,7 @@ object MotionDummyData {
             id = 7,
             title = "Motion Comic: Shadows of Fear",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_7",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
             genre = "Horror",
             rating = 4.2f,
             views = 1500,
@@ -95,7 +96,7 @@ object MotionDummyData {
             id = 8,
             title = "Motion Comic: Night Terrors",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_8",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
             genre = "Horror",
             rating = 4.6f,
             views = 2200
@@ -104,7 +105,7 @@ object MotionDummyData {
             id = 9,
             title = "Motion Comic: Haunted Whispers",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_9",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
             genre = "Horror",
             rating = 4.3f,
             views = 1700
@@ -113,7 +114,7 @@ object MotionDummyData {
             id = 10,
             title = "Motion Comic: The Cursed Realm",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_10",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
             genre = "Horror",
             rating = 4.5f,
             views = 2000
@@ -122,7 +123,7 @@ object MotionDummyData {
             id = 11,
             title = "Motion Comic: Echoes of Dread",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_11",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
             genre = "Horror",
             rating = 4.1f,
             views = 1400
@@ -131,7 +132,7 @@ object MotionDummyData {
             id = 12,
             title = "Motion Comic: Phantom Shadows",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_12",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
             genre = "Horror",
             rating = 4.4f,
             views = 1800
@@ -142,7 +143,7 @@ object MotionDummyData {
             id = 13,
             title = "Motion Comic: Mystic Realms",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_13",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             genre = "Fantasy",
             rating = 4.9f,
             views = 3000,
@@ -152,7 +153,7 @@ object MotionDummyData {
             id = 14,
             title = "Motion Comic: Dragon’s Legacy",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_14",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             genre = "Fantasy",
             rating = 4.4f,
             views = 1900
@@ -161,7 +162,7 @@ object MotionDummyData {
             id = 15,
             title = "Motion Comic: Enchanted Forest",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_15",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
             genre = "Fantasy",
             rating = 4.7f,
             views = 2600
@@ -170,7 +171,7 @@ object MotionDummyData {
             id = 16,
             title = "Motion Comic: Fairy Kingdoms",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_16",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
             genre = "Fantasy",
             rating = 4.6f,
             views = 2300
@@ -179,7 +180,7 @@ object MotionDummyData {
             id = 17,
             title = "Motion Comic: Wizard’s Quest",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_17",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             genre = "Fantasy",
             rating = 4.8f,
             views = 2800
@@ -188,7 +189,7 @@ object MotionDummyData {
             id = 18,
             title = "Motion Comic: Magic Chronicles",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_18",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
             genre = "Fantasy",
             rating = 4.5f,
             views = 2100
@@ -199,7 +200,7 @@ object MotionDummyData {
             id = 19,
             title = "Motion Comic: Galactic Heroes",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_19",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
             genre = "Sci-Fi",
             rating = 4.7f,
             views = 2800,
@@ -209,7 +210,7 @@ object MotionDummyData {
             id = 20,
             title = "Motion Comic: Cyber Rebellion",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_20",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
             genre = "Sci-Fi",
             rating = 4.3f,
             views = 1600
@@ -218,7 +219,7 @@ object MotionDummyData {
             id = 21,
             title = "Motion Comic: Star Voyage",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_21",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
             genre = "Sci-Fi",
             rating = 4.5f,
             views = 2000
@@ -227,7 +228,7 @@ object MotionDummyData {
             id = 22,
             title = "Motion Comic: Alien Frontier",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_22",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
             genre = "Sci-Fi",
             rating = 4.6f,
             views = 2400
@@ -236,7 +237,7 @@ object MotionDummyData {
             id = 23,
             title = "Motion Comic: Time Warp",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_23",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
             genre = "Sci-Fi",
             rating = 4.4f,
             views = 1800
@@ -245,7 +246,7 @@ object MotionDummyData {
             id = 24,
             title = "Motion Comic: Future Echoes",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_24",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
             genre = "Sci-Fi",
             rating = 4.8f,
             views = 2600
@@ -256,7 +257,7 @@ object MotionDummyData {
             id = 25,
             title = "Motion Comic: The Cosmic Adventure",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_25",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
             genre = "Adventure",
             rating = 4.5f,
             views = 2000,
@@ -266,7 +267,7 @@ object MotionDummyData {
             id = 26,
             title = "Motion Comic: Quest for Glory",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_26",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             genre = "Adventure",
             rating = 4.8f,
             views = 2400
@@ -275,7 +276,7 @@ object MotionDummyData {
             id = 27,
             title = "Motion Comic: Jungle Odyssey",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_27",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
             genre = "Adventure",
             rating = 4.6f,
             views = 2200
@@ -284,7 +285,7 @@ object MotionDummyData {
             id = 28,
             title = "Motion Comic: Pirate’s Treasure",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_28",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
             genre = "Adventure",
             rating = 4.4f,
             views = 1900
@@ -293,7 +294,7 @@ object MotionDummyData {
             id = 29,
             title = "Motion Comic: Mountain Expedition",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_29",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             genre = "Adventure",
             rating = 4.7f,
             views = 2500
@@ -302,7 +303,7 @@ object MotionDummyData {
             id = 30,
             title = "Motion Comic: Desert Quest",
             thumbnailUrl = R.drawable.ic_launcher_background,
-            videoUrl = "placeholder_motion_video_30",
+            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
             genre = "Adventure",
             rating = 4.5f,
             views = 2100

@@ -27,6 +27,21 @@ fun BottomNavBar(navController: NavController) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
+
+    // Debugging: Log the current route and hierarchy
+    println("Current Route: $currentRoute")
+    currentDestination?.hierarchy?.forEach { destination ->
+        println("Hierarchy Route: ${destination.route}")
+    }
+
+    // Map nested routes to their parent tab routes
+    val routeToTabMap = mapOf(
+        "comic_detail/\\d+" to BottomNavItem.Home.route, // Maps comic_detail/{comicId} to Home tab
+        "comic_reader/\\d+/\\d+" to BottomNavItem.Home.route, // Maps comic_reader/{comicId}/{episodeId} to Home tab
+        "comic_purchase/\\d+" to BottomNavItem.AlfaStore.route, // Maps comic_purchase/{comicId} to AlfaStore tab
+        "order_history" to BottomNavItem.AlfaStore.route // Maps order_history to AlfaStore tab
+    )
 
     GlassmorphicSurface(
         modifier = Modifier
@@ -39,7 +54,17 @@ fun BottomNavBar(navController: NavController) {
             contentColor = Color.White
         ) {
             items.forEach { screen ->
-                val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                // Check if the current destination or any parent matches the screen's route
+                val isDirectMatch = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                // Check if the current route is a nested route associated with this tab
+                val isNestedMatch = routeToTabMap.entries.any { (pattern, tabRoute) ->
+                    currentRoute?.matches(Regex(pattern)) == true && tabRoute == screen.route
+                }
+                val isSelected = isDirectMatch || isNestedMatch
+
+                // Debugging: Log isSelected for each tab
+                println("Tab: ${screen.label}, Route: ${screen.route}, isSelected: $isSelected, isDirectMatch: $isDirectMatch, isNestedMatch: $isNestedMatch")
+
                 val scale by animateFloatAsState(
                     targetValue = if (isSelected) 1.2f else 1f,
                     animationSpec = spring(),
