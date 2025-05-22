@@ -3,6 +3,7 @@ package com.alfacomics.presentation.ui.screens.home
 import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +68,10 @@ fun EpisodePlayerScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var bufferingTimeout by remember { mutableStateOf(false) }
 
+    // States for double-tap to seek feedback
+    var showRewindFeedback by remember { mutableStateOf(false) }
+    var showForwardFeedback by remember { mutableStateOf(false) }
+
     // Coroutine scope for auto-hiding controls and buffering timeout
     val coroutineScope = rememberCoroutineScope()
 
@@ -74,6 +80,15 @@ fun EpisodePlayerScreen(
         coroutineScope.launch {
             delay(2000) // Hide controls after 2 seconds
             showControls = false
+        }
+    }
+
+    // Function to auto-hide double-tap feedback after a delay
+    fun autoHideFeedback() {
+        coroutineScope.launch {
+            delay(500) // Hide feedback after 0.5 seconds
+            showRewindFeedback = false
+            showForwardFeedback = false
         }
     }
 
@@ -295,22 +310,80 @@ fun EpisodePlayerScreen(
                 }
             }
 
-            // Custom Controls Overlay
+            // Custom Controls Overlay with Double-Tap to Seek
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .alpha(if (showControls) 1f else 0f)
-                    .clickable(
-                        onClick = {
-                            showControls = !showControls
-                            if (showControls) {
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                showControls = !showControls
+                                if (showControls) {
+                                    autoHideControls()
+                                }
+                            },
+                            onDoubleTap = { offset ->
+                                val width = size.width.toFloat()
+                                val tapX = offset.x
+                                if (tapX < width / 2) {
+                                    // Double-tap on the left side (Rewind)
+                                    val newPosition = (exoPlayer.currentPosition - 10000).coerceAtLeast(0)
+                                    exoPlayer.seekTo(newPosition)
+                                    videoPosition = newPosition
+                                    showRewindFeedback = true
+                                    autoHideFeedback()
+                                } else {
+                                    // Double-tap on the right side (Fast Forward)
+                                    val duration = exoPlayer.duration
+                                    if (duration > 0) {
+                                        val newPosition = (exoPlayer.currentPosition + 10000).coerceAtMost(duration)
+                                        exoPlayer.seekTo(newPosition)
+                                        videoPosition = newPosition
+                                        showForwardFeedback = true
+                                        autoHideFeedback()
+                                    }
+                                }
+                                showControls = true
                                 autoHideControls()
                             }
-                        },
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    )
+                        )
+                    }
             ) {
+                // Double-Tap Feedback (Rewind)
+                if (showRewindFeedback) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(start = 32.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Rewind 10s",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                // Double-Tap Feedback (Forward)
+                if (showForwardFeedback) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 32.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Forward 10s",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
                 // Center Controls (Rewind, Play/Pause, Forward)
                 Row(
                     modifier = Modifier
