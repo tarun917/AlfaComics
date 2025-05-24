@@ -17,7 +17,14 @@ import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
+import com.alfacomics.presentation.ui.screens.profile.CoinPurchaseScreen
+import com.alfacomics.presentation.ui.screens.profile.EditProfileScreen
+import com.alfacomics.presentation.ui.screens.profile.LanguageSelectionScreen
 import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
+import com.alfacomics.presentation.ui.screens.profile.SettingsScreen
+import com.alfacomics.presentation.ui.screens.profile.ShareAndRewardScreen
+import com.alfacomics.presentation.ui.screens.profile.SupportScreen
+import com.alfacomics.presentation.ui.screens.profile.UploadComicScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
@@ -125,6 +132,28 @@ fun NavGraph(
                 isLandscape = isLandscape,
                 onOrientationChange = onOrientationChange
             )
+        }
+        // Profile Tab Routes
+        composable("edit_profile") {
+            EditProfileScreen(navController = navController)
+        }
+        composable("settings") {
+            SettingsScreen(navController = navController)
+        }
+        composable("language_selection") {
+            LanguageSelectionScreen(navController = navController)
+        }
+        composable("support") {
+            SupportScreen(navController = navController)
+        }
+        composable("share_and_reward") {
+            ShareAndRewardScreen(navController = navController)
+        }
+        composable("upload_comic") {
+            UploadComicScreen(navController = navController)
+        }
+        composable("coin_purchase") {
+            CoinPurchaseScreen(navController = navController)
         }
     }
 }

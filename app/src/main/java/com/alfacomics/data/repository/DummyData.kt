@@ -394,13 +394,17 @@ object DummyData {
     private val votedOptionMap = mutableStateMapOf<Int, Int>()
     private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
 
-    private val userProfile = UserProfile(
+    private var userProfile = UserProfile(
         username = "ComicFan123",
         email = "comicfan123@example.com",
         profilePictureResourceId = R.drawable.ic_launcher_background,
         aboutMe = "Avid comic reader and collector. Love superhero stories!",
         alfaCoins = 500
     )
+
+    private var notificationsEnabled = true
+    private var selectedLanguage = "en" // Default language: English
+    private var referralRewards = 0 // Track rewards earned from referrals
 
     private val userAboutMeState = mutableStateOf(userProfile.aboutMe)
 
@@ -587,6 +591,45 @@ object DummyData {
         userAboutMeState.value = newAboutMe
     }
 
+    fun updateProfilePicture(newPictureResourceId: Int) {
+        userProfile = userProfile.copy(profilePictureResourceId = newPictureResourceId)
+    }
+
+    fun updateUserProfile(newUsername: String, newEmail: String) {
+        userProfile = userProfile.copy(username = newUsername, email = newEmail)
+    }
+
+    fun addAlfaCoins(coins: Int) {
+        userProfile = userProfile.copy(alfaCoins = userProfile.alfaCoins + coins)
+    }
+
+    fun updateAlfaCoins(newBalance: Int) {
+        userProfile = userProfile.copy(alfaCoins = newBalance)
+    }
+
+    fun getNotificationsEnabled(): Boolean = notificationsEnabled
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        notificationsEnabled = enabled
+    }
+
+    fun clearUserData() {
+        userProfile = UserProfile(
+            username = "Guest",
+            email = "guest@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "",
+            alfaCoins = 0
+        )
+        userAboutMeState.value = ""
+        notificationsEnabled = true
+        favoriteComicIds.clear()
+        favoriteMotionComicIds.clear()
+        purchaseConfirmations.clear()
+        selectedLanguage = "en" // Reset language
+        referralRewards = 0 // Reset referral rewards
+    }
+
     fun getFavoriteComicsCount(): Int {
         return favoriteComicIds.size
     }
@@ -633,13 +676,6 @@ object DummyData {
         }
     }
 
-    fun updateAlfaCoins(newBalance: Int) {
-        val updatedProfile = userProfile.copy(alfaCoins = newBalance)
-        val userProfileField = this::class.java.getDeclaredField("userProfile")
-        userProfileField.isAccessible = true
-        userProfileField.set(this, updatedProfile)
-    }
-
     fun getReadCountForHardCopyComic(hardCopyComicId: Int): Int {
         return comics.find { it.id == hardCopyComicId }?.readCount ?: 0
     }
@@ -650,5 +686,18 @@ object DummyData {
 
     fun getBuyerDetailsForComic(comicId: Int): List<BuyerDetails> {
         return buyerDetailsList.filter { it.comicId == comicId }
+    }
+
+    fun getSelectedLanguage(): String = selectedLanguage
+
+    fun setSelectedLanguage(languageCode: String) {
+        selectedLanguage = languageCode
+    }
+
+    fun getReferralRewards(): Int = referralRewards
+
+    fun addReferralRewards(coins: Int) {
+        referralRewards += coins
+        addAlfaCoins(coins) // Add referral rewards to user's Alfa Coins
     }
 }

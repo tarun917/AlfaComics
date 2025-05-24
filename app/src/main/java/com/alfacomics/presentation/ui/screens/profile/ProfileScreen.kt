@@ -1,6 +1,7 @@
 package com.alfacomics.presentation.ui.screens.profile
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,38 +12,44 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavHostController // Added import
+import androidx.navigation.NavHostController
 import com.alfacomics.R
 import com.alfacomics.data.repository.DummyData
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun ProfileScreen(
-    navController: NavHostController // Added navController parameter
+    navController: NavHostController
 ) {
     val userProfile = DummyData.getUserProfile()
     val favoriteComicsCount by derivedStateOf { DummyData.getFavoriteComicsCount() }
     val communityPostsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
+    val context = LocalContext.current
+
+    // State for profile picture selection dialog
+    var showPictureDialog by remember { mutableStateOf(false) }
+    var selectedPictureResourceId by remember { mutableStateOf(userProfile.profilePictureResourceId) }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 56.dp), // Added padding to ensure bottom navigation is visible
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Settings Icon at Top-Left
@@ -54,7 +61,9 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
-                    onClick = { /* Placeholder for settings functionality */ },
+                    onClick = {
+                        navController.navigate("settings")
+                    },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
@@ -86,7 +95,7 @@ fun ProfileScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = userProfile.profilePictureResourceId),
+                            painter = painterResource(id = selectedPictureResourceId),
                             contentDescription = "Profile Picture",
                             modifier = Modifier
                                 .size(100.dp)
@@ -94,7 +103,7 @@ fun ProfileScreen(
                                 .background(Color.Gray)
                         )
                         IconButton(
-                            onClick = { /* Placeholder for choosing profile picture */ },
+                            onClick = { showPictureDialog = true },
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
                                 .size(32.dp)
@@ -111,7 +120,7 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Username and Email
+                    // Username and Email with Edit Button
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -134,6 +143,17 @@ fun ProfileScreen(
                                 fontSize = 16.sp
                             )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = { navController.navigate("edit_profile") },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profile",
+                                tint = Color(0xFFBB86FC)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -152,38 +172,101 @@ fun ProfileScreen(
         // Options Cards
         item {
             ProfileOptionCard(title = "Alfa Coins: ${userProfile.alfaCoins}") {
-                /* Placeholder for Alfa Coins action */
+                Toast.makeText(context, "Alfa Coins: ${userProfile.alfaCoins}", Toast.LENGTH_SHORT).show()
             }
         }
         item {
             ProfileOptionCard(title = "Buy Alfa Coins") {
-                /* Placeholder for buying Alfa Coins */
+                navController.navigate("coin_purchase")
             }
         }
         item {
             ProfileOptionCard(title = "Choose Language") {
-                /* Placeholder for choosing language */
+                navController.navigate("language_selection")
             }
         }
         item {
             ProfileOptionCard(title = "Support") {
-                /* Placeholder for support action */
+                navController.navigate("support")
             }
         }
         item {
             ProfileOptionCard(title = "Share And Reward") {
-                /* Placeholder for sharing and rewards */
+                navController.navigate("share_and_reward")
             }
         }
         item {
             ProfileOptionCard(title = "Upload Your Comic") {
-                /* Placeholder for uploading a comic */
+                navController.navigate("upload_comic")
             }
         }
 
         // Spacer to push content up if needed
         item {
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+
+    // Profile Picture Selection Dialog
+    if (showPictureDialog) {
+        Dialog(onDismissRequest = { showPictureDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF121212))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Choose Profile Picture",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+
+                    // Simulate picture options (using dummy resources)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_background),
+                            contentDescription = "Picture Option 1",
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    selectedPictureResourceId = R.drawable.ic_launcher_background
+                                    DummyData.updateProfilePicture(R.drawable.ic_launcher_background)
+                                    showPictureDialog = false
+                                }
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_background),
+                            contentDescription = "Picture Option 2",
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    selectedPictureResourceId = R.drawable.ic_launcher_background
+                                    DummyData.updateProfilePicture(R.drawable.ic_launcher_background)
+                                    showPictureDialog = false
+                                }
+                        )
+                    }
+
+                    TextButton(onClick = { showPictureDialog = false }) {
+                        Text("Cancel", color = Color.White)
+                    }
+                }
+            }
         }
     }
 }
