@@ -13,7 +13,7 @@ import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
 import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
-import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen // Added import for new screen
+import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
@@ -27,7 +27,9 @@ import com.alfacomics.presentation.ui.screens.store.OrderHistoryScreen
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    viewModel: CommunityViewModel
+    viewModel: CommunityViewModel,
+    isLandscape: Boolean,
+    onOrientationChange: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -67,7 +69,12 @@ fun NavGraph(
             arguments = listOf(navArgument("motionComicId") { type = NavType.IntType })
         ) { backStackEntry ->
             val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
-            MotionComicDetailScreen(navController = navController, motionComicId = motionComicId)
+            MotionComicDetailScreen(
+                navController = navController,
+                motionComicId = motionComicId,
+                isLandscape = isLandscape,
+                onOrientationChange = onOrientationChange
+            )
         }
         composable("premium") {
             PremiumScreen(navController = navController)
@@ -103,7 +110,7 @@ fun NavGraph(
             )
         }
         composable(
-            route = "episode_player/{motionComicId}/{episodeId}", // New route for EpisodePlayerScreen
+            route = "episode_player/{motionComicId}/{episodeId}",
             arguments = listOf(
                 navArgument("motionComicId") { type = NavType.IntType },
                 navArgument("episodeId") { type = NavType.IntType }
@@ -114,7 +121,9 @@ fun NavGraph(
             EpisodePlayerScreen(
                 navController = navController,
                 motionComicId = motionComicId,
-                initialEpisodeId = episodeId
+                initialEpisodeId = episodeId,
+                isLandscape = isLandscape,
+                onOrientationChange = onOrientationChange
             )
         }
     }

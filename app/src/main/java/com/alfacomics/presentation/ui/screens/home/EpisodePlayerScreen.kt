@@ -1,23 +1,20 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,23 +37,57 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+
+// Custom Saver for MotionEpisode? to handle nullable MotionEpisode
+val MotionEpisodeSaver: Saver<MotionEpisode?, List<Any?>> = Saver(
+    save = { episode ->
+        if (episode == null) {
+            listOf(null, null, null)
+        } else {
+            listOf(episode.id, episode.title, episode.videoUrl)
+        }
+    },
+    restore = { restored ->
+        if (restored[0] == null || restored[1] == null || restored[2] == null) {
+            null
+        } else {
+            MotionEpisode(
+                id = restored[0] as Int,
+                title = restored[1] as String,
+                videoUrl = restored[2] as String
+            )
+        }
+    }
+)
 
 @Composable
 fun EpisodePlayerScreen(
     navController: NavHostController,
     motionComicId: Int,
-    initialEpisodeId: Int
+    initialEpisodeId: Int,
+    isLandscape: Boolean,
+    onOrientationChange: (Boolean) -> Unit
 ) {
     val motionComic = MotionDummyData.getMotionComicById(motionComicId)
     val episodes = motionComic?.episodes ?: emptyList()
     val context = LocalContext.current
 
-    // State for the currently playing episode
-    var currentEpisodeIndex by remember { mutableStateOf(episodes.indexOfFirst { it.id == initialEpisodeId }.coerceAtLeast(0)) }
-    var currentEpisode by remember { mutableStateOf(episodes.getOrNull(currentEpisodeIndex)) }
+    // State for the currently playing episode index
+    var currentEpisodeIndex by rememberSaveable { mutableStateOf(episodes.indexOfFirst { it.id == initialEpisodeId }.coerceAtLeast(0)) }
+
+    // State for the currently playing episode using custom Saver
+    val currentEpisodeState: MutableState<MotionEpisode?> = rememberSaveable(stateSaver = MotionEpisodeSaver) {
+        mutableStateOf(episodes.getOrNull(currentEpisodeIndex))
+    }
+    var currentEpisode by currentEpisodeState
 
     // State for controls
     var showNextButton by remember { mutableStateOf(false) }
@@ -73,13 +104,15 @@ fun EpisodePlayerScreen(
     var showForwardFeedback by remember { mutableStateOf(false) }
 
     // Coroutine scope for auto-hiding controls and buffering timeout
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
 
-    // Function to auto-hide controls after a delay
+    // Function to auto-hide controls after a delay, but only if the video is playing
     fun autoHideControls() {
         coroutineScope.launch {
-            delay(2000) // Hide controls after 2 seconds
-            showControls = false
+            delay(3000) // Hide controls after 3 seconds
+            if (isPlaying) {
+                showControls = false
+            }
         }
     }
 
@@ -93,6 +126,7 @@ fun EpisodePlayerScreen(
     }
 
     // Function to format time in mm:ss format
+    @SuppressLint("DefaultLocale")
     fun formatTime(millis: Long): String {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
@@ -180,10 +214,12 @@ fun EpisodePlayerScreen(
         }
     }
 
-    // Update video position periodically
-    LaunchedEffect(Unit) {
-        while (true) {
-            videoPosition = exoPlayer.currentPosition
+    // Update video position periodically using a coroutine on the main thread
+    LaunchedEffect(exoPlayer) {
+        while (isActive) {
+            // Access ExoPlayer on the main thread
+            val position = exoPlayer.currentPosition
+            videoPosition = position
             delay(1000) // Update every second
         }
     }
@@ -202,6 +238,7 @@ fun EpisodePlayerScreen(
                 Lifecycle.Event.ON_DESTROY -> {
                     exoPlayer.stop()
                     exoPlayer.release()
+                    coroutineScope.cancel() // Cancel the coroutine scope
                 }
                 else -> {}
             }
@@ -210,6 +247,7 @@ fun EpisodePlayerScreen(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
             exoPlayer.release()
+            coroutineScope.cancel()
         }
     }
 
@@ -222,6 +260,7 @@ fun EpisodePlayerScreen(
         isBuffering = false
     }
 
+    // Early return if motionComic or currentEpisode is null
     if (motionComic == null || currentEpisode == null) {
         Box(
             modifier = Modifier
@@ -243,11 +282,13 @@ fun EpisodePlayerScreen(
             .fillMaxSize()
             .background(Color(0xFF121212))
     ) {
-        // PlayerView at the top
+        // PlayerView at the top with gesture detection directly applied
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .let {
+                    if (isLandscape) it.fillMaxHeight() else it.height(200.dp) // Fill screen in landscape
+                }
                 .background(Color.Black)
         ) {
             AndroidView(
@@ -263,58 +304,7 @@ fun EpisodePlayerScreen(
                 },
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp)),
-                update = { playerView ->
-                    // Set the video URL for the current episode
-                    val mediaItem = MediaItem.fromUri(currentEpisode!!.videoUrl)
-                    exoPlayer.setMediaItem(mediaItem)
-                    exoPlayer.prepare()
-                    // Seek and play only if the player is ready
-                    if (exoPlayer.playbackState == Player.STATE_READY) {
-                        exoPlayer.seekTo(videoPosition)
-                        if (isPlaying) {
-                            exoPlayer.play()
-                        } else {
-                            exoPlayer.pause()
-                        }
-                    }
-                }
-            )
-
-            // Loading Indicator
-            if (isBuffering) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color.White)
-                }
-            }
-
-            // Error Message or Buffering Timeout
-            errorMessage?.let { message ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = message,
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            // Custom Controls Overlay with Double-Tap to Seek
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .alpha(if (showControls) 1f else 0f)
+                    .clip(RoundedCornerShape(8.dp))
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = {
@@ -348,216 +338,308 @@ fun EpisodePlayerScreen(
                                 autoHideControls()
                             }
                         )
+                    },
+                update = { playerView ->
+                    // Since we've already returned if currentEpisode is null, it's safe to access properties here
+                    val mediaItem = MediaItem.fromUri(currentEpisode?.videoUrl.toString())
+                    exoPlayer.setMediaItem(mediaItem)
+                    exoPlayer.prepare()
+                    // Seek and play only if the player is ready
+                    if (exoPlayer.playbackState == Player.STATE_READY) {
+                        exoPlayer.seekTo(videoPosition)
+                        if (isPlaying) {
+                            exoPlayer.play()
+                        } else {
+                            exoPlayer.pause()
+                        }
                     }
+                }
+            )
+
+            // Loading Indicator
+            if (isBuffering) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .align(Alignment.Center)
+                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+
+            // Error Message or Buffering Timeout
+            errorMessage?.let { message ->
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .align(Alignment.Center)
+                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = message,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            // Double-Tap Feedback (Rewind)
+            if (showRewindFeedback) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 32.dp)
+                        .background(Color.Black.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Rewind 10s",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            // Double-Tap Feedback (Forward)
+            if (showForwardFeedback) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 32.dp)
+                        .background(Color.Black.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Forward 10s",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            // Center Controls (Rewind, Play/Pause, Forward)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+                    .background(Color.Black.copy(alpha = 0.0f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .alpha(if (showControls || !isPlaying) 1f else 0f), // Show controls if paused
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Double-Tap Feedback (Rewind)
-                if (showRewindFeedback) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 32.dp)
-                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "Rewind 10s",
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                // Rewind Button
+                IconButton(
+                    onClick = {
+                        val newPosition = (exoPlayer.currentPosition - 10000).coerceAtLeast(0)
+                        exoPlayer.seekTo(newPosition)
+                        videoPosition = newPosition
+                        showControls = true
+                        autoHideControls()
                     }
-                }
-
-                // Double-Tap Feedback (Forward)
-                if (showForwardFeedback) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 32.dp)
-                            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "Forward 10s",
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-
-                // Center Controls (Rewind, Play/Pause, Forward)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.Center),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Rewind Button
-                    IconButton(
-                        onClick = {
-                            val newPosition = (exoPlayer.currentPosition - 10000).coerceAtLeast(0)
-                            exoPlayer.seekTo(newPosition)
-                            videoPosition = newPosition
-                            showControls = true
-                            autoHideControls()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FastRewind,
-                            contentDescription = "Rewind 10s",
-                            tint = Color.White
-                        )
-                    }
-
-                    // Play/Pause Button
-                    IconButton(
-                        onClick = {
-                            if (exoPlayer.isPlaying) {
-                                exoPlayer.pause()
-                                isPlaying = false
-                            } else {
-                                exoPlayer.play()
-                                isPlaying = true
-                            }
-                            showControls = true
-                            autoHideControls()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (exoPlayer.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (exoPlayer.isPlaying) "Pause" else "Play",
-                            tint = Color.White,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-
-                    // Fast Forward Button
-                    IconButton(
-                        onClick = {
-                            val duration = exoPlayer.duration
-                            if (duration > 0) { // Ensure duration is valid
-                                val newPosition = (exoPlayer.currentPosition + 10000).coerceAtMost(duration)
-                                exoPlayer.seekTo(newPosition)
-                                videoPosition = newPosition
-                                showControls = true
-                                autoHideControls()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FastForward,
-                            contentDescription = "Forward 10s",
-                            tint = Color.White
-                        )
-                    }
-                }
-
-                // Next Button (Bottom Right, visible for 4 seconds at the end)
-                if (showNextButton && currentEpisodeIndex < episodes.size - 1) {
-                    IconButton(
-                        onClick = {
-                            currentEpisodeIndex++
-                            currentEpisode = episodes[currentEpisodeIndex]
-                            showNextButton = false
-                            showControls = true
-                            autoHideControls()
-                        },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SkipNext,
-                            contentDescription = "Next Episode",
-                            tint = Color.White
-                        )
-                    }
-                }
-
-                // Timing and Seek Bar (Bottom of the video overlay)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .background(Color.Black.copy(alpha = 0.5f))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${formatTime(videoPosition)} / ${formatTime(videoDuration)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White
-                        )
-                    }
-                    Slider(
-                        value = if (videoDuration > 0) (videoPosition.toFloat() / videoDuration.toFloat()) else 0f,
-                        onValueChange = { value ->
-                            val newPosition = (value * videoDuration).toLong()
-                            exoPlayer.seekTo(newPosition)
-                            videoPosition = newPosition
-                            showControls = true
-                            autoHideControls()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color(0xFFBB86FC),
-                            inactiveTrackColor = Color.Gray
-                        )
+                    Icon(
+                        imageVector = Icons.Default.FastRewind,
+                        contentDescription = "Rewind 10s",
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
                     )
                 }
 
-                // Back Button (Top Left)
+                // Play/Pause Button
                 IconButton(
-                    onClick = { navController.popBackStack() },
+                    onClick = {
+                        if (exoPlayer.isPlaying) {
+                            exoPlayer.pause()
+                            isPlaying = false
+                            showControls = true // Ensure controls stay visible when paused
+                        } else {
+                            exoPlayer.play()
+                            isPlaying = true
+                            showControls = true
+                            autoHideControls()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (exoPlayer.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (exoPlayer.isPlaying) "Pause" else "Play",
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+
+                // Fast Forward Button
+                IconButton(
+                    onClick = {
+                        val duration = exoPlayer.duration
+                        if (duration > 0) { // Ensure duration is valid
+                            val newPosition = (exoPlayer.currentPosition + 10000).coerceAtMost(duration)
+                            exoPlayer.seekTo(newPosition)
+                            videoPosition = newPosition
+                            showControls = true
+                            autoHideControls()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FastForward,
+                        contentDescription = "Forward 10s",
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+
+            // Rotate Button (Top Right, to toggle orientation)
+            IconButton(
+                onClick = {
+                    onOrientationChange(!isLandscape) // Toggle orientation
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+            ) {
+                Icon(
+                    imageVector = if (isLandscape) Icons.Default.ScreenRotation else Icons.Default.ScreenRotation,
+                    contentDescription = if (isLandscape) "Switch to Portrait" else "Switch to Landscape",
+                    tint = Color.White
+                )
+            }
+
+            // Next Button (Bottom Right, visible for 4 seconds at the end)
+            if (showNextButton && currentEpisodeIndex < episodes.size - 1) {
+                IconButton(
+                    onClick = {
+                        currentEpisodeIndex++
+                        currentEpisode = episodes[currentEpisodeIndex]
+                        showNextButton = false
+                        showControls = true
+                        autoHideControls()
+                    },
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.BottomEnd)
                         .padding(16.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        imageVector = Icons.Default.SkipNext,
+                        contentDescription = "Next Episode",
                         tint = Color.White
                     )
                 }
             }
-        }
 
-        // Episode List (below the video player)
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                Text(
-                    text = motionComic.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    textAlign = TextAlign.Center
+            // Timing and Seek Bar (Bottom of the video overlay)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(Color.Black.copy(alpha = 0.0f))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${formatTime(videoPosition)} / ${formatTime(videoDuration)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White
+                    )
+                }
+                Slider(
+                    value = if (videoDuration > 0) (videoPosition.toFloat() / videoDuration.toFloat()) else 0f,
+                    onValueChange = { value ->
+                        val newPosition = (value * videoDuration).toLong()
+                        exoPlayer.seekTo(newPosition)
+                        videoPosition = newPosition
+                        showControls = true
+                        autoHideControls()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = Color(0xFFBB86FC),
+                        inactiveTrackColor = Color.Gray
+                    )
                 )
             }
 
-            items(episodes) { episode ->
-                EpisodeItem(
-                    episode = episode,
-                    isPlaying = episode.id == currentEpisode?.id,
-                    onPlayClick = {
-                        currentEpisodeIndex = episodes.indexOf(episode)
-                        currentEpisode = episode
-                        showNextButton = false
-                        showControls = true
-                        autoHideControls()
-                    }
+            // Progress Bar Overlay (Always visible)
+            LinearProgressIndicator(
+                progress = { if (videoDuration > 0) (videoPosition.toFloat() / videoDuration.toFloat()) else 0f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .align(Alignment.BottomCenter),
+                color = Color.Red,
+                trackColor = Color.Gray.copy(alpha = 0.1f)
+            )
+
+            // Back Button (Top Left)
+            IconButton(
+                onClick = {
+                    navController.popBackStack()
+                    // Reset to portrait when navigating back
+                    onOrientationChange(false)
+                },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
                 )
+            }
+        }
+
+        // Episode List (below the video player, hidden in landscape mode)
+        if (!isLandscape) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    Text(
+                        text = motionComic.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                items(episodes) { episode ->
+                    EpisodeItem(
+                        episode = episode,
+                        isPlaying = episode.id == currentEpisode?.id,
+                        onPlayClick = {
+                            currentEpisodeIndex = episodes.indexOf(episode)
+                            currentEpisode = episode
+                            showNextButton = false
+                            showControls = true
+                            autoHideControls()
+                        }
+                    )
+                }
             }
         }
     }
@@ -574,7 +656,7 @@ fun EpisodeItem(
             .fillMaxWidth()
             .clickable(onClick = onPlayClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying) Color(0xFFBB86FC).copy(alpha = 0.2f) else Color(0xFF1E1E1E)
+            containerColor = if (isPlaying) Color(0xFFBB86FC).copy(alpha = 0.3f) else Color(0xFF1E1E1E)
         )
     ) {
         Row(

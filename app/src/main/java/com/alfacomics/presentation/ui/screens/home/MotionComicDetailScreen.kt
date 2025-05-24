@@ -26,8 +26,10 @@ import com.alfacomics.data.repository.MotionEpisode
 
 @Composable
 fun MotionComicDetailScreen(
-    navController: NavHostController,
-    motionComicId: Int
+    navController: NavHostController, // Added explicit type
+    motionComicId: Int, // Added explicit type
+    isLandscape: Boolean, // Added explicit type
+    onOrientationChange: (Boolean) -> Unit // Added explicit type
 ) {
     val motionComic = MotionDummyData.getMotionComicById(motionComicId)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
@@ -166,7 +168,7 @@ fun MotionComicDetailScreen(
             EpisodeItem(
                 episode = episode,
                 onPlayClick = {
-                    // Navigate to EpisodePlayerScreen instead of playing directly
+                    // Navigate to EpisodePlayerScreen
                     navController.navigate("episode_player/$motionComicId/${episode.id}")
                 }
             )
