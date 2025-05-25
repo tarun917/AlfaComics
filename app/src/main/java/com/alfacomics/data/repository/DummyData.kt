@@ -395,12 +395,29 @@ object DummyData {
     private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
 
     private var userProfile = UserProfile(
-        username = "ComicFan123",
-        email = "comicfan123@example.com",
+        username = "Guest",
+        email = "guest@example.com",
         profilePictureResourceId = R.drawable.ic_launcher_background,
-        aboutMe = "Avid comic reader and collector. Love superhero stories!",
-        alfaCoins = 500
+        aboutMe = "",
+        alfaCoins = 0
     )
+
+    internal var isLoggedIn: Boolean = false
+    private val registeredUsers = mutableMapOf<String, String>().apply {
+        // Simulated user data (email: password)
+        put("comicfan123@example.com", "password123")
+        put("superherolover@example.com", "super123")
+        put("fantasyreader@example.com", "fantasy123")
+        put("admin@example.com", "Tarun123")
+    }
+
+    // Map to store additional user details (email: username)
+    internal val userDetails = mutableMapOf<String, String>().apply {
+        put("comicfan123@example.com", "ComicFan123")
+        put("superherolover@example.com", "SuperheroLover")
+        put("fantasyreader@example.com", "FantasyReader")
+        put("admin@example.com", "Admin")
+    }
 
     private var notificationsEnabled = true
     private var selectedLanguage = "en" // Default language: English
@@ -415,6 +432,7 @@ object DummyData {
         "ActionHero",
         "AdventureSeeker",
         "MysterySolver",
+        "Admin",
         "SciFiGeek"
     )
 
@@ -422,6 +440,7 @@ object DummyData {
         "SuperheroLover",
         "FantasyReader",
         "ActionHero",
+        "Admin",
         "AdventureSeeker"
     )
 
@@ -508,6 +527,7 @@ object DummyData {
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
+        if (!isLoggedIn) return // Prevent posting if not logged in
         val timestamp = "2025-05-18 12:00 PM"
         val postId = postIdCounter++
         communityPosts.add(
@@ -528,6 +548,7 @@ object DummyData {
     }
 
     fun addCommentToPost(postId: Int, comment: String) {
+        if (!isLoggedIn) return // Prevent commenting if not logged in
         val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
         post?.comments?.add(
@@ -628,6 +649,7 @@ object DummyData {
         purchaseConfirmations.clear()
         selectedLanguage = "en" // Reset language
         referralRewards = 0 // Reset referral rewards
+        isLoggedIn = false // Reset login state
     }
 
     fun getFavoriteComicsCount(): Int {
@@ -699,5 +721,49 @@ object DummyData {
     fun addReferralRewards(coins: Int) {
         referralRewards += coins
         addAlfaCoins(coins) // Add referral rewards to user's Alfa Coins
+    }
+
+    // Login with Email ID and Password
+    fun loginUser(email: String, password: String): Boolean {
+        val storedPassword = registeredUsers[email]
+        if (storedPassword != null && storedPassword == password) {
+            val username = userDetails[email] ?: "User" // Fallback to "User" if username not found
+            userProfile = UserProfile(
+                username = username,
+                email = email,
+                profilePictureResourceId = R.drawable.ic_launcher_background,
+                aboutMe = "",
+                alfaCoins = 500
+            )
+            userAboutMeState.value = ""
+            isLoggedIn = true
+            return true
+        }
+        return false
+    }
+
+    // Sign Up function with Email ID
+    fun signUpUser(fullName: String, email: String, mobileNumber: String, password: String): Boolean {
+        // Check if email already exists
+        if (registeredUsers.containsKey(email)) {
+            return false // Email already exists
+        }
+
+        // Add new user to registeredUsers
+        registeredUsers[email] = password
+
+        // Store additional user details (using fullName as username for now)
+        userDetails[email] = fullName
+
+        // Update userProfile with the new email
+        userProfile = UserProfile(
+            username = fullName, // Using fullName as username
+            email = email,
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "",
+            alfaCoins = 500
+        )
+        userAboutMeState.value = ""
+        return true
     }
 }

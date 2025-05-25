@@ -35,6 +35,15 @@ import com.alfacomics.data.repository.DummyData
 fun ProfileScreen(
     navController: NavHostController
 ) {
+    // Redirect to login if not logged in
+    LaunchedEffect(Unit) {
+        if (!DummyData.isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("profile") { inclusive = true }
+            }
+        }
+    }
+
     val userProfile = DummyData.getUserProfile()
     val favoriteComicsCount by derivedStateOf { DummyData.getFavoriteComicsCount() }
     val communityPostsCount by derivedStateOf { DummyData.getCommunityPostsCount() }

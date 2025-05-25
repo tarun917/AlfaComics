@@ -97,7 +97,7 @@ fun SettingsScreen(
         Button(
             onClick = {
                 DummyData.clearUserData()
-                navController.navigate("home") {
+                navController.navigate("login") {
                     popUpTo("home") { inclusive = true }
                 }
             },

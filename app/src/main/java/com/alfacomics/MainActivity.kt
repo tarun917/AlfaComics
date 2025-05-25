@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.alfacomics.data.repository.DummyData
 import com.alfacomics.presentation.ui.components.BottomNavBar
 import com.alfacomics.presentation.ui.navigation.NavGraph
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
@@ -88,6 +89,8 @@ fun AlfaComicsApp(viewModel: CommunityViewModel) {
     val currentDestination = currentBackStackEntry?.destination?.route
 
     val shouldShowTopBar = currentDestination == "home"
+    // Hide bottom navigation bar on login and signup screens, and in landscape mode
+    val shouldShowBottomBar = currentDestination != "login" && currentDestination != "signup" && !isLandscape
 
     Scaffold(
         topBar = {
@@ -100,7 +103,7 @@ fun AlfaComicsApp(viewModel: CommunityViewModel) {
             }
         },
         bottomBar = {
-            if (!isLandscape) { // Hide BottomNavBar in landscape mode
+            if (shouldShowBottomBar) {
                 BottomNavBar(navController = navController)
             }
         }
