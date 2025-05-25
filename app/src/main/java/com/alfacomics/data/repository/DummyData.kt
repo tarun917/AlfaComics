@@ -121,6 +121,13 @@ data class BuyerDetails(
     val purchaseTimestamp: String
 )
 
+// Data class to store Premium Subscription Details
+data class PremiumSubscription(
+    val planDuration: String, // e.g., "3-Month", "6-Month", "12-Month"
+    val price: String,        // e.g., "₹349", "₹499", "₹799"
+    val subscriptionStartDate: String // e.g., "2025-05-25 07:58 PM"
+)
+
 object DummyData {
     private val comics = listOf(
         // Classic Comics (50 comics: 10 per genre)
@@ -385,6 +392,7 @@ object DummyData {
 
     private val episodeSocialDataMap = mutableMapOf<String, EpisodeSocialData>()
     private var isSubscribed = false
+    private var premiumSubscription: PremiumSubscription? = null // Store premium subscription details
     private val purchaseConfirmations = mutableMapOf<Int, Boolean>()
     private val communityPosts = mutableStateListOf<CommunityPost>()
     private var postIdCounter = 1
@@ -412,7 +420,7 @@ object DummyData {
     }
 
     // Map to store additional user details (email: username)
-    internal val userDetails = mutableMapOf<String, String>().apply {
+    private val userDetails = mutableMapOf<String, String>().apply {
         put("comicfan123@example.com", "ComicFan123")
         put("superherolover@example.com", "SuperheroLover")
         put("fantasyreader@example.com", "FantasyReader")
@@ -495,6 +503,24 @@ object DummyData {
 
     fun setUserSubscribed(subscribed: Boolean) {
         isSubscribed = subscribed
+        if (!subscribed) {
+            premiumSubscription = null // Clear subscription details if unsubscribed
+        }
+    }
+
+    // New function to subscribe to a premium plan with details
+    fun subscribeToPremium(planDuration: String, price: String, startDate: String) {
+        isSubscribed = true
+        premiumSubscription = PremiumSubscription(
+            planDuration = planDuration,
+            price = price,
+            subscriptionStartDate = startDate
+        )
+    }
+
+    // New function to get premium subscription details
+    fun getPremiumSubscription(): PremiumSubscription? {
+        return premiumSubscription
     }
 
     fun getEpisodesWithSubscription(comicId: Int): List<Episode> {
@@ -650,6 +676,8 @@ object DummyData {
         selectedLanguage = "en" // Reset language
         referralRewards = 0 // Reset referral rewards
         isLoggedIn = false // Reset login state
+        isSubscribed = false // Reset subscription state
+        premiumSubscription = null // Clear subscription details
     }
 
     fun getFavoriteComicsCount(): Int {
@@ -742,7 +770,7 @@ object DummyData {
         return false
     }
 
-    // Sign Up function with Email ID
+    // Updated Sign Up function without username
     fun signUpUser(fullName: String, email: String, mobileNumber: String, password: String): Boolean {
         // Check if email already exists
         if (registeredUsers.containsKey(email)) {
@@ -752,7 +780,7 @@ object DummyData {
         // Add new user to registeredUsers
         registeredUsers[email] = password
 
-        // Store additional user details (using fullName as username for now)
+        // Store additional user details (using fullName as username)
         userDetails[email] = fullName
 
         // Update userProfile with the new email

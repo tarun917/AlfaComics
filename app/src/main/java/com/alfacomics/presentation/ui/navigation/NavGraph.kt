@@ -20,6 +20,7 @@ import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
 import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
+import com.alfacomics.presentation.ui.screens.payment.PaymentOptionsScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
 import com.alfacomics.presentation.ui.screens.profile.CoinPurchaseScreen
 import com.alfacomics.presentation.ui.screens.profile.EditProfileScreen
@@ -168,6 +169,39 @@ fun NavGraph(
                 }
             }
             PremiumScreen(navController = navController)
+        }
+        composable(
+            route = "payment/{planDuration}/{price}",
+            arguments = listOf(
+                navArgument("planDuration") { type = NavType.StringType },
+                navArgument("price") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            // Redirect to login if not logged in
+            LaunchedEffect(Unit) {
+                if (!DummyData.isLoggedIn) {
+                    navController.navigate("login") {
+                        popUpTo("payment/{planDuration}/{price}") { inclusive = true }
+                    }
+                }
+            }
+            val planDuration = backStackEntry.arguments?.getString("planDuration") ?: ""
+            val price = backStackEntry.arguments?.getString("price") ?: ""
+            PaymentOptionsScreen(
+                navController = navController,
+                planDuration = planDuration,
+                price = price,
+                onPaymentSuccess = {
+                    DummyData.subscribeToPremium(
+                        planDuration = planDuration,
+                        price = price,
+                        startDate = "2025-05-25 08:34 PM" // Current date and time
+                    )
+                },
+                onPaymentFailed = {
+                    // Handle payment failure (e.g., show error message)
+                }
+            )
         }
         composable("search") {
             // Redirect to login if not logged in
