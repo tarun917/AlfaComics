@@ -90,24 +90,24 @@ fun ComicCard(
 
     Box(
         modifier = Modifier
-            .width(130.dp)
+            .width(140.dp)
             .padding(vertical = 4.dp)
             .scale(animatedScale)
-            .shadow(6.dp, shape = RoundedCornerShape(12.dp))
+            .shadow(6.dp, shape = RoundedCornerShape(8.dp))
             .background(
                 Brush.linearGradient(
                     colors = listOf(Color(0xFF2A004D).copy(alpha = 0.8f), Color(0xFF1C2526).copy(alpha = 0.8f))
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
             .border(
                 width = 1.dp,
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -120,7 +120,7 @@ fun ComicCard(
                 .matchParentSize()
                 .shadow(
                     elevation = 10.dp,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     spotColor = Color(0xFFBB86FC).copy(alpha = glowAlpha),
                     ambientColor = Color(0xFFFFD700).copy(alpha = glowAlpha)
                 )
@@ -135,7 +135,7 @@ fun ComicCard(
             // Thumbnail with Overlays
             Box(
                 modifier = Modifier
-                    .size(100.dp, 150.dp)
+                    .size(120.dp, 150.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 // Static placeholder for cover image with gradient
@@ -259,24 +259,24 @@ fun MotionComicCard(
 
     Box(
         modifier = Modifier
-            .width(130.dp)
+            .width(150.dp)
             .padding(vertical = 4.dp)
             .scale(animatedScale)
-            .shadow(6.dp, shape = RoundedCornerShape(12.dp))
+            .shadow(6.dp, shape = RoundedCornerShape(8.dp))
             .background(
                 Brush.linearGradient(
                     colors = listOf(Color(0xFF2A004D).copy(alpha = 0.8f), Color(0xFF1C2526).copy(alpha = 0.8f))
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
             .border(
                 width = 1.dp,
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -289,7 +289,7 @@ fun MotionComicCard(
                 .matchParentSize()
                 .shadow(
                     elevation = 10.dp,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     spotColor = Color(0xFFBB86FC).copy(alpha = glowAlpha),
                     ambientColor = Color(0xFFFFD700).copy(alpha = glowAlpha)
                 )
@@ -304,7 +304,7 @@ fun MotionComicCard(
             // Thumbnail with Overlays
             Box(
                 modifier = Modifier
-                    .size(100.dp, 150.dp)
+                    .size(130.dp, 150.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 // Static placeholder for cover image with gradient

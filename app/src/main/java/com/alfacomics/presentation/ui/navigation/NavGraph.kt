@@ -1,6 +1,5 @@
 package com.alfacomics.presentation.ui.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -20,16 +19,20 @@ import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
 import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
+import com.alfacomics.presentation.ui.screens.notification.NotificationScreen
 import com.alfacomics.presentation.ui.screens.payment.PaymentOptionsScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
 import com.alfacomics.presentation.ui.screens.profile.CoinPurchaseScreen
 import com.alfacomics.presentation.ui.screens.profile.EditProfileScreen
+import com.alfacomics.presentation.ui.screens.profile.FollowScreen
 import com.alfacomics.presentation.ui.screens.profile.LanguageSelectionScreen
 import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
 import com.alfacomics.presentation.ui.screens.profile.SettingsScreen
 import com.alfacomics.presentation.ui.screens.profile.ShareAndRewardScreen
 import com.alfacomics.presentation.ui.screens.profile.SupportScreen
 import com.alfacomics.presentation.ui.screens.profile.UploadComicScreen
+import com.alfacomics.presentation.ui.screens.profile.UserPostsScreen
+import com.alfacomics.presentation.ui.screens.profile.UserProfileScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
@@ -52,7 +55,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = if (DummyData.isLoggedIn) "home" else "login", // Start directly with home if logged in
+        startDestination = if (DummyData.isLoggedIn) "home" else "login",
         modifier = modifier
     ) {
         composable("login") {
@@ -193,7 +196,7 @@ fun NavGraph(
                     DummyData.subscribeToPremium(
                         planDuration = planDuration,
                         price = price,
-                        startDate = "2025-05-25 08:34 PM" // Current date and time
+                        startDate = "2025-05-26 09:10 PM" // Current date and time
                     )
                 },
                 onPaymentFailed = {
@@ -221,7 +224,7 @@ fun NavGraph(
                     }
                 }
             }
-            Text("Notifications Screen Placeholder")
+            NotificationScreen(navController = navController) // Updated to use the correct NotificationScreen
         }
         composable(
             route = "comic_purchase/{comicId}",
@@ -373,6 +376,43 @@ fun NavGraph(
                 }
             }
             CoinPurchaseScreen(navController = navController)
+        }
+        composable("follow_screen") {
+            // Redirect to login if not logged in
+            LaunchedEffect(DummyData.isLoggedIn) {
+                if (!DummyData.isLoggedIn) {
+                    navController.navigate("login") {
+                        popUpTo("follow_screen") { inclusive = true }
+                    }
+                }
+            }
+            FollowScreen(navController = navController)
+        }
+        composable("user_posts") {
+            // Redirect to login if not logged in
+            LaunchedEffect(DummyData.isLoggedIn) {
+                if (!DummyData.isLoggedIn) {
+                    navController.navigate("login") {
+                        popUpTo("user_posts") { inclusive = true }
+                    }
+                }
+            }
+            UserPostsScreen(navController = navController)
+        }
+        composable(
+            route = "user_profile/{username}",
+            arguments = listOf(navArgument("username") { type = NavType.StringType })
+        ) { backStackEntry ->
+            // Redirect to login if not logged in
+            LaunchedEffect(DummyData.isLoggedIn) {
+                if (!DummyData.isLoggedIn) {
+                    navController.navigate("login") {
+                        popUpTo("user_profile/{username}") { inclusive = true }
+                    }
+                }
+            }
+            val username = backStackEntry.arguments?.getString("username") ?: ""
+            UserProfileScreen(navController = navController, username = username)
         }
     }
 }

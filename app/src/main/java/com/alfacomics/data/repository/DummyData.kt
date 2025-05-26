@@ -84,7 +84,8 @@ data class CommunityPost(
     val imageUrl: String? = null,
     val poll: Poll? = null,
     val comments: MutableList<Comment> = mutableListOf(),
-    val reactions: Map<String, List<String>> = emptyMap()
+    val reactions: Map<String, List<String>> = emptyMap(),
+    val userProfilePictureResourceId: Int = R.drawable.ic_launcher_background
 )
 
 data class Comment(
@@ -108,7 +109,9 @@ data class UserProfile(
     val email: String,
     val profilePictureResourceId: Int,
     val aboutMe: String,
-    val alfaCoins: Int
+    val alfaCoins: Int,
+    val followers: List<String> = emptyList(),
+    val following: List<String> = emptyList()
 )
 
 data class BuyerDetails(
@@ -121,11 +124,16 @@ data class BuyerDetails(
     val purchaseTimestamp: String
 )
 
-// Data class to store Premium Subscription Details
 data class PremiumSubscription(
-    val planDuration: String, // e.g., "3-Month", "6-Month", "12-Month"
-    val price: String,        // e.g., "₹349", "₹499", "₹799"
-    val subscriptionStartDate: String // e.g., "2025-05-25 07:58 PM"
+    val planDuration: String,
+    val price: String,
+    val subscriptionStartDate: String
+)
+
+data class Notification(
+    val message: String,
+    val timestamp: String,
+    val targetUser: String
 )
 
 object DummyData {
@@ -392,7 +400,7 @@ object DummyData {
 
     private val episodeSocialDataMap = mutableMapOf<String, EpisodeSocialData>()
     private var isSubscribed = false
-    private var premiumSubscription: PremiumSubscription? = null // Store premium subscription details
+    private var premiumSubscription: PremiumSubscription? = null
     private val purchaseConfirmations = mutableMapOf<Int, Boolean>()
     private val communityPosts = mutableStateListOf<CommunityPost>()
     private var postIdCounter = 1
@@ -401,35 +409,132 @@ object DummyData {
     private val pollVotesMap = mutableStateMapOf<Int, MutableList<Int>>()
     private val votedOptionMap = mutableStateMapOf<Int, Int>()
     private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
+    private val notifications = mutableStateListOf<Notification>()
 
     private var userProfile = UserProfile(
         username = "Guest",
         email = "guest@example.com",
         profilePictureResourceId = R.drawable.ic_launcher_background,
         aboutMe = "",
-        alfaCoins = 0
+        alfaCoins = 0,
+        followers = emptyList(),
+        following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
     )
 
     internal var isLoggedIn: Boolean = false
     private val registeredUsers = mutableMapOf<String, String>().apply {
-        // Simulated user data (email: password)
         put("comicfan123@example.com", "password123")
         put("superherolover@example.com", "super123")
         put("fantasyreader@example.com", "fantasy123")
         put("admin@example.com", "112233")
+        put("actionhero@example.com", "action123")
+        put("adventureseeker@example.com", "adventure123")
+        put("mysterysolver@example.com", "mystery123")
+        put("scifigeek@example.com", "scifi123")
     }
 
-    // Map to store additional user details (email: username)
     private val userDetails = mutableMapOf<String, String>().apply {
         put("comicfan123@example.com", "ComicFan123")
         put("superherolover@example.com", "SuperheroLover")
         put("fantasyreader@example.com", "FantasyReader")
         put("admin@example.com", "Admin")
+        put("actionhero@example.com", "ActionHero")
+        put("adventureseeker@example.com", "AdventureSeeker")
+        put("mysterysolver@example.com", "MysterySolver")
+        put("scifigeek@example.com", "SciFiGeek")
+    }
+
+    // Map to store profile pictures for all users (username to resource ID)
+    private val userProfilePictures = mutableMapOf<String, Int>().apply {
+        put("ComicFan123", R.drawable.ic_launcher_background)
+        put("SuperheroLover", R.drawable.ic_launcher_background)
+        put("FantasyReader", R.drawable.ic_launcher_background)
+        put("Admin", R.drawable.ic_launcher_background)
+        put("ActionHero", R.drawable.ic_launcher_background)
+        put("AdventureSeeker", R.drawable.ic_launcher_background)
+        put("MysterySolver", R.drawable.ic_launcher_background)
+        put("SciFiGeek", R.drawable.ic_launcher_background)
+    }
+
+    // Map to store followers and following for all users (username to UserProfile)
+    private val allUserProfiles = mutableMapOf<String, UserProfile>().apply {
+        put("ComicFan123", UserProfile(
+            username = "ComicFan123",
+            email = "comicfan123@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "I love reading superhero comics!",
+            alfaCoins = 500,
+            followers = listOf("SuperheroLover", "FantasyReader", "Admin"),
+            following = listOf("SuperheroLover", "ActionHero")
+        ))
+        put("SuperheroLover", UserProfile(
+            username = "SuperheroLover",
+            email = "superherolover@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Superhero fan forever!",
+            alfaCoins = 700,
+            followers = listOf("ComicFan123", "AdventureSeeker"),
+            following = listOf("ComicFan123", "FantasyReader")
+        ))
+        put("FantasyReader", UserProfile(
+            username = "FantasyReader",
+            email = "fantasyreader@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "I enjoy fantasy worlds!",
+            alfaCoins = 600,
+            followers = listOf("ComicFan123", "SuperheroLover"),
+            following = listOf("SuperheroLover", "ActionHero")
+        ))
+        put("Admin", UserProfile(
+            username = "Admin",
+            email = "admin@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Administrator of Alfa Comics",
+            alfaCoins = 1000,
+            followers = listOf("ComicFan123"),
+            following = listOf("SuperheroLover", "FantasyReader")
+        ))
+        put("ActionHero", UserProfile(
+            username = "ActionHero",
+            email = "actionhero@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Action comics are the best!",
+            alfaCoins = 550,
+            followers = listOf("ComicFan123", "FantasyReader"),
+            following = listOf("SuperheroLover", "AdventureSeeker")
+        ))
+        put("AdventureSeeker", UserProfile(
+            username = "AdventureSeeker",
+            email = "adventureseeker@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Always seeking adventures in comics!",
+            alfaCoins = 650,
+            followers = listOf("SuperheroLover"),
+            following = listOf("ActionHero", "MysterySolver")
+        ))
+        put("MysterySolver", UserProfile(
+            username = "MysterySolver",
+            email = "mysterysolver@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "I love solving mysteries in comics!",
+            alfaCoins = 500,
+            followers = listOf(),
+            following = listOf("AdventureSeeker", "SciFiGeek")
+        ))
+        put("SciFiGeek", UserProfile(
+            username = "SciFiGeek",
+            email = "scifigeek@example.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Sci-fi comics are my favorite!",
+            alfaCoins = 600,
+            followers = listOf(),
+            following = listOf("MysterySolver")
+        ))
     }
 
     private var notificationsEnabled = true
-    private var selectedLanguage = "en" // Default language: English
-    private var referralRewards = 0 // Track rewards earned from referrals
+    private var selectedLanguage = "en"
+    private var referralRewards = 0
 
     private val userAboutMeState = mutableStateOf(userProfile.aboutMe)
 
@@ -504,11 +609,10 @@ object DummyData {
     fun setUserSubscribed(subscribed: Boolean) {
         isSubscribed = subscribed
         if (!subscribed) {
-            premiumSubscription = null // Clear subscription details if unsubscribed
+            premiumSubscription = null
         }
     }
 
-    // New function to subscribe to a premium plan with details
     fun subscribeToPremium(planDuration: String, price: String, startDate: String) {
         isSubscribed = true
         premiumSubscription = PremiumSubscription(
@@ -518,7 +622,6 @@ object DummyData {
         )
     }
 
-    // New function to get premium subscription details
     fun getPremiumSubscription(): PremiumSubscription? {
         return premiumSubscription
     }
@@ -553,7 +656,7 @@ object DummyData {
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
-        if (!isLoggedIn) return // Prevent posting if not logged in
+        if (!isLoggedIn) return
         val timestamp = "2025-05-18 12:00 PM"
         val postId = postIdCounter++
         communityPosts.add(
@@ -565,7 +668,8 @@ object DummyData {
                 imageUrl = imageUrl,
                 poll = poll,
                 comments = mutableListOf(),
-                reactions = emptyMap()
+                reactions = emptyMap(),
+                userProfilePictureResourceId = userProfile.profilePictureResourceId
             )
         )
         if (poll != null) {
@@ -574,7 +678,7 @@ object DummyData {
     }
 
     fun addCommentToPost(postId: Int, comment: String) {
-        if (!isLoggedIn) return // Prevent commenting if not logged in
+        if (!isLoggedIn) return
         val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
         post?.comments?.add(
@@ -634,24 +738,36 @@ object DummyData {
         return userProfile.copy(aboutMe = userAboutMeState.value)
     }
 
+    fun getUserProfileByUsername(username: String): UserProfile? {
+        return allUserProfiles[username]
+    }
+
     fun updateAboutMe(newAboutMe: String) {
         userAboutMeState.value = newAboutMe
+        userProfile = userProfile.copy(aboutMe = newAboutMe)
+        allUserProfiles[userProfile.username] = userProfile
     }
 
     fun updateProfilePicture(newPictureResourceId: Int) {
         userProfile = userProfile.copy(profilePictureResourceId = newPictureResourceId)
+        allUserProfiles[userProfile.username] = userProfile
     }
 
     fun updateUserProfile(newUsername: String, newEmail: String) {
+        val oldUsername = userProfile.username
         userProfile = userProfile.copy(username = newUsername, email = newEmail)
+        allUserProfiles.remove(oldUsername)
+        allUserProfiles[newUsername] = userProfile
     }
 
     fun addAlfaCoins(coins: Int) {
         userProfile = userProfile.copy(alfaCoins = userProfile.alfaCoins + coins)
+        allUserProfiles[userProfile.username] = userProfile
     }
 
     fun updateAlfaCoins(newBalance: Int) {
         userProfile = userProfile.copy(alfaCoins = newBalance)
+        allUserProfiles[userProfile.username] = userProfile
     }
 
     fun getNotificationsEnabled(): Boolean = notificationsEnabled
@@ -666,18 +782,21 @@ object DummyData {
             email = "guest@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
             aboutMe = "",
-            alfaCoins = 0
+            alfaCoins = 0,
+            followers = emptyList(),
+            following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
         )
         userAboutMeState.value = ""
         notificationsEnabled = true
         favoriteComicIds.clear()
         favoriteMotionComicIds.clear()
         purchaseConfirmations.clear()
-        selectedLanguage = "en" // Reset language
-        referralRewards = 0 // Reset referral rewards
-        isLoggedIn = false // Reset login state
-        isSubscribed = false // Reset subscription state
-        premiumSubscription = null // Clear subscription details
+        selectedLanguage = "en"
+        referralRewards = 0
+        isLoggedIn = false
+        isSubscribed = false
+        premiumSubscription = null
+        // Do not clear notifications to preserve them across logins/logouts
     }
 
     fun getFavoriteComicsCount(): Int {
@@ -748,50 +867,120 @@ object DummyData {
 
     fun addReferralRewards(coins: Int) {
         referralRewards += coins
-        addAlfaCoins(coins) // Add referral rewards to user's Alfa Coins
+        addAlfaCoins(coins)
     }
 
-    // Login with Email ID and Password
     fun loginUser(email: String, password: String): Boolean {
         val storedPassword = registeredUsers[email]
         if (storedPassword != null && storedPassword == password) {
-            val username = userDetails[email] ?: "User" // Fallback to "User" if username not found
-            userProfile = UserProfile(
+            val username = userDetails[email] ?: "User"
+            userProfile = allUserProfiles[username] ?: UserProfile(
                 username = username,
                 email = email,
                 profilePictureResourceId = R.drawable.ic_launcher_background,
                 aboutMe = "",
-                alfaCoins = 500
+                alfaCoins = 500,
+                followers = emptyList(),
+                following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
             )
-            userAboutMeState.value = ""
+            userAboutMeState.value = userProfile.aboutMe
             isLoggedIn = true
             return true
         }
         return false
     }
 
-    // Updated Sign Up function without username
     fun signUpUser(fullName: String, email: String, mobileNumber: String, password: String): Boolean {
-        // Check if email already exists
         if (registeredUsers.containsKey(email)) {
-            return false // Email already exists
+            return false
         }
-
-        // Add new user to registeredUsers
         registeredUsers[email] = password
-
-        // Store additional user details (using fullName as username)
         userDetails[email] = fullName
-
-        // Update userProfile with the new email
-        userProfile = UserProfile(
-            username = fullName, // Using fullName as username
+        val newUserProfile = UserProfile(
+            username = fullName,
             email = email,
             profilePictureResourceId = R.drawable.ic_launcher_background,
             aboutMe = "",
-            alfaCoins = 500
+            alfaCoins = 500,
+            followers = emptyList(),
+            following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
         )
+        userProfile = newUserProfile
+        allUserProfiles[fullName] = newUserProfile
         userAboutMeState.value = ""
         return true
+    }
+
+    // Follow a user
+    fun followUser(currentUser: String, targetUser: String) {
+        if (currentUser == targetUser) return // Prevent self-following
+        val targetProfile = allUserProfiles[targetUser] ?: return
+        val currentProfile = allUserProfiles[currentUser] ?: return
+
+        // Update followers list of the target user
+        val updatedFollowers = targetProfile.followers.toMutableList().apply {
+            if (!contains(currentUser)) add(currentUser)
+        }
+        allUserProfiles[targetUser] = targetProfile.copy(followers = updatedFollowers)
+
+        // Update following list of the current user
+        val updatedFollowing = currentProfile.following.toMutableList().apply {
+            if (!contains(targetUser)) add(targetUser)
+        }
+        allUserProfiles[currentUser] = currentProfile.copy(following = updatedFollowing)
+
+        // Update userProfile if the current user is the logged-in user
+        if (currentUser == userProfile.username) {
+            userProfile = currentProfile.copy(following = updatedFollowing)
+        }
+
+        // Add notification for the target user
+        if (allUserProfiles[targetUser]?.username != currentUser) {
+            addNotification("${currentProfile.username} has followed you.", targetUser)
+        }
+    }
+
+    // Unfollow a user
+    fun unfollowUser(currentUser: String, targetUser: String) {
+        if (currentUser == targetUser) return
+        val targetProfile = allUserProfiles[targetUser] ?: return
+        val currentProfile = allUserProfiles[currentUser] ?: return
+
+        // Update followers list of the target user
+        val updatedFollowers = targetProfile.followers.toMutableList().apply {
+            remove(currentUser)
+        }
+        allUserProfiles[targetUser] = targetProfile.copy(followers = updatedFollowers)
+
+        // Update following list of the current user
+        val updatedFollowing = currentProfile.following.toMutableList().apply {
+            remove(targetUser)
+        }
+        allUserProfiles[currentUser] = currentProfile.copy(following = updatedFollowing)
+
+        // Update userProfile if the current user is the logged-in user
+        if (currentUser == userProfile.username) {
+            userProfile = currentProfile.copy(following = updatedFollowing)
+        }
+    }
+
+    // Check if a user is followed by the current user
+    fun isUserFollowed(currentUser: String, targetUser: String): Boolean {
+        val currentProfile = allUserProfiles[currentUser] ?: return false
+        return currentProfile.following.contains(targetUser)
+    }
+
+    // Get notifications for the current user
+    fun getNotifications(): List<Notification> {
+        val currentUserProfile = userProfile
+        return notifications.filter { notification ->
+            notification.targetUser == currentUserProfile.username
+        }
+    }
+
+    // Add a notification
+    private fun addNotification(message: String, targetUser: String) {
+        val timestamp = "2025-05-26 09:04 PM" // Using current date and time as per prompt
+        notifications.add(Notification(message, timestamp, targetUser))
     }
 }

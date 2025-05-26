@@ -47,6 +47,7 @@ fun ProfileScreen(
     val userProfile = DummyData.getUserProfile()
     val favoriteComicsCount by derivedStateOf { DummyData.getFavoriteComicsCount() }
     val communityPostsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
+    val followersCount by derivedStateOf { userProfile.followers.size }
     val context = LocalContext.current
 
     // State for profile picture selection dialog
@@ -58,7 +59,7 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color(0xFF121212))
             .padding(horizontal = 16.dp)
-            .padding(bottom = 56.dp), // Added padding to ensure bottom navigation is visible
+            .padding(bottom = 56.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Settings Icon at Top-Left
@@ -167,6 +168,25 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Followers Button
+                    Button(
+                        onClick = {
+                            navController.navigate("follow_screen")
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFBB86FC),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "Followers: $followersCount",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     // About Me Section
                     AboutMeSection(
                         aboutMe = userProfile.aboutMe,
@@ -187,6 +207,11 @@ fun ProfileScreen(
         item {
             ProfileOptionCard(title = "Buy Alfa Coins") {
                 navController.navigate("coin_purchase")
+            }
+        }
+        item {
+            ProfileOptionCard(title = "Your Posts") {
+                navController.navigate("user_posts")
             }
         }
         item {

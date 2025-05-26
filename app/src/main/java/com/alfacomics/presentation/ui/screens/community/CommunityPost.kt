@@ -3,22 +3,26 @@ package com.alfacomics.presentation.ui.screens.community
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alfacomics.R
 import com.alfacomics.data.repository.CommunityPost
 import com.alfacomics.data.repository.DummyData
@@ -27,7 +31,9 @@ import com.alfacomics.data.repository.DummyData
 @Composable
 fun CommunityPostItem(
     post: CommunityPost,
-    onAddComment: (Int, String) -> Unit
+    onAddComment: (Int, String) -> Unit,
+    onFollowClick: (String) -> Unit = {}, // Added callback for follow button
+    onUsernameClick: (String) -> Unit = {} // Added callback for username click
 ) {
     var isCommentingEnabled by remember(post.id) { mutableStateOf(true) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -38,6 +44,29 @@ fun CommunityPostItem(
 
     // Access the context for sharing
     val context = LocalContext.current
+
+    // Follow button state
+    val currentUser = DummyData.getUserProfile().username
+    var isFollowing by remember { mutableStateOf(DummyData.isUserFollowed(currentUser, post.username)) }
+    var showCheckMark by remember { mutableStateOf(false) }
+
+    // Glow animation for the check mark
+    val glowAlpha by animateFloatAsState(
+        targetValue = if (showCheckMark) 0.6f else 0f,
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = FastOutSlowInEasing
+        ),
+        label = "glowAnimation"
+    )
+
+    // Reset check mark visibility after 2 seconds
+    LaunchedEffect(showCheckMark) {
+        if (showCheckMark) {
+            kotlinx.coroutines.delay(2000)
+            showCheckMark = false
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Card(
@@ -58,11 +87,13 @@ fun CommunityPostItem(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Profile Picture
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray),
+                            .background(Color.Gray)
+                            .clickable { onUsernameClick(post.username) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -74,7 +105,12 @@ fun CommunityPostItem(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
+                    // Username and Timestamp
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onUsernameClick(post.username) }
+                    ) {
                         Text(
                             text = post.username,
                             style = MaterialTheme.typography.bodyLarge,
@@ -86,6 +122,70 @@ fun CommunityPostItem(
                             color = Color.Gray
                         )
                     }
+
+                    // Follow Button or Check Mark
+                    if (currentUser != post.username) { // Don't show follow button for the user's own posts
+                        if (showCheckMark) {
+                            // Show glowing check mark
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .shadow(
+                                        elevation = 10.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = Color(0xFFBB86FC).copy(alpha = glowAlpha),
+                                        ambientColor = Color(0xFFFFD700).copy(alpha = glowAlpha)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Followed",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        } else if (!isFollowing) {
+                            // Show Follow button
+                            Button(
+                                onClick = {
+                                    onFollowClick(post.username)
+                                    isFollowing = true
+                                    showCheckMark = true
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .background(
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = "Follow",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     PostMenu(
                         post = post,
@@ -127,7 +227,7 @@ fun CommunityPostItem(
                             try {
                                 val whatsappIntent = Intent(Intent.ACTION_SEND).apply {
                                     type = "text/plain"
-                                    setPackage("com.whatsapp") // Target WhatsApp specifically
+                                    setPackage("com.whatsapp")
                                     putExtra(Intent.EXTRA_TEXT, post.content)
                                 }
                                 context.startActivity(whatsappIntent)
@@ -135,7 +235,7 @@ fun CommunityPostItem(
                                 Toast.makeText(context, "WhatsApp is not installed", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        modifier = Modifier.padding(top = 4.dp) // Adjust padding to align vertically with Heart button
+                        modifier = Modifier.padding(top = 4.dp)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_whatsapp),
@@ -151,7 +251,7 @@ fun CommunityPostItem(
                             try {
                                 val facebookIntent = Intent(Intent.ACTION_SEND).apply {
                                     type = "text/plain"
-                                    setPackage("com.facebook.katana") // Target Facebook specifically
+                                    setPackage("com.facebook.katana")
                                     putExtra(Intent.EXTRA_TEXT, post.content)
                                 }
                                 context.startActivity(facebookIntent)
@@ -159,7 +259,7 @@ fun CommunityPostItem(
                                 Toast.makeText(context, "Facebook is not installed", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        modifier = Modifier.padding(top = 4.dp) // Adjust padding to align vertically with Heart button
+                        modifier = Modifier.padding(top = 4.dp)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_facebook),

@@ -1,11 +1,12 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -14,6 +15,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.alfacomics.data.repository.DummyData
 import com.alfacomics.presentation.ui.components.GlassmorphicSurface
 
 @Composable
@@ -22,6 +25,9 @@ fun TopNavBar(
     onSearchClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
+    // Get the count of notifications for the current user
+    val notificationCount = remember { DummyData.getNotifications() }.size
+
     GlassmorphicSurface(
         modifier = Modifier
             .fillMaxWidth()
@@ -67,12 +73,32 @@ fun TopNavBar(
                         tint = Color.White
                     )
                 }
-                IconButton(onClick = onNotificationClick) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.White
-                    )
+                Box {
+                    IconButton(onClick = onNotificationClick) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notifications",
+                            tint = Color.White
+                        )
+                    }
+                    // Show notification count badge if there are notifications
+                    if (notificationCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(x = 10.dp, y = (-10).dp)
+                                .background(Color.Red, shape = androidx.compose.foundation.shape.CircleShape)
+                                .size(20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = notificationCount.toString(),
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
             }
         }

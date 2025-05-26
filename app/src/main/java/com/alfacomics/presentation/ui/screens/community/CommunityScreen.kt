@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController // Added import
+import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.Poll
 import com.alfacomics.data.repository.PollOption
@@ -29,7 +29,7 @@ import com.alfacomics.data.repository.PollOption
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun CommunityScreen(
-    navController: NavHostController, // Added navController parameter
+    navController: NavHostController,
     viewModel: CommunityViewModel
 ) {
     var newPostContent by remember { mutableStateOf(TextFieldValue("")) }
@@ -41,7 +41,7 @@ fun CommunityScreen(
     var searchQuery by remember { mutableStateOf("") }
     var showPollDialog by remember { mutableStateOf(false) }
     var pollQuestion by remember { mutableStateOf("") }
-    var pollOptions by remember { mutableStateOf(mutableListOf("", "")) } // Start with 2 options
+    var pollOptions by remember { mutableStateOf(mutableListOf("", "")) }
     val posts = DummyData.getCommunityPosts()
     val maxWordLimit = 512
     val maxPollOptions = 6
@@ -422,6 +422,12 @@ fun CommunityScreen(
                     post = post,
                     onAddComment = { postId, comment ->
                         DummyData.addCommentToPost(postId, comment)
+                    },
+                    onFollowClick = { username ->
+                        DummyData.followUser(DummyData.getUserProfile().username, username)
+                    },
+                    onUsernameClick = { username ->
+                        navController.navigate("user_profile/$username")
                     }
                 )
             }
