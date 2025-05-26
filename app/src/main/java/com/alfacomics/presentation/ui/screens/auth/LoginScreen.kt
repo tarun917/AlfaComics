@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -24,6 +25,15 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Check if user is already logged in (e.g., Admin during testing)
+    LaunchedEffect(Unit) {
+        if (DummyData.isLoggedIn) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -119,6 +129,31 @@ fun LoginScreen(
             )
         ) {
             Text("Login", fontSize = 16.sp)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Skip Button (Login as Admin and skip to Home Screen)
+        TextButton(
+            onClick = {
+                // Simulate login as Admin for testing
+                val loginSuccess = DummyData.loginUser("admin@example.com", "112233")
+                if (loginSuccess) {
+                    // Ensure navigation happens after login state is updated
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                } else {
+                    errorMessage = "Failed to login as Admin"
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Skip (Login as Admin)",
+                color = Color(0xFFBB86FC),
+                fontSize = 14.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))

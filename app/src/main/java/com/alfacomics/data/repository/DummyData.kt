@@ -416,7 +416,7 @@ object DummyData {
         put("comicfan123@example.com", "password123")
         put("superherolover@example.com", "super123")
         put("fantasyreader@example.com", "fantasy123")
-        put("admin@example.com", "Tarun123")
+        put("admin@example.com", "112233")
     }
 
     // Map to store additional user details (email: username)

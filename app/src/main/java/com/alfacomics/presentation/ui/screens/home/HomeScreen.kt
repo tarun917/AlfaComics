@@ -29,7 +29,7 @@ fun HomeScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val tabs = listOf("Comics", "Motion Comics")
+    val tabs = listOf("Digital Comics", "Motion Comics")
     var selectedTabIndex by remember { mutableStateOf(0) }
 
     // Gradient background for the screen with a subtle shine effect
@@ -82,7 +82,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 4.dp) // Reduced padding from 16.dp to 0.dp to minimize black space
         ) {
             // Header
             Row(

@@ -43,29 +43,27 @@ fun NavGraph(
     isLandscape: Boolean,
     onOrientationChange: (Boolean) -> Unit
 ) {
+    // Ensure Admin is logged in by default for testing
+    LaunchedEffect(Unit) {
+        if (!DummyData.isLoggedIn) {
+            DummyData.loginUser("admin@example.com", "Tarun123")
+        }
+    }
+
     NavHost(
         navController = navController,
-        startDestination = "login", // Start with login screen
+        startDestination = if (DummyData.isLoggedIn) "home" else "login", // Start directly with home if logged in
         modifier = modifier
     ) {
         composable("login") {
             LoginScreen(navController = navController)
-
-            // Check if user is already logged in
-            LaunchedEffect(Unit) {
-                if (DummyData.isLoggedIn) {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-            }
         }
         composable("signup") {
             SignUpScreen(navController = navController)
         }
         composable("home") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
@@ -76,7 +74,7 @@ fun NavGraph(
         }
         composable("alfaStore") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("alfaStore") { inclusive = true }
@@ -87,7 +85,7 @@ fun NavGraph(
         }
         composable("community") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("community") { inclusive = true }
@@ -98,7 +96,7 @@ fun NavGraph(
         }
         composable("favourite") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("favourite") { inclusive = true }
@@ -109,7 +107,7 @@ fun NavGraph(
         }
         composable("profile") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("profile") { inclusive = true }
@@ -123,7 +121,7 @@ fun NavGraph(
             arguments = listOf(navArgument("comicId") { type = NavType.IntType })
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("comic_detail/{comicId}") { inclusive = true }
@@ -144,7 +142,7 @@ fun NavGraph(
             arguments = listOf(navArgument("motionComicId") { type = NavType.IntType })
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("motion_comic_detail/{motionComicId}") { inclusive = true }
@@ -161,7 +159,7 @@ fun NavGraph(
         }
         composable("premium") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("premium") { inclusive = true }
@@ -178,7 +176,7 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("payment/{planDuration}/{price}") { inclusive = true }
@@ -205,7 +203,7 @@ fun NavGraph(
         }
         composable("search") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("search") { inclusive = true }
@@ -216,7 +214,7 @@ fun NavGraph(
         }
         composable("notifications") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("notifications") { inclusive = true }
@@ -230,7 +228,7 @@ fun NavGraph(
             arguments = listOf(navArgument("comicId") { type = NavType.IntType })
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("comic_purchase/{comicId}") { inclusive = true }
@@ -242,7 +240,7 @@ fun NavGraph(
         }
         composable("order_history") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("order_history") { inclusive = true }
@@ -259,7 +257,7 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("comic_reader/{comicId}/{episodeId}") { inclusive = true }
@@ -281,7 +279,7 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("episode_player/{motionComicId}/{episodeId}") { inclusive = true }
@@ -301,7 +299,7 @@ fun NavGraph(
         // Profile Tab Routes
         composable("edit_profile") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("edit_profile") { inclusive = true }
@@ -312,7 +310,7 @@ fun NavGraph(
         }
         composable("settings") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("settings") { inclusive = true }
@@ -323,7 +321,7 @@ fun NavGraph(
         }
         composable("language_selection") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("language_selection") { inclusive = true }
@@ -334,7 +332,7 @@ fun NavGraph(
         }
         composable("support") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("support") { inclusive = true }
@@ -345,7 +343,7 @@ fun NavGraph(
         }
         composable("share_and_reward") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("share_and_reward") { inclusive = true }
@@ -356,7 +354,7 @@ fun NavGraph(
         }
         composable("upload_comic") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("upload_comic") { inclusive = true }
@@ -367,7 +365,7 @@ fun NavGraph(
         }
         composable("coin_purchase") {
             // Redirect to login if not logged in
-            LaunchedEffect(Unit) {
+            LaunchedEffect(DummyData.isLoggedIn) {
                 if (!DummyData.isLoggedIn) {
                     navController.navigate("login") {
                         popUpTo("coin_purchase") { inclusive = true }

@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.alfacomics.data.repository.Comic
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.presentation.ui.components.HorizontalComicScroll
 
@@ -25,17 +26,19 @@ fun ClassicTab(
     val comics = DummyData.getComicsByCategory("Classic")
     val genres = DummyData.getGenresByCategory("Classic")
     val groupedComics = genres.associateWith { genre ->
-        comics.filter { it.genre == genre }
+        comics.filter { it.genre == genre.toString() }
     }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 4.dp), // Reduced padding from 16.dp to 4.dp
+            .padding(horizontal = 4.dp), // Already minimized in previous request
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Grouped Comics by Genre
-        items(groupedComics.entries.toList()) { (genre, genreComics) ->
+        items(groupedComics.entries.toList()) { entry ->
+            val genre = entry.key.toString()
+            val genreComics = entry.value
             Column {
                 Text(
                     text = genre,
@@ -52,10 +55,13 @@ fun ClassicTab(
                         .shadow(2.dp, RoundedCornerShape(8.dp)),
                     textAlign = TextAlign.Start
                 )
-                HorizontalComicScroll(
-                    comics = genreComics,
+                HorizontalComicScroll<Comic>(
+                    items = genreComics,
                     navController = navController,
-                    modifier = Modifier.padding(horizontal = 4.dp) // Reduced padding for HorizontalComicScroll
+                    modifier = Modifier, // Removed padding(horizontal = 4.dp) to minimize black space
+                    onClick = { comic ->
+                        navController.navigate("comic_detail/${comic.id}")
+                    }
                 )
             }
         }
