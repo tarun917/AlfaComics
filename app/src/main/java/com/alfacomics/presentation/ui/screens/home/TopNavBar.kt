@@ -25,8 +25,13 @@ fun TopNavBar(
     onSearchClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
-    // Get the count of notifications for the current user
-    val notificationCount = remember { DummyData.getNotifications() }.size
+    // Get the count of unread notifications for the current user
+    val notificationCount = remember { mutableStateOf(DummyData.getUnreadNotificationsCount()) }
+
+    // Update notification count when notifications change
+    LaunchedEffect(DummyData.getNotifications()) {
+        notificationCount.value = DummyData.getUnreadNotificationsCount()
+    }
 
     GlassmorphicSurface(
         modifier = Modifier
@@ -81,8 +86,8 @@ fun TopNavBar(
                             tint = Color.White
                         )
                     }
-                    // Show notification count badge if there are notifications
-                    if (notificationCount > 0) {
+                    // Show notification count badge if there are unread notifications
+                    if (notificationCount.value > 0) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
@@ -92,7 +97,7 @@ fun TopNavBar(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = notificationCount.toString(),
+                                text = notificationCount.value.toString(),
                                 color = Color.White,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontSize = 12.sp
@@ -109,7 +114,7 @@ fun TopNavBar(
 fun GradientACLogo() {
     val gradient = Brush.horizontalGradient(
         listOf(
-            Color(0xFFF72585), // Pinkish
+            Color(0xFF44D366), // Pinkish
             Color(0xFF4361EE)  // Bluish
         )
     )

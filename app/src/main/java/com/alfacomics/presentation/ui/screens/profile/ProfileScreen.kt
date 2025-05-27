@@ -168,21 +168,48 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Followers Button
-                    Button(
-                        onClick = {
-                            navController.navigate("follow_screen")
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFBB86FC),
-                            contentColor = Color.White
-                        )
+                    // Followers and Your Posts Buttons in a Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
-                            text = "Followers: $followersCount",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontSize = 16.sp
-                        )
+                        Button(
+                            onClick = {
+                                navController.navigate("follow_screen")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFBB86FC),
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Followers: $followersCount",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                navController.navigate("user_posts")
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFBB86FC),
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Your Posts",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -207,11 +234,6 @@ fun ProfileScreen(
         item {
             ProfileOptionCard(title = "Buy Alfa Coins") {
                 navController.navigate("coin_purchase")
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Your Posts") {
-                navController.navigate("user_posts")
             }
         }
         item {

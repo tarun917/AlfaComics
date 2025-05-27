@@ -133,7 +133,8 @@ data class PremiumSubscription(
 data class Notification(
     val message: String,
     val timestamp: String,
-    val targetUser: String
+    val targetUser: String,
+    val isRead: Boolean = false
 )
 
 object DummyData {
@@ -558,6 +559,9 @@ object DummyData {
     )
 
     init {
+        // Adding sample posts for different users
+        userProfile = allUserProfiles["Admin"] ?: userProfile
+        isLoggedIn = true
         addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1", null)
         addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null, null)
         addCommunityPost(
@@ -571,6 +575,16 @@ object DummyData {
                 )
             )
         )
+
+        // Adding more posts for different users
+        userProfile = allUserProfiles["ComicFan123"] ?: userProfile
+        addCommunityPost("Loved the new Action Classic 2! #ActionFans", "placeholder_image_2", null)
+        addCommunityPost("Looking for some Adventure comics recommendations!", null, null)
+
+        userProfile = allUserProfiles["FantasyReader"] ?: userProfile
+        addCommunityPost("Fantasy Modern 1 is a must-read! #FantasyLovers", "placeholder_image_3", null)
+
+        userProfile = allUserProfiles["Admin"] ?: userProfile // Reset to Admin for testing
     }
 
     fun getComicsByCategory(category: String): List<Comic> {
@@ -653,6 +667,11 @@ object DummyData {
 
     fun getCommunityPosts(): List<CommunityPost> {
         return communityPosts.sortedByDescending { post -> post.id }
+    }
+
+    fun getUserPosts(): List<CommunityPost> {
+        val currentUser = userProfile.username
+        return communityPosts.filter { post -> post.username == currentUser }
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
@@ -970,7 +989,7 @@ object DummyData {
         return currentProfile.following.contains(targetUser)
     }
 
-    // Get notifications for the current user
+    // Get all notifications for the current user
     fun getNotifications(): List<Notification> {
         val currentUserProfile = userProfile
         return notifications.filter { notification ->
@@ -978,9 +997,27 @@ object DummyData {
         }
     }
 
+    // Get unread notifications count for the current user
+    fun getUnreadNotificationsCount(): Int {
+        val currentUserProfile = userProfile
+        return notifications.count { notification ->
+            notification.targetUser == currentUserProfile.username && !notification.isRead
+        }
+    }
+
+    // Mark all notifications as read for the current user
+    fun markNotificationsAsRead() {
+        val currentUserProfile = userProfile
+        notifications.forEachIndexed { index, notification ->
+            if (notification.targetUser == currentUserProfile.username && !notification.isRead) {
+                notifications[index] = notification.copy(isRead = true)
+            }
+        }
+    }
+
     // Add a notification
     private fun addNotification(message: String, targetUser: String) {
-        val timestamp = "2025-05-26 09:04 PM" // Using current date and time as per prompt
-        notifications.add(Notification(message, timestamp, targetUser))
+        val timestamp = "2025-05-26 09:45 PM" // Updated to current date and time
+        notifications.add(Notification(message, timestamp, targetUser, isRead = false))
     }
 }

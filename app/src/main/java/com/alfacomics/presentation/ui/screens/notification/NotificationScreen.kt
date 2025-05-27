@@ -29,6 +29,11 @@ fun NotificationScreen(
     val notifications = remember { DummyData.getNotifications() } // Use directly as a State
     val currentUser = DummyData.getUserProfile().username
 
+    // Mark all notifications as read when the screen is loaded
+    LaunchedEffect(Unit) {
+        DummyData.markNotificationsAsRead()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
