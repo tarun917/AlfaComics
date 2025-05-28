@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.ImageBitmap
 import com.alfacomics.R
 
 data class Comic(
@@ -108,6 +109,7 @@ data class UserProfile(
     val username: String,
     val email: String,
     val profilePictureResourceId: Int,
+    val profilePictureBitmap: ImageBitmap? = null, // Added new field for bitmap
     val aboutMe: String,
     val alfaCoins: Int,
     val followers: List<String> = emptyList(),
@@ -416,13 +418,14 @@ object DummyData {
         username = "Guest",
         email = "guest@example.com",
         profilePictureResourceId = R.drawable.ic_launcher_background,
+        profilePictureBitmap = null, // Added new field
         aboutMe = "",
         alfaCoins = 0,
         followers = emptyList(),
         following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
     )
 
-    internal var isLoggedIn: Boolean = false
+    var isLoggedIn: Boolean = false // Changed from internal to public
     private val registeredUsers = mutableMapOf<String, String>().apply {
         put("comicfan123@example.com", "password123")
         put("superherolover@example.com", "super123")
@@ -463,6 +466,7 @@ object DummyData {
             username = "ComicFan123",
             email = "comicfan123@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "I love reading superhero comics!",
             alfaCoins = 500,
             followers = listOf("SuperheroLover", "FantasyReader", "Admin"),
@@ -472,6 +476,7 @@ object DummyData {
             username = "SuperheroLover",
             email = "superherolover@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "Superhero fan forever!",
             alfaCoins = 700,
             followers = listOf("ComicFan123", "AdventureSeeker"),
@@ -481,6 +486,7 @@ object DummyData {
             username = "FantasyReader",
             email = "fantasyreader@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "I enjoy fantasy worlds!",
             alfaCoins = 600,
             followers = listOf("ComicFan123", "SuperheroLover"),
@@ -490,6 +496,7 @@ object DummyData {
             username = "Admin",
             email = "admin@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "Administrator of Alfa Comics",
             alfaCoins = 1000,
             followers = listOf("ComicFan123"),
@@ -499,6 +506,7 @@ object DummyData {
             username = "ActionHero",
             email = "actionhero@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "Action comics are the best!",
             alfaCoins = 550,
             followers = listOf("ComicFan123", "FantasyReader"),
@@ -508,6 +516,7 @@ object DummyData {
             username = "AdventureSeeker",
             email = "adventureseeker@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "Always seeking adventures in comics!",
             alfaCoins = 650,
             followers = listOf("SuperheroLover"),
@@ -517,6 +526,7 @@ object DummyData {
             username = "MysterySolver",
             email = "mysterysolver@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "I love solving mysteries in comics!",
             alfaCoins = 500,
             followers = listOf(),
@@ -526,6 +536,7 @@ object DummyData {
             username = "SciFiGeek",
             email = "scifigeek@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "Sci-fi comics are my favorite!",
             alfaCoins = 600,
             followers = listOf(),
@@ -767,6 +778,11 @@ object DummyData {
         allUserProfiles[userProfile.username] = userProfile
     }
 
+    fun updateProfilePicture(newPicture: ImageBitmap) {
+        userProfile = userProfile.copy(profilePictureBitmap = newPicture)
+        allUserProfiles[userProfile.username] = userProfile
+    }
+
     fun updateProfilePicture(newPictureResourceId: Int) {
         userProfile = userProfile.copy(profilePictureResourceId = newPictureResourceId)
         allUserProfiles[userProfile.username] = userProfile
@@ -800,6 +816,7 @@ object DummyData {
             username = "Guest",
             email = "guest@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "",
             alfaCoins = 0,
             followers = emptyList(),
@@ -897,6 +914,7 @@ object DummyData {
                 username = username,
                 email = email,
                 profilePictureResourceId = R.drawable.ic_launcher_background,
+                profilePictureBitmap = null, // Added new field
                 aboutMe = "",
                 alfaCoins = 500,
                 followers = emptyList(),
@@ -919,6 +937,7 @@ object DummyData {
             username = fullName,
             email = email,
             profilePictureResourceId = R.drawable.ic_launcher_background,
+            profilePictureBitmap = null, // Added new field
             aboutMe = "",
             alfaCoins = 500,
             followers = emptyList(),

@@ -5,26 +5,30 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.delay
-import androidx.compose.ui.res.painterResource
 import com.alfacomics.R
+import com.alfacomics.data.repository.DummyData
+import kotlinx.coroutines.delay
 
 @Composable
 fun PaymentOptionsScreen(
@@ -55,6 +59,9 @@ fun PaymentOptionsScreen(
 
     // Scan QR
     var showQRDialog by remember { mutableStateOf(false) }
+
+    // UPI Pop-up State
+    var showUPIPopUp by remember { mutableStateOf(true) } // Show UPI pop-up by default
 
     // Gradient background for the screen
     val gradientBackground = Brush.verticalGradient(
@@ -275,6 +282,266 @@ fun PaymentOptionsScreen(
         }
     }
 
+    // UPI Pop-up Dialog (Shown by default)
+    if (showUPIPopUp) {
+        Dialog(onDismissRequest = { showUPIPopUp = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            ) {
+                Box {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Pay with UPI",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+
+                        // UPI App Options (PhonePe, Google Pay, Paytm) with Icons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            UPIAppOption(
+                                appIconRes = R.drawable.phonepe_logo,
+                                appName = "PhonePe",
+                                isSelected = selectedUPIApp == "PhonePe",
+                                onClick = { selectedUPIApp = "PhonePe" }
+                            )
+                            UPIAppOption(
+                                appIconRes = R.drawable.googlepay_logo,
+                                appName = "Google Pay",
+                                isSelected = selectedUPIApp == "Google Pay",
+                                onClick = { selectedUPIApp = "Google Pay" }
+                            )
+                            UPIAppOption(
+                                appIconRes = R.drawable.paytm_logo,
+                                appName = "Paytm",
+                                isSelected = selectedUPIApp == "Paytm",
+                                onClick = { selectedUPIApp = "Paytm" }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Input Type Dropdown and Field
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            ) {
+                                if (inputType == "Enter UPI ID") {
+                                    OutlinedTextField(
+                                        value = upiId,
+                                        onValueChange = { upiId = it },
+                                        label = { Text("Enter UPI ID", color = Color.White) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textStyle = LocalTextStyle.current.copy(color = Color.White),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.Transparent,
+                                            unfocusedContainerColor = Color.Transparent,
+                                            focusedIndicatorColor = Color(0xFFBB86FC),
+                                            unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f)
+                                        )
+                                    )
+                                } else {
+                                    OutlinedTextField(
+                                        value = mobileNumber,
+                                        onValueChange = { mobileNumber = it },
+                                        label = { Text("Enter Mobile Number", color = Color.White) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textStyle = LocalTextStyle.current.copy(color = Color.White),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.Transparent,
+                                            unfocusedContainerColor = Color.Transparent,
+                                            focusedIndicatorColor = Color(0xFFBB86FC),
+                                            unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f)
+                                        )
+                                    )
+                                }
+                            }
+
+                            // Input Type Dropdown (Only Icon)
+                            Box {
+                                IconButton(onClick = { showInputTypeDropdown = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Select Input Type",
+                                        tint = Color.White
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showInputTypeDropdown,
+                                    onDismissRequest = { showInputTypeDropdown = false },
+                                    modifier = Modifier
+                                        .background(Color(0xFF2A004D))
+                                        .border(
+                                            width = 1.dp,
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .width(180.dp)
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                "Enter UPI ID",
+                                                color = Color.White,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(
+                                                        if (inputType == "Enter UPI ID") {
+                                                            Brush.linearGradient(
+                                                                colors = listOf(Color(0xFFBB86FC).copy(alpha = 0.2f), Color(0xFFFFD700).copy(alpha = 0.2f))
+                                                            )
+                                                        } else {
+                                                            Brush.linearGradient(
+                                                                colors = listOf(Color.Transparent, Color.Transparent)
+                                                            )
+                                                        },
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    )
+                                                    .padding(8.dp),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        onClick = {
+                                            inputType = "Enter UPI ID"
+                                            showInputTypeDropdown = false
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                "Enter Mobile Number",
+                                                color = Color.White,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(
+                                                        if (inputType == "Enter Mobile Number") {
+                                                            Brush.linearGradient(
+                                                                colors = listOf(Color(0xFFBB86FC).copy(alpha = 0.2f), Color(0xFFFFD700).copy(alpha = 0.2f))
+                                                            )
+                                                        } else {
+                                                            Brush.linearGradient(
+                                                                colors = listOf(Color.Transparent, Color.Transparent)
+                                                            )
+                                                        },
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    )
+                                                    .padding(8.dp),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        onClick = {
+                                            inputType = "Enter Mobile Number"
+                                            showInputTypeDropdown = false
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(
+                                onClick = { showUPIPopUp = false },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("Cancel")
+                            }
+                            Button(
+                                onClick = {
+                                    if (selectedUPIApp == null) {
+                                        errorMessage = "Please select a UPI app"
+                                        return@Button
+                                    }
+                                    if (inputType == "Enter UPI ID" && upiId.isBlank()) {
+                                        errorMessage = "Please enter UPI ID"
+                                        return@Button
+                                    }
+                                    if (inputType == "Enter Mobile Number" && mobileNumber.isBlank()) {
+                                        errorMessage = "Please enter mobile number"
+                                        return@Button
+                                    }
+                                    selectedMethod = "UPI"
+                                    errorMessage = null
+                                    showUPIPopUp = false
+                                    showPaymentDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color.White
+                                ),
+                                modifier = Modifier
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text("Pay")
+                            }
+                        }
+                    }
+
+                    // Cross Icon at Top Right
+                    IconButton(
+                        onClick = { showUPIPopUp = false },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFD700))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close Pop-up",
+                            tint = Color.Black
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // Credit/Debit Card Details Dialog
     if (showCardDetailsDialog) {
         Dialog(onDismissRequest = { showCardDetailsDialog = false }) {
@@ -412,7 +679,7 @@ fun PaymentOptionsScreen(
         }
     }
 
-    // UPI Details Dialog
+    // UPI Details Dialog (Only shown if user clicks UPI option manually)
     if (showUPIDetailsDialog) {
         Dialog(onDismissRequest = { showUPIDetailsDialog = false }) {
             Card(
@@ -436,7 +703,7 @@ fun PaymentOptionsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Select UPI App",
+                        text = "Pay with UPI",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         modifier = Modifier.fillMaxWidth(),
@@ -627,6 +894,7 @@ fun PaymentOptionsScreen(
                                     errorMessage = "Please enter mobile number"
                                     return@Button
                                 }
+                                selectedMethod = "UPI"
                                 errorMessage = null
                                 showUPIDetailsDialog = false
                                 showPaymentDialog = true
@@ -912,107 +1180,5 @@ fun PaymentOptionsScreen(
                     shape = RoundedCornerShape(16.dp)
                 )
         )
-    }
-}
-
-@Composable
-fun PaymentMethodCard(
-    methodName: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onClick() }
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                brush = Brush.linearGradient(
-                    colors = if (isSelected) listOf(Color(0xFFFFD700), Color(0xFFBB86FC))
-                    else listOf(Color(0xFFBB86FC), Color(0xFF6200EE))
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFF2A004D), Color(0xFF1C2526))
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = isSelected,
-                onClick = { onClick() },
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = Color(0xFFBB86FC),
-                    unselectedColor = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = methodName,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.9f)
-            )
-        }
-    }
-}
-
-@Composable
-fun UPIAppOption(
-    appIconRes: Int,
-    appName: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .size(60.dp) // Adjusted size for better spacing
-            .padding(4.dp)
-            .clickable { onClick() }
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                brush = Brush.linearGradient(
-                    colors = if (isSelected) listOf(Color(0xFFFFD700), Color(0xFFBB86FC))
-                    else listOf(Color(0xFFBB86FC), Color(0xFF6200EE))
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFF2A004D), Color(0xFF1C2526))
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(id = appIconRes),
-                contentDescription = appName,
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(bottom = 4.dp)
-            )
-            Text(
-                text = appName,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }

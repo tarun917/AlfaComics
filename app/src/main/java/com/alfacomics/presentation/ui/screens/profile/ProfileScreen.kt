@@ -1,9 +1,13 @@
 package com.alfacomics.presentation.ui.screens.profile
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +22,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -35,24 +41,48 @@ import com.alfacomics.data.repository.DummyData
 fun ProfileScreen(
     navController: NavHostController
 ) {
+    // State to hold the logged-in status
+    var isLoggedIn by remember { mutableStateOf(DummyData.isLoggedIn) }
+
     // Redirect to login if not logged in
-    LaunchedEffect(Unit) {
-        if (!DummyData.isLoggedIn) {
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
             navController.navigate("login") {
                 popUpTo("profile") { inclusive = true }
             }
         }
     }
 
-    val userProfile = DummyData.getUserProfile()
-    val favoriteComicsCount by derivedStateOf { DummyData.getFavoriteComicsCount() }
-    val communityPostsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
+    // State to hold the user profile and refresh it when needed
+    var userProfile by remember { mutableStateOf(DummyData.getUserProfile()) }
+    val favoriteComicsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
     val followersCount by derivedStateOf { userProfile.followers.size }
     val context = LocalContext.current
 
     // State for profile picture selection dialog
     var showPictureDialog by remember { mutableStateOf(false) }
     var selectedPictureResourceId by remember { mutableStateOf(userProfile.profilePictureResourceId) }
+
+    // Launcher for picking an image from gallery
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+                bitmap?.let { bmp ->
+                    DummyData.updateProfilePicture(bmp.asImageBitmap())
+                    // Refresh userProfile to reflect the updated image
+                    userProfile = DummyData.getUserProfile()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()
+            }
+        }
+        showPictureDialog = false
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -93,167 +123,453 @@ fun ProfileScreen(
                     .padding(vertical = 8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2526))
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Profile Picture with Edit Option
-                    Box(
-                        modifier = Modifier.size(100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = selectedPictureResourceId),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(Color.Gray)
-                        )
-                        IconButton(
-                            onClick = { showPictureDialog = true },
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(32.dp)
-                                .background(Color(0xFFBB86FC), CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile Picture",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Username and Email with Edit Button
+                    // Left Side: Profile Picture, Name, Email
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        // Profile Picture with Edit Option
+                        Box(
+                            modifier = Modifier.size(70.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = userProfile.username,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.White,
-                                fontSize = 20.sp
-                            )
+                            val defaultBitmap = BitmapFactory.decodeResource(context.resources, selectedPictureResourceId)
+                            if (userProfile.profilePictureBitmap != null) {
+                                Image(
+                                    bitmap = userProfile.profilePictureBitmap!!,
+                                    contentDescription = "Profile Picture",
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                            ),
+                                            shape = CircleShape
+                                        )
+                                        .background(Color.Gray)
+                                )
+                            } else if (defaultBitmap != null) {
+                                Image(
+                                    bitmap = defaultBitmap.asImageBitmap(),
+                                    contentDescription = "Profile Picture",
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                            ),
+                                            shape = CircleShape
+                                        )
+                                        .background(Color.Gray)
+                                )
+                            } else {
+                                // Fallback placeholder if both bitmaps are null
+                                Box(
+                                    modifier = Modifier
+                                        .size(70.dp)
+                                        .clip(CircleShape)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                            ),
+                                            shape = CircleShape
+                                        )
+                                        .background(Color.Gray)
+                                )
+                            }
+                            IconButton(
+                                onClick = { showPictureDialog = true },
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .size(16.dp)
+                                    .background(Color(0xFFBB86FC), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Profile Picture",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // Username, Email, and Edit Button
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = userProfile.username,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.White,
+                                    fontSize = 18.sp
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(
+                                    onClick = { navController.navigate("edit_profile") },
+                                    modifier = Modifier.size(16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Profile",
+                                        tint = Color(0xFFBB86FC)
+                                    )
+                                }
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = userProfile.email,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(alpha = 0.7f),
-                                fontSize = 16.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(
-                            onClick = { navController.navigate("edit_profile") },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile",
-                                tint = Color(0xFFBB86FC)
+                                fontSize = 14.sp
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Followers and Your Posts Buttons in a Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    // Right Side: Coin Image and Available Coins
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Button(
-                            onClick = {
-                                navController.navigate("follow_screen")
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFBB86FC),
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "Followers: $followersCount",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center
+                        val coinBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_coin)
+                        if (coinBitmap != null) {
+                            Image(
+                                bitmap = coinBitmap.asImageBitmap(),
+                                contentDescription = "Coin Image",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                            )
+                        } else {
+                            // Fallback placeholder for coin image
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Gray)
                             )
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${userProfile.alfaCoins}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFFBB86FC),
+                            fontSize = 16.sp
+                        )
+                    }
+                }
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                // Followers and Your Posts Buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 16.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            navController.navigate("follow_screen")
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFBB86FC),
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Followers: $followersCount",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                        Button(
-                            onClick = {
-                                navController.navigate("user_posts")
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFBB86FC),
-                                contentColor = Color.White
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(
+                        onClick = {
+                            navController.navigate("user_posts")
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFBB86FC),
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Your Posts",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                // About Me Section
+                AboutMeSection(
+                    aboutMe = userProfile.aboutMe,
+                    onUpdateAboutMe = { newAboutMe ->
+                        DummyData.updateAboutMe(newAboutMe)
+                    }
+                )
+            }
+        }
+
+        // Options in Two Columns
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Left Column: Buy Alfa Coins, Choose Language
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Buy Alfa Coins
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clickable {
+                                navController.navigate("coin_purchase")
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFBB86FC),
+                                shape = RoundedCornerShape(12.dp)
                             ),
-                            modifier = Modifier.weight(1f)
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFBB86FC),
+                                            Color(0xFF4361EE)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Your Posts",
-                                style = MaterialTheme.typography.bodyMedium,
+                                text = "Buy Alfa Coins",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
                                 fontSize = 16.sp,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // About Me Section
-                    AboutMeSection(
-                        aboutMe = userProfile.aboutMe,
-                        onUpdateAboutMe = { newAboutMe ->
-                            DummyData.updateAboutMe(newAboutMe)
+                    // Choose Language
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clickable {
+                                navController.navigate("language_selection")
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFBB86FC),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFBB86FC),
+                                            Color(0xFF4361EE)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Choose Language",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
+                            )
                         }
-                    )
+                    }
                 }
-            }
-        }
 
-        // Options Cards
-        item {
-            ProfileOptionCard(title = "Alfa Coins: ${userProfile.alfaCoins}") {
-                Toast.makeText(context, "Alfa Coins: ${userProfile.alfaCoins}", Toast.LENGTH_SHORT).show()
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Buy Alfa Coins") {
-                navController.navigate("coin_purchase")
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Choose Language") {
-                navController.navigate("language_selection")
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Support") {
-                navController.navigate("support")
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Share And Reward") {
-                navController.navigate("share_and_reward")
-            }
-        }
-        item {
-            ProfileOptionCard(title = "Upload Your Comic") {
-                navController.navigate("upload_comic")
+                // Right Column: Support, Share And Reward, Upload Your Comic
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Support
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clickable {
+                                navController.navigate("support")
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFBB86FC),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFBB86FC),
+                                            Color(0xFF4361EE)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Support",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+
+                    // Share And Reward
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clickable {
+                                navController.navigate("share_and_reward")
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFBB86FC),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFBB86FC),
+                                            Color(0xFF4361EE)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Share And Reward",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+
+                    // Upload Your Comic
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clickable {
+                                navController.navigate("upload_comic")
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFBB86FC),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color(0xFFBB86FC),
+                                            Color(0xFF4361EE)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Upload Your Comic",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -287,35 +603,17 @@ fun ProfileScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    // Simulate picture options (using dummy resources)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    // Option to pick image from gallery
+                    Button(
+                        onClick = {
+                            pickImageLauncher.launch("image/*")
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFBB86FC),
+                            contentColor = Color.White
+                        )
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
-                            contentDescription = "Picture Option 1",
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .clickable {
-                                    selectedPictureResourceId = R.drawable.ic_launcher_background
-                                    DummyData.updateProfilePicture(R.drawable.ic_launcher_background)
-                                    showPictureDialog = false
-                                }
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
-                            contentDescription = "Picture Option 2",
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .clickable {
-                                    selectedPictureResourceId = R.drawable.ic_launcher_background
-                                    DummyData.updateProfilePicture(R.drawable.ic_launcher_background)
-                                    showPictureDialog = false
-                                }
-                        )
+                        Text("Pick from Gallery", fontSize = 16.sp)
                     }
 
                     TextButton(onClick = { showPictureDialog = false }) {
@@ -466,12 +764,22 @@ fun ProfileOptionCard(
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White
             )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
-                contentDescription = "Option Icon",
-                tint = Color(0xFFBB86FC),
-                modifier = Modifier.size(24.dp)
-            )
+            val iconBitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.ic_launcher_background)
+            if (iconBitmap != null) {
+                Icon(
+                    bitmap = iconBitmap.asImageBitmap(),
+                    contentDescription = "Option Icon",
+                    tint = Color(0xFFBB86FC),
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                // Fallback placeholder for icon
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(Color.Gray)
+                )
+            }
         }
     }
 }

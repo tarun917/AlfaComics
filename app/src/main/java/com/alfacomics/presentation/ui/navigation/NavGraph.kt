@@ -20,6 +20,7 @@ import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
 import com.alfacomics.presentation.ui.screens.notification.NotificationScreen
+import com.alfacomics.presentation.ui.screens.payment.CoinPurchasePaymentScreen
 import com.alfacomics.presentation.ui.screens.payment.PaymentOptionsScreen
 import com.alfacomics.presentation.ui.screens.premium.PremiumScreen
 import com.alfacomics.presentation.ui.screens.profile.CoinPurchaseScreen
@@ -196,8 +197,37 @@ fun NavGraph(
                     DummyData.subscribeToPremium(
                         planDuration = planDuration,
                         price = price,
-                        startDate = "2025-05-26 09:10 PM" // Current date and time
+                        startDate = "2025-05-27 09:10 PM" // Updated to current date and time
                     )
+                },
+                onPaymentFailed = {
+                    // Handle payment failure (e.g., show error message)
+                }
+            )
+        }
+        composable(
+            route = "coin_payment/{coins}/{price}",
+            arguments = listOf(
+                navArgument("coins") { type = NavType.IntType },
+                navArgument("price") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            // Redirect to login if not logged in
+            LaunchedEffect(DummyData.isLoggedIn) {
+                if (!DummyData.isLoggedIn) {
+                    navController.navigate("login") {
+                        popUpTo("coin_payment/{coins}/{price}") { inclusive = true }
+                    }
+                }
+            }
+            val coins = backStackEntry.arguments?.getInt("coins") ?: 0
+            val price = backStackEntry.arguments?.getInt("price") ?: 0
+            CoinPurchasePaymentScreen(
+                navController = navController,
+                coins = coins,
+                price = price,
+                onPaymentSuccess = {
+                    // Handled in CoinPurchasePaymentScreen
                 },
                 onPaymentFailed = {
                     // Handle payment failure (e.g., show error message)
@@ -224,7 +254,7 @@ fun NavGraph(
                     }
                 }
             }
-            NotificationScreen(navController = navController) // Updated to use the correct NotificationScreen
+            NotificationScreen(navController = navController)
         }
         composable(
             route = "comic_purchase/{comicId}",
