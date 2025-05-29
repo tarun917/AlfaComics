@@ -1,19 +1,29 @@
 package com.alfacomics.presentation.ui.screens.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.presentation.ui.screens.community.CommunityPostItem
@@ -42,7 +52,7 @@ fun UserPostsScreen(
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = Color(0xFFBB86FC)
                 )
@@ -67,8 +77,16 @@ fun UserPostsScreen(
             items(userPosts) { post ->
                 CommunityPostItem(
                     post = post,
-                    onAddComment = { postId, comment ->
+                    onAddComment = { postId: Int, comment: String ->
                         DummyData.addCommentToPost(postId, comment)
+                    },
+                    onFollowClick = { username: String ->
+                        // Since these are the user's own posts, the follow button won't be shown.
+                        // We can leave this as an empty lambda or handle it if needed in the future.
+                    },
+                    onUsernameClick = { username: String ->
+                        // Navigate back to the profile screen (optional, since user is already coming from there)
+                        navController.navigate("profile")
                     }
                 )
             }

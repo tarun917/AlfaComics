@@ -32,8 +32,8 @@ import com.alfacomics.data.repository.DummyData
 fun CommunityPostItem(
     post: CommunityPost,
     onAddComment: (Int, String) -> Unit,
-    onFollowClick: (String) -> Unit = {}, // Added callback for follow button
-    onUsernameClick: (String) -> Unit = {} // Added callback for username click
+    onFollowClick: (String) -> Unit,
+    onUsernameClick: (String) -> Unit
 ) {
     var isCommentingEnabled by remember(post.id) { mutableStateOf(true) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -65,6 +65,20 @@ fun CommunityPostItem(
         if (showCheckMark) {
             kotlinx.coroutines.delay(2000)
             showCheckMark = false
+        }
+    }
+
+    // Fetch user profile to get badges
+    val userProfile = DummyData.getUserProfileByUsername(post.username)
+    // Show only the highest-tier badge (if multiple badges exist)
+    val highestBadge = userProfile?.badges?.maxByOrNull { badge ->
+        when (badge.name) {
+            "Platinum Star" -> 5
+            "Diamond Star" -> 4
+            "Gold Star" -> 3
+            "Silver Star" -> 2
+            "Copper Star" -> 1
+            else -> 0
         }
     }
 
@@ -105,17 +119,42 @@ fun CommunityPostItem(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Username and Timestamp
+                    // Username, Timestamp, and Badge
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .clickable { onUsernameClick(post.username) }
                     ) {
-                        Text(
-                            text = post.username,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.White
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = post.username,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            // Show the highest-tier badge if it exists
+                            highestBadge?.let { badge ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Star, // Temporary star icon
+                                        contentDescription = badge.name,
+                                        tint = badge.color,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = badge.name,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = badge.color,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
                         Text(
                             text = post.timestamp,
                             style = MaterialTheme.typography.labelSmall,
@@ -231,7 +270,7 @@ fun CommunityPostItem(
                                     putExtra(Intent.EXTRA_TEXT, post.content)
                                 }
                                 context.startActivity(whatsappIntent)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 Toast.makeText(context, "WhatsApp is not installed", Toast.LENGTH_SHORT).show()
                             }
                         },
@@ -255,7 +294,7 @@ fun CommunityPostItem(
                                     putExtra(Intent.EXTRA_TEXT, post.content)
                                 }
                                 context.startActivity(facebookIntent)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 Toast.makeText(context, "Facebook is not installed", Toast.LENGTH_SHORT).show()
                             }
                         },

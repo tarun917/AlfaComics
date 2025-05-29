@@ -420,13 +420,13 @@ fun CommunityScreen(
             items(posts) { post ->
                 CommunityPostItem(
                     post = post,
-                    onAddComment = { postId, comment ->
+                    onAddComment = { postId: Int, comment: String ->
                         DummyData.addCommentToPost(postId, comment)
                     },
-                    onFollowClick = { username ->
+                    onFollowClick = { username: String ->
                         DummyData.followUser(DummyData.getUserProfile().username, username)
                     },
-                    onUsernameClick = { username ->
+                    onUsernameClick = { username: String ->
                         navController.navigate("user_profile/$username")
                     }
                 )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import com.alfacomics.R
 
@@ -105,6 +106,11 @@ data class PollOption(
     val votes: Int = 0
 )
 
+data class Badge(
+    val name: String,
+    val color: Color
+)
+
 data class UserProfile(
     val username: String,
     val email: String,
@@ -113,7 +119,10 @@ data class UserProfile(
     val aboutMe: String,
     val alfaCoins: Int,
     val followers: List<String> = emptyList(),
-    val following: List<String> = emptyList()
+    val following: List<String> = emptyList(),
+    val episodesRead: Int = 0,
+    val badges: List<Badge> = emptyList()
+
 )
 
 data class BuyerDetails(
@@ -597,6 +606,51 @@ object DummyData {
 
         userProfile = allUserProfiles["Admin"] ?: userProfile // Reset to Admin for testing
     }
+    fun getUserProfileByUsername(username: String): UserProfile? {
+        return userProfiles.find { it.username == username }
+    }
+
+    private val userProfiles = mutableListOf(
+        UserProfile(
+            username = "Admin",
+            email = "admin@alfacomics.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Lover of comics and superheroes!",
+            alfaCoins = 1500,
+            followers = listOf("ComicFan123", "FantasyReader"),
+            episodesRead = 600,
+            badges = listOf(
+                Badge("Copper Star", Color(0xFFB87333)),
+                Badge("Silver Star", Color(0xFFC0C0C0)),
+                Badge("Gold Star", Color(0xFFFFD700)),
+                Badge("Platinum Star", Color(0xFF00C4B4))
+            )
+        ),
+        UserProfile(
+            username = "ComicFan123",
+            email = "comicfan123@alfacomics.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "I read comics all day!",
+            alfaCoins = 500,
+            followers = listOf("Admin"),
+            episodesRead = 60,
+            badges = listOf(Badge("Copper Star", Color(0xFFB87333)))
+        ),
+        UserProfile(
+            username = "FantasyReader",
+            email = "fantasyreader@alfacomics.com",
+            profilePictureResourceId = R.drawable.ic_launcher_background,
+            aboutMe = "Fantasy comics are the best!",
+            alfaCoins = 800,
+            followers = listOf("Admin"),
+            episodesRead = 300,
+            badges = listOf(
+                Badge("Copper Star", Color(0xFFB87333)),
+                Badge("Silver Star", Color(0xFFC0C0C0)),
+                Badge("Gold Star", Color(0xFFFFD700))
+            )
+        )
+    )
 
     fun getComicsByCategory(category: String): List<Comic> {
         return comics.filter { comic -> comic.category == category }
@@ -768,9 +822,6 @@ object DummyData {
         return userProfile.copy(aboutMe = userAboutMeState.value)
     }
 
-    fun getUserProfileByUsername(username: String): UserProfile? {
-        return allUserProfiles[username]
-    }
 
     fun updateAboutMe(newAboutMe: String) {
         userAboutMeState.value = newAboutMe
