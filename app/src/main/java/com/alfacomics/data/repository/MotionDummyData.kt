@@ -45,6 +45,36 @@ object MotionDummyData {
                     id = 3,
                     title = "Episode 3",
                     videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 4,
+                    title = "Episode 4",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 5,
+                    title = "Episode 5",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 6,
+                    title = "Episode 6",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 7,
+                    title = "Episode 7",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 8,
+                    title = "Episode 8",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 9,
+                    title = "Episode 9",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
                 )
             )
         ),
@@ -65,6 +95,36 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 3,
+                    title = "Episode 3",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 4,
+                    title = "Episode 4",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 5,
+                    title = "Episode 5",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 6,
+                    title = "Episode 6",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 7,
+                    title = "Episode 7",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 8,
+                    title = "Episode 8",
                     videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
                 )
             )
@@ -87,6 +147,36 @@ object MotionDummyData {
                     id = 2,
                     title = "Episode 2",
                     videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 3,
+                    title = "Episode 3",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 4,
+                    title = "Episode 4",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 5,
+                    title = "Episode 5",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 6,
+                    title = "Episode 6",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 7,
+                    title = "Episode 7",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 8,
+                    title = "Episode 8",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
                 )
             )
         ),
@@ -108,6 +198,21 @@ object MotionDummyData {
                     id = 2,
                     title = "Episode 2",
                     videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 3,
+                    title = "Episode 3",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 4,
+                    title = "Episode 4",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 5,
+                    title = "Episode 5",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
                 )
             )
         ),
@@ -128,6 +233,21 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 3,
+                    title = "Episode 3",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 4,
+                    title = "Episode 4",
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ),
+                MotionEpisode(
+                    id = 5,
+                    title = "Episode 5",
                     videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
                 )
             )
