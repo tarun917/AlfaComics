@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -96,7 +97,7 @@ fun CommunityPostItem(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // User Profile Section with Menu Icon
+                // User Profile Section with Follow Image
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -162,7 +163,7 @@ fun CommunityPostItem(
                         )
                     }
 
-                    // Follow Button or Check Mark
+                    // Follow Image or Check Mark (Moved to PostMenu's position)
                     if (currentUser != post.username) { // Don't show follow button for the user's own posts
                         if (showCheckMark) {
                             // Show glowing check mark
@@ -185,53 +186,20 @@ fun CommunityPostItem(
                                 )
                             }
                         } else if (!isFollowing) {
-                            // Show Follow button
-                            Button(
-                                onClick = {
-                                    onFollowClick(post.username)
-                                    isFollowing = true
-                                    showCheckMark = true
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent,
-                                    contentColor = Color.White
-                                ),
+                            // Show Follow image
+                            Image(
+                                painter = painterResource(id = R.drawable.follow_user),
+                                contentDescription = "Follow User",
                                 modifier = Modifier
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Text(
-                                        text = "Follow",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
+                                    .size(40.dp) // Adjusted size to fit the space
+                                    .clickable {
+                                        onFollowClick(post.username)
+                                        isFollowing = true
+                                        showCheckMark = true
+                                    }
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    PostMenu(
-                        post = post,
-                        isCommentingEnabled = isCommentingEnabled,
-                        onToggleCommenting = { isCommentingEnabled = !isCommentingEnabled },
-                        onEdit = { showEditDialog = true }
-                    )
                 }
 
                 // Post Content, Image, and Poll
@@ -241,7 +209,7 @@ fun CommunityPostItem(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Reactions Row (Heart, WhatsApp, Facebook)
+                // Reactions Row (Heart, WhatsApp, Facebook, PostMenu)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -249,16 +217,20 @@ fun CommunityPostItem(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Heart Reaction Button with Count
-                    ReactionButton(
-                        reactionType = "heart",
-                        icon = Icons.Default.Favorite,
-                        reactionCount = post.reactions["heart"]?.size ?: 0,
-                        hasReacted = post.reactions["heart"]?.contains(currentUserId) ?: false,
+                    // Heart Reaction Button (Simplified to Icon Only)
+                    IconButton(
                         onClick = {
                             DummyData.addReactionToPost(post.id, "heart", currentUserId)
-                        }
-                    )
+                        },
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "heart",
+                            tint = if (post.reactions["heart"]?.contains(currentUserId) == true) Color(0xFFBB86FC) else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
 
                     // WhatsApp Share Button
                     IconButton(
@@ -307,6 +279,14 @@ fun CommunityPostItem(
                             modifier = Modifier.size(24.dp)
                         )
                     }
+
+                    // PostMenu (Moved to this Row after Facebook)
+                    PostMenu(
+                        post = post,
+                        isCommentingEnabled = isCommentingEnabled,
+                        onToggleCommenting = { isCommentingEnabled = !isCommentingEnabled },
+                        onEdit = { showEditDialog = true }
+                    )
                 }
 
                 // Comments
@@ -341,7 +321,7 @@ fun CommunityPostItem(
 
         if (showFullScreenImage && post.imageUrl != null) {
             FullScreenImageViewer(
-                imageUrl = post.imageUrl!!,
+                imageUrl = post.imageUrl,
                 onDismiss = { showFullScreenImage = false }
             )
         }

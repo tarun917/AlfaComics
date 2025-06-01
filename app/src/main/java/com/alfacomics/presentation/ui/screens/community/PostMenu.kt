@@ -6,6 +6,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.alfacomics.data.repository.CommunityPost
 import com.alfacomics.data.repository.DummyData
 
@@ -28,11 +30,14 @@ fun PostMenu(
     var showMenu by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        IconButton(onClick = { showMenu = true }) {
+        IconButton(
+            onClick = { showMenu = true },
+            modifier = Modifier.padding(top = 7.dp) // Added 2.dp top padding to align with other icons
+        ) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = "Menu",
-                tint = Color.White
+                tint = Color.Gray
             )
         }
         DropdownMenu(
