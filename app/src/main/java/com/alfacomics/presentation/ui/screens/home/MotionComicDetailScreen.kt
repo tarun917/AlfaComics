@@ -1,6 +1,7 @@
 package com.alfacomics.presentation.ui.screens.home
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -79,21 +81,15 @@ fun MotionComicDetailScreen(
                     .fillMaxWidth()
                     .height(300.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Gray)
             ) {
-                // Placeholder for cover image
-                Box(
+                // Display the cover image
+                Image(
+                    painter = painterResource(id = motionComic.thumbnailUrl),
+                    contentDescription = "Motion Comic Cover",
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Cover\nPlaceholder",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
 
                 // Favourite Button at Top-Right Corner
                 Row(
