@@ -29,7 +29,7 @@ import java.text.DecimalFormat
 @Composable
 fun ComicBox(
     title: String,
-    coverImageUrl: String,
+    coverImageResId: Int,
     rating: Float,
     price: Int? = null,
     comicId: Int? = null,

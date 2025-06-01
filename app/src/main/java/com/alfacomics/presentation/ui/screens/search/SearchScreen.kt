@@ -23,7 +23,7 @@ import com.alfacomics.presentation.ui.components.ComicBox
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun SearchScreen(
-    navController: NavHostController // Added navController parameter
+    navController: NavHostController
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedGenre by remember { mutableStateOf("") }
@@ -128,10 +128,10 @@ fun SearchScreen(
             items(filteredComics) { comic ->
                 ComicBox(
                     title = comic.title,
-                    coverImageUrl = comic.coverImageUrl,
+                    coverImageResId = comic.coverImageResId,  // Updated to use coverImageResId
                     rating = comic.rating,
                     comicId = comic.id,
-                    navController = navController // Pass navController to ComicBox
+                    navController = navController
                 )
             }
 
