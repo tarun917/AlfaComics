@@ -23,11 +23,20 @@ data class MotionEpisode(
 )
 
 object MotionDummyData {
+    // Array of drawable resource IDs for cyclic mapping
+    private val motionThumbnails = listOf(
+        R.drawable.motion_image1,
+        R.drawable.motion_image2,
+        R.drawable.motion_image3,
+        R.drawable.motion_image4,
+        R.drawable.motion_image5
+    )
+
     private val motionComics = mutableStateListOf(
         MotionComic(
             id = 1,
             title = "Motion Comic: Eternal Love",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Romance",
             rating = 4.8f,
             views = 2500,
@@ -92,7 +101,7 @@ object MotionDummyData {
         MotionComic(
             id = 2,
             title = "Motion Comic: Hearts in Bloom",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Romance",
             rating = 4.5f,
             views = 1800,
@@ -151,7 +160,7 @@ object MotionDummyData {
         MotionComic(
             id = 3,
             title = "Motion Comic: Love Across Time",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Romance",
             rating = 4.7f,
             views = 2200,
@@ -210,7 +219,7 @@ object MotionDummyData {
         MotionComic(
             id = 4,
             title = "Motion Comic: Whisper of Hearts",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Romance",
             rating = 4.6f,
             views = 2000,
@@ -251,7 +260,7 @@ object MotionDummyData {
         MotionComic(
             id = 5,
             title = "Motion Comic: Forever Yours",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Romance",
             rating = 4.9f,
             views = 2700,
@@ -292,7 +301,7 @@ object MotionDummyData {
         MotionComic(
             id = 6,
             title = "Motion Comic: Sunset Promises",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Romance",
             rating = 4.4f,
             views = 1900,
@@ -315,7 +324,7 @@ object MotionDummyData {
         MotionComic(
             id = 7,
             title = "Motion Comic: Shadows of Fear",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Horror",
             rating = 4.2f,
             views = 1500,
@@ -338,7 +347,7 @@ object MotionDummyData {
         MotionComic(
             id = 8,
             title = "Motion Comic: Night Terrors",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Horror",
             rating = 4.6f,
             views = 2200,
@@ -361,7 +370,7 @@ object MotionDummyData {
         MotionComic(
             id = 9,
             title = "Motion Comic: Haunted Whispers",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Horror",
             rating = 4.3f,
             views = 1700,
@@ -384,7 +393,7 @@ object MotionDummyData {
         MotionComic(
             id = 10,
             title = "Motion Comic: The Cursed Realm",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Horror",
             rating = 4.5f,
             views = 2000,
@@ -407,7 +416,7 @@ object MotionDummyData {
         MotionComic(
             id = 11,
             title = "Motion Comic: Echoes of Dread",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Horror",
             rating = 4.1f,
             views = 1400,
@@ -430,7 +439,7 @@ object MotionDummyData {
         MotionComic(
             id = 12,
             title = "Motion Comic: Phantom Shadows",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Horror",
             rating = 4.4f,
             views = 1800,
@@ -453,7 +462,7 @@ object MotionDummyData {
         MotionComic(
             id = 13,
             title = "Motion Comic: Mystic Realms",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Fantasy",
             rating = 4.9f,
             views = 3000,
@@ -476,7 +485,7 @@ object MotionDummyData {
         MotionComic(
             id = 14,
             title = "Motion Comic: Dragon’s Legacy",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Fantasy",
             rating = 4.4f,
             views = 1900,
@@ -499,7 +508,7 @@ object MotionDummyData {
         MotionComic(
             id = 15,
             title = "Motion Comic: Enchanted Forest",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Fantasy",
             rating = 4.7f,
             views = 2600,
@@ -522,7 +531,7 @@ object MotionDummyData {
         MotionComic(
             id = 16,
             title = "Motion Comic: Fairy Kingdoms",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Fantasy",
             rating = 4.6f,
             views = 2300,
@@ -545,7 +554,7 @@ object MotionDummyData {
         MotionComic(
             id = 17,
             title = "Motion Comic: Wizard’s Quest",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Fantasy",
             rating = 4.8f,
             views = 2800,
@@ -568,7 +577,7 @@ object MotionDummyData {
         MotionComic(
             id = 18,
             title = "Motion Comic: Magic Chronicles",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Fantasy",
             rating = 4.5f,
             views = 2100,
@@ -591,7 +600,7 @@ object MotionDummyData {
         MotionComic(
             id = 19,
             title = "Motion Comic: Galactic Heroes",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Sci-Fi",
             rating = 4.7f,
             views = 2800,
@@ -614,7 +623,7 @@ object MotionDummyData {
         MotionComic(
             id = 20,
             title = "Motion Comic: Cyber Rebellion",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Sci-Fi",
             rating = 4.3f,
             views = 1600,
@@ -637,7 +646,7 @@ object MotionDummyData {
         MotionComic(
             id = 21,
             title = "Motion Comic: Star Voyage",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Sci-Fi",
             rating = 4.5f,
             views = 2000,
@@ -660,7 +669,7 @@ object MotionDummyData {
         MotionComic(
             id = 22,
             title = "Motion Comic: Alien Frontier",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Sci-Fi",
             rating = 4.6f,
             views = 2400,
@@ -683,7 +692,7 @@ object MotionDummyData {
         MotionComic(
             id = 23,
             title = "Motion Comic: Time Warp",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Sci-Fi",
             rating = 4.4f,
             views = 1800,
@@ -706,7 +715,7 @@ object MotionDummyData {
         MotionComic(
             id = 24,
             title = "Motion Comic: Future Echoes",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Sci-Fi",
             rating = 4.8f,
             views = 2600,
@@ -729,7 +738,7 @@ object MotionDummyData {
         MotionComic(
             id = 25,
             title = "Motion Comic: The Cosmic Adventure",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Adventure",
             rating = 4.5f,
             views = 2000,
@@ -752,7 +761,7 @@ object MotionDummyData {
         MotionComic(
             id = 26,
             title = "Motion Comic: Quest for Glory",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[0],
             genre = "Adventure",
             rating = 4.8f,
             views = 2400,
@@ -775,7 +784,7 @@ object MotionDummyData {
         MotionComic(
             id = 27,
             title = "Motion Comic: Jungle Odyssey",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[1],
             genre = "Adventure",
             rating = 4.6f,
             views = 2200,
@@ -798,7 +807,7 @@ object MotionDummyData {
         MotionComic(
             id = 28,
             title = "Motion Comic: Pirate’s Treasure",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[2],
             genre = "Adventure",
             rating = 4.4f,
             views = 1900,
@@ -821,7 +830,7 @@ object MotionDummyData {
         MotionComic(
             id = 29,
             title = "Motion Comic: Mountain Expedition",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[3],
             genre = "Adventure",
             rating = 4.7f,
             views = 2500,
@@ -844,7 +853,7 @@ object MotionDummyData {
         MotionComic(
             id = 30,
             title = "Motion Comic: Desert Quest",
-            thumbnailUrl = R.drawable.ic_launcher_background,
+            thumbnailUrl = motionThumbnails[4],
             genre = "Adventure",
             rating = 4.5f,
             views = 2100,
