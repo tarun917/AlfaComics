@@ -1,6 +1,8 @@
 package com.alfacomics.presentation.ui.screens.profile
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -206,7 +208,7 @@ fun ProfileScreen(
 
                         Spacer(modifier = Modifier.width(12.dp))
 
-                        // Username, Email, and Edit Button
+                        // Username, User ID, Email, and Edit Button
                         Column(
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.Center
@@ -220,6 +222,29 @@ fun ProfileScreen(
                                     color = Color.White,
                                     fontSize = 18.sp
                                 )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "(ID: ${userProfile.userId})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    fontSize = 14.sp
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(ClipboardManager::class.java)
+                                        val clip = ClipData.newPlainText("User ID", userProfile.userId.toString())
+                                        clipboard.setPrimaryClip(clip)
+                                        Toast.makeText(context, "User ID copied to clipboard", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.size(16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = "Copy User ID",
+                                        tint = Color(0xFFBB86FC)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(4.dp))
                                 IconButton(
                                     onClick = { navController.navigate("edit_profile") },

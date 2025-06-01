@@ -113,6 +113,7 @@ data class Badge(
 )
 
 data class UserProfile(
+    val userId: Long,  // Added userId property
     val username: String,
     val email: String,
     val profilePictureResourceId: Int,
@@ -423,7 +424,11 @@ object DummyData {
     private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
     private val notifications = mutableStateListOf<Notification>()
 
+    // Counter for generating unique user IDs, starting from 102342
+    private var userIdCounter: Long = 102342
+
     private var userProfile = UserProfile(
+        userId = userIdCounter++,  // Assign initial userId to Guest
         username = "Guest",
         email = "guest@example.com",
         profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -470,6 +475,7 @@ object DummyData {
 
     private val allUserProfiles = mutableMapOf<String, UserProfile>().apply {
         put("ComicFan123", UserProfile(
+            userId = userIdCounter++,
             username = "ComicFan123",
             email = "comicfan123@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -480,6 +486,7 @@ object DummyData {
             following = listOf("SuperheroLover", "ActionHero")
         ))
         put("SuperheroLover", UserProfile(
+            userId = userIdCounter++,
             username = "SuperheroLover",
             email = "superherolover@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -490,6 +497,7 @@ object DummyData {
             following = listOf("ComicFan123", "FantasyReader")
         ))
         put("FantasyReader", UserProfile(
+            userId = userIdCounter++,
             username = "FantasyReader",
             email = "fantasyreader@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -500,6 +508,7 @@ object DummyData {
             following = listOf("SuperheroLover", "ActionHero")
         ))
         put("Admin", UserProfile(
+            userId = userIdCounter++,
             username = "Admin",
             email = "admin@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -510,6 +519,7 @@ object DummyData {
             following = listOf("SuperheroLover", "FantasyReader")
         ))
         put("ActionHero", UserProfile(
+            userId = userIdCounter++,
             username = "ActionHero",
             email = "actionhero@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -520,6 +530,7 @@ object DummyData {
             following = listOf("SuperheroLover", "AdventureSeeker")
         ))
         put("AdventureSeeker", UserProfile(
+            userId = userIdCounter++,
             username = "AdventureSeeker",
             email = "adventureseeker@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -530,6 +541,7 @@ object DummyData {
             following = listOf("ActionHero", "MysterySolver")
         ))
         put("MysterySolver", UserProfile(
+            userId = userIdCounter++,
             username = "MysterySolver",
             email = "mysterysolver@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -540,6 +552,7 @@ object DummyData {
             following = listOf("AdventureSeeker", "SciFiGeek")
         ))
         put("SciFiGeek", UserProfile(
+            userId = userIdCounter++,
             username = "SciFiGeek",
             email = "scifigeek@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -579,7 +592,7 @@ object DummyData {
     init {
         // Adding sample posts for different users
         userProfile = allUserProfiles["Admin"] ?: userProfile
-        Log.d("DummyData", "Initial userProfile alfaCoins: ${userProfile.alfaCoins}") // Debug log
+        Log.d("DummyData", "Initial userProfile alfaCoins: ${userProfile.alfaCoins}")
         isLoggedIn = true
         addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1", null)
         addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null, null)
@@ -596,16 +609,16 @@ object DummyData {
         )
 
         userProfile = allUserProfiles["ComicFan123"] ?: userProfile
-        Log.d("DummyData", "After ComicFan123, userProfile alfaCoins: ${userProfile.alfaCoins}") // Debug log
+        Log.d("DummyData", "After ComicFan123, userProfile alfaCoins: ${userProfile.alfaCoins}")
         addCommunityPost("Loved the new Action Classic 2! #ActionFans", "placeholder_image_2", null)
         addCommunityPost("Looking for some Adventure comics recommendations!", null, null)
 
         userProfile = allUserProfiles["FantasyReader"] ?: userProfile
-        Log.d("DummyData", "After FantasyReader, userProfile alfaCoins: ${userProfile.alfaCoins}") // Debug log
+        Log.d("DummyData", "After FantasyReader, userProfile alfaCoins: ${userProfile.alfaCoins}")
         addCommunityPost("Fantasy Modern 1 is a must-read! #FantasyLovers", "placeholder_image_3", null)
 
         userProfile = allUserProfiles["Admin"] ?: userProfile
-        Log.d("DummyData", "Final userProfile alfaCoins: ${userProfile.alfaCoins}") // Debug log
+        Log.d("DummyData", "Final userProfile alfaCoins: ${userProfile.alfaCoins}")
     }
 
     fun getUserProfileByUsername(username: String): UserProfile? {
@@ -614,6 +627,7 @@ object DummyData {
 
     private val userProfiles = mutableListOf(
         UserProfile(
+            userId = 102342,  // Admin's userId (already assigned above, but explicitly set here)
             username = "Admin",
             email = "admin@alfacomics.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -629,6 +643,7 @@ object DummyData {
             )
         ),
         UserProfile(
+            userId = 102343,  // ComicFan123's userId
             username = "ComicFan123",
             email = "comicfan123@alfacomics.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -639,6 +654,7 @@ object DummyData {
             badges = listOf(Badge("Copper Star", Color(0xFFB87333)))
         ),
         UserProfile(
+            userId = 102344,  // FantasyReader's userId
             username = "FantasyReader",
             email = "fantasyreader@alfacomics.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -874,7 +890,8 @@ object DummyData {
 
     fun updateUserProfile(newUsername: String, newEmail: String) {
         val oldUsername = userProfile.username
-        userProfile = userProfile.copy(username = newUsername, email = newEmail)
+        val currentUserId = userProfile.userId  // Preserve the existing userId
+        userProfile = userProfile.copy(username = newUsername, email = newEmail, userId = currentUserId)
         allUserProfiles.remove(oldUsername)
         allUserProfiles[newUsername] = userProfile
     }
@@ -897,6 +914,7 @@ object DummyData {
 
     fun clearUserData() {
         userProfile = UserProfile(
+            userId = userIdCounter++,  // Assign new userId to Guest
             username = "Guest",
             email = "guest@example.com",
             profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -994,6 +1012,7 @@ object DummyData {
         if (storedPassword != null && storedPassword == password) {
             val username = userDetails[email] ?: "User"
             userProfile = allUserProfiles[username] ?: UserProfile(
+                userId = userIdCounter++,
                 username = username,
                 email = email,
                 profilePictureResourceId = R.drawable.ic_launcher_background,
@@ -1017,6 +1036,7 @@ object DummyData {
         registeredUsers[email] = password
         userDetails[email] = fullName
         val newUserProfile = UserProfile(
+            userId = userIdCounter++,  // Assign new userId
             username = fullName,
             email = email,
             profilePictureResourceId = R.drawable.ic_launcher_background,
