@@ -30,6 +30,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
+import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.MotionDummyData
 import com.alfacomics.data.repository.MotionEpisode
 import com.google.android.exoplayer2.ExoPlayer
@@ -50,19 +51,20 @@ import java.util.concurrent.TimeUnit
 val MotionEpisodeSaver: Saver<MotionEpisode?, List<Any?>> = Saver(
     save = { episode ->
         if (episode == null) {
-            listOf(null, null, null)
+            listOf(null, null, null, null)
         } else {
-            listOf(episode.id, episode.title, episode.videoUrl)
+            listOf(episode.id, episode.title, episode.videoUrl, episode.isUnlocked)
         }
     },
     restore = { restored ->
-        if (restored[0] == null || restored[1] == null || restored[2] == null) {
+        if (restored[0] == null || restored[1] == null || restored[2] == null || restored[3] == null) {
             null
         } else {
             MotionEpisode(
                 id = restored[0] as Int,
                 title = restored[1] as String,
-                videoUrl = restored[2] as String
+                videoUrl = restored[2] as String,
+                isUnlocked = restored[3] as Boolean
             )
         }
     }
@@ -77,7 +79,7 @@ fun EpisodePlayerScreen(
     onOrientationChange: (Boolean) -> Unit
 ) {
     val motionComic = MotionDummyData.getMotionComicById(motionComicId)
-    val episodes = motionComic?.episodes ?: emptyList()
+    val episodes by remember { derivedStateOf { MotionDummyData.getMotionEpisodesWithSubscription(motionComicId) } }
     val context = LocalContext.current
 
     // State for the currently playing episode index
@@ -88,6 +90,11 @@ fun EpisodePlayerScreen(
         mutableStateOf(episodes.getOrNull(currentEpisodeIndex))
     }
     var currentEpisode by currentEpisodeState
+
+    // State to trigger recomposition after unlocking an episode
+    var episodeListState by remember { mutableStateOf(episodes) }
+    // State for showing insufficient coins dialog
+    var showInsufficientCoinsDialog by remember { mutableStateOf(false) }
 
     // State for controls
     var showNextButton by remember { mutableStateOf(false) }
@@ -627,21 +634,69 @@ fun EpisodePlayerScreen(
                     )
                 }
 
-                items(episodes) { episode ->
+                items(episodeListState) { episode ->
                     EpisodeItem(
                         episode = episode,
                         isPlaying = episode.id == currentEpisode?.id,
+                        isLocked = !episode.isUnlocked && !DummyData.isUserSubscribed(),
                         onPlayClick = {
-                            currentEpisodeIndex = episodes.indexOf(episode)
-                            currentEpisode = episode
-                            showNextButton = false
-                            showControls = true
-                            autoHideControls()
+                            if (episode.isUnlocked || DummyData.isUserSubscribed()) {
+                                currentEpisodeIndex = episodes.indexOf(episode)
+                                currentEpisode = episode
+                                showNextButton = false
+                                showControls = true
+                                autoHideControls()
+                            }
+                        },
+                        onUnlockClick = {
+                            if (!DummyData.isUserSubscribed() && !episode.isUnlocked) {
+                                val success = MotionDummyData.unlockMotionEpisodeWithCoins(motionComicId, episode.id, 50)
+                                if (success) {
+                                    episodeListState = MotionDummyData.getMotionEpisodesWithSubscription(motionComicId)
+                                } else {
+                                    showInsufficientCoinsDialog = true
+                                }
+                            }
                         }
                     )
                 }
             }
         }
+    }
+
+    // Insufficient Coins Dialog
+    if (showInsufficientCoinsDialog) {
+        AlertDialog(
+            onDismissRequest = { showInsufficientCoinsDialog = false },
+            title = {
+                Text(
+                    text = "Insufficient Coins",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+            },
+            text = {
+                Text(
+                    text = "You don't have enough coins to unlock this episode. You need 50 coins, but you have ${DummyData.getUserProfile().alfaCoins} coins.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showInsufficientCoinsDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {},
+            containerColor = Color(0xFF1E1E1E),
+            shape = RoundedCornerShape(8.dp)
+        )
     }
 }
 
@@ -649,14 +704,16 @@ fun EpisodePlayerScreen(
 fun EpisodeItem(
     episode: MotionEpisode,
     isPlaying: Boolean,
-    onPlayClick: () -> Unit
+    isLocked: Boolean,
+    onPlayClick: () -> Unit,
+    onUnlockClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onPlayClick),
+            .clickable(enabled = !isLocked, onClick = onPlayClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying) Color(0xFFBB86FC).copy(alpha = 0.3f) else Color(0xFF1E1E1E)
+            containerColor = if (isPlaying) Color(0xFFBB86FC).copy(alpha = 0.3f) else if (isLocked) Color.Gray else Color(0xFF1E1E1E)
         )
     ) {
         Row(
@@ -666,23 +723,65 @@ fun EpisodeItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = episode.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
-            )
-            Button(
-                onClick = onPlayClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFBB86FC),
-                    contentColor = Color.White
-                ),
-                modifier = Modifier.height(32.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Play",
-                    style = MaterialTheme.typography.labelSmall
+                    text = episode.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
                 )
+                if (isLocked) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Locked",
+                        tint = Color.Red,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "(50 Coins)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Red
+                    )
+                }
+            }
+
+            if (isLocked) {
+                Button(
+                    onClick = onUnlockClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp)
+                        .wrapContentWidth()
+                ) {
+                    Text(
+                        text = "Unlock",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onPlayClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Text(
+                        text = "Play",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }

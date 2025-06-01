@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,14 +28,26 @@ import com.alfacomics.data.repository.MotionEpisode
 
 @Composable
 fun MotionComicDetailScreen(
-    navController: NavHostController, // Added explicit type
-    motionComicId: Int, // Added explicit type
-    isLandscape: Boolean, // Added explicit type
-    onOrientationChange: (Boolean) -> Unit // Added explicit type
+    navController: NavHostController,
+    motionComicId: Int,
+    isLandscape: Boolean,
+    onOrientationChange: (Boolean) -> Unit
 ) {
     val motionComic = MotionDummyData.getMotionComicById(motionComicId)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var isFavorite by remember { mutableStateOf(DummyData.isFavoriteMotionComic(motionComicId)) }
+    var isSubscribed by remember { mutableStateOf(DummyData.isUserSubscribed()) }
+    val episodes by remember { derivedStateOf { MotionDummyData.getMotionEpisodesWithSubscription(motionComicId) } }
+
+    // State to trigger recomposition after unlocking an episode
+    var episodeListState by remember { mutableStateOf(episodes) }
+    // State for showing insufficient coins dialog
+    var showInsufficientCoinsDialog by remember { mutableStateOf(false) }
+
+    // Debug logs for initial state
+    Log.d("MotionComicDetailScreen", "isLoggedIn: ${DummyData.isLoggedIn}")
+    Log.d("MotionComicDetailScreen", "isSubscribed: $isSubscribed")
+    Log.d("MotionComicDetailScreen", "User alfaCoins: ${DummyData.getUserProfile().alfaCoins}")
 
     if (motionComic == null) {
         Box(
@@ -115,6 +129,31 @@ fun MotionComicDetailScreen(
         }
 
         item {
+            // Subscribe Button (if not subscribed)
+            if (!isSubscribed) {
+                Button(
+                    onClick = {
+                        DummyData.setUserSubscribed(true)
+                        isSubscribed = true
+                        episodeListState = MotionDummyData.getMotionEpisodesWithSubscription(motionComicId)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text(
+                        text = "Subscribe to Unlock All Episodes",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+
+        item {
             // Description (Expandable)
             Column(
                 modifier = Modifier
@@ -164,29 +203,86 @@ fun MotionComicDetailScreen(
             )
         }
 
-        items(motionComic.episodes) { episode ->
+        items(episodeListState) { episode ->
             EpisodeItem(
                 episode = episode,
+                isLocked = !episode.isUnlocked && !isSubscribed,
                 onPlayClick = {
-                    // Navigate to EpisodePlayerScreen
-                    navController.navigate("episode_player/$motionComicId/${episode.id}")
+                    if (episode.isUnlocked || isSubscribed) {
+                        navController.navigate("episode_player/$motionComicId/${episode.id}")
+                    }
+                },
+                onUnlockClick = {
+                    Log.d("MotionComicDetailScreen", "Unlock button clicked for episode ${episode.id}")
+                    if (!isSubscribed && !episode.isUnlocked) {
+                        val success = MotionDummyData.unlockMotionEpisodeWithCoins(motionComicId, episode.id, 50)
+                        Log.d("MotionComicDetailScreen", "Unlock success: $success")
+                        if (success) {
+                            episodeListState = MotionDummyData.getMotionEpisodesWithSubscription(motionComicId)
+                            Log.d("MotionComicDetailScreen", "Episode list updated after unlock")
+                        } else {
+                            showInsufficientCoinsDialog = true
+                            Log.d("MotionComicDetailScreen", "Showing insufficient coins dialog")
+                        }
+                    }
                 }
             )
         }
+    }
+
+    // Insufficient Coins Dialog
+    if (showInsufficientCoinsDialog) {
+        Log.d("MotionComicDetailScreen", "Insufficient coins dialog shown")
+        AlertDialog(
+            onDismissRequest = { showInsufficientCoinsDialog = false },
+            title = {
+                Text(
+                    text = "Insufficient Coins",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+            },
+            text = {
+                Text(
+                    text = "You don't have enough coins to unlock this episode. You need 50 coins, but you have ${DummyData.getUserProfile().alfaCoins} coins.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showInsufficientCoinsDialog = false
+                        Log.d("MotionComicDetailScreen", "Dialog dismissed")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {},
+            containerColor = Color(0xFF1E1E1E),
+            shape = RoundedCornerShape(8.dp)
+        )
     }
 }
 
 @Composable
 fun EpisodeItem(
     episode: MotionEpisode,
-    onPlayClick: () -> Unit
+    isLocked: Boolean,
+    onPlayClick: () -> Unit,
+    onUnlockClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onPlayClick),
+            .clickable(enabled = !isLocked, onClick = onPlayClick),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = if (isLocked) Color.Gray else Color(0xFF1E1E1E)
         )
     ) {
         Row(
@@ -196,23 +292,65 @@ fun EpisodeItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = episode.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
-            )
-            Button(
-                onClick = onPlayClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFBB86FC),
-                    contentColor = Color.White
-                ),
-                modifier = Modifier.height(32.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Play",
-                    style = MaterialTheme.typography.labelSmall
+                    text = episode.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
                 )
+                if (isLocked) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Locked",
+                        tint = Color.Red,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "(50 Coins)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Red
+                    )
+                }
+            }
+
+            if (isLocked) {
+                Button(
+                    onClick = onUnlockClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp)
+                        .wrapContentWidth()
+                ) {
+                    Text(
+                        text = "Unlock",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onPlayClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Text(
+                        text = "Play",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }

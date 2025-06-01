@@ -1,11 +1,13 @@
 package com.alfacomics.data.repository
 
+import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import com.alfacomics.R
 
 data class MotionComic(
     val id: Int,
     val title: String,
-    val thumbnailUrl: Int, // Note: In a real app, this should be a String URL for dynamic loading
+    val thumbnailUrl: Int,
     val genre: String,
     val rating: Float,
     val views: Int,
@@ -16,12 +18,12 @@ data class MotionComic(
 data class MotionEpisode(
     val id: Int,
     val title: String,
-    val videoUrl: String
+    val videoUrl: String,
+    val isUnlocked: Boolean = true
 )
 
 object MotionDummyData {
-    private val motionComics = listOf(
-        // Romance Genre (6 motion comics)
+    private val motionComics = mutableStateListOf(
         MotionComic(
             id = 1,
             title = "Motion Comic: Eternal Love",
@@ -34,47 +36,56 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 3,
                     title = "Episode 3",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 4,
                     title = "Episode 4",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 5,
                     title = "Episode 5",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 6,
                     title = "Episode 6",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 7,
                     title = "Episode 7",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 8,
                     title = "Episode 8",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 9,
                     title = "Episode 9",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 )
             )
         ),
@@ -90,42 +101,50 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 3,
                     title = "Episode 3",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 4,
                     title = "Episode 4",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 5,
                     title = "Episode 5",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 6,
                     title = "Episode 6",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 7,
                     title = "Episode 7",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 8,
                     title = "Episode 8",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 )
             )
         ),
@@ -141,42 +160,50 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 3,
                     title = "Episode 3",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 4,
                     title = "Episode 4",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 5,
                     title = "Episode 5",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 6,
                     title = "Episode 6",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 7,
                     title = "Episode 7",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 ),
                 MotionEpisode(
                     id = 8,
                     title = "Episode 8",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = false
                 )
             )
         ),
@@ -192,27 +219,32 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 3,
                     title = "Episode 3",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 4,
                     title = "Episode 4",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 5,
                     title = "Episode 5",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -228,27 +260,32 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 3,
                     title = "Episode 3",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 4,
                     title = "Episode 4",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 5,
                     title = "Episode 5",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -264,17 +301,17 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
-
-        // Horror Genre (6 motion comics)
         MotionComic(
             id = 7,
             title = "Motion Comic: Shadows of Fear",
@@ -287,12 +324,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -308,12 +347,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -329,12 +370,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -350,12 +393,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -371,12 +416,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -392,17 +439,17 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
-
-        // Fantasy Genre (6 motion comics)
         MotionComic(
             id = 13,
             title = "Motion Comic: Mystic Realms",
@@ -415,12 +462,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -436,12 +485,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -457,12 +508,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -478,12 +531,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -499,12 +554,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -520,17 +577,17 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
-
-        // Sci-Fi Genre (6 motion comics)
         MotionComic(
             id = 19,
             title = "Motion Comic: Galactic Heroes",
@@ -543,12 +600,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -564,12 +623,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -585,12 +646,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -606,12 +669,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -627,12 +692,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -648,17 +715,17 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
-
-        // Adventure Genre (6 motion comics)
         MotionComic(
             id = 25,
             title = "Motion Comic: The Cosmic Adventure",
@@ -671,12 +738,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -692,12 +761,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -713,12 +784,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -734,12 +807,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -755,12 +830,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         ),
@@ -776,12 +853,14 @@ object MotionDummyData {
                 MotionEpisode(
                     id = 1,
                     title = "Episode 1",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 ),
                 MotionEpisode(
                     id = 2,
                     title = "Episode 2",
-                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                    videoUrl = "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_10mb.mp4",
+                    isUnlocked = true
                 )
             )
         )
@@ -802,5 +881,53 @@ object MotionDummyData {
 
     fun getMotionComicsByGenre(genre: String): List<MotionComic> {
         return motionComics.filter { it.genre == genre && it.episodes.isNotEmpty() }
+    }
+
+    fun getMotionEpisodesWithSubscription(motionComicId: Int): List<MotionEpisode> {
+        val motionComic = getMotionComicById(motionComicId) ?: return emptyList()
+        return if (DummyData.isUserSubscribed()) {
+            motionComic.episodes.map { episode -> episode.copy(isUnlocked = true) }
+        } else {
+            motionComic.episodes.mapIndexed { index, episode ->
+                if (index < 5) episode.copy(isUnlocked = true) else episode
+            }
+        }
+    }
+
+    fun unlockMotionEpisodeWithCoins(motionComicId: Int, episodeId: Int, coinsRequired: Int = 50): Boolean {
+        Log.d("MotionDummyData", "Attempting to unlock episode $episodeId for comic $motionComicId")
+        val motionComic = getMotionComicById(motionComicId) ?: return false.also {
+            Log.d("MotionDummyData", "MotionComic not found")
+        }
+        val episode = motionComic.episodes.find { it.id == episodeId } ?: return false.also {
+            Log.d("MotionDummyData", "Episode not found")
+        }
+
+        val userProfile = DummyData.getUserProfile()
+        Log.d("MotionDummyData", "Current alfaCoins: ${userProfile.alfaCoins}, Required: $coinsRequired")
+        if (userProfile.alfaCoins >= coinsRequired) {
+            DummyData.updateAlfaCoins(userProfile.alfaCoins - coinsRequired)
+            val updatedEpisode = episode.copy(isUnlocked = true)
+            updateMotionEpisode(motionComicId, episodeId, updatedEpisode)
+            Log.d("MotionDummyData", "Episode unlocked successfully. New alfaCoins: ${userProfile.alfaCoins - coinsRequired}")
+            return true
+        } else {
+            Log.d("MotionDummyData", "Not enough coins to unlock episode")
+            return false
+        }
+    }
+
+    fun updateMotionEpisode(motionComicId: Int, episodeId: Int, updatedEpisode: MotionEpisode) {
+        val motionComicIndex = motionComics.indexOfFirst { it.id == motionComicId }
+        if (motionComicIndex != -1) {
+            val motionComic = motionComics[motionComicIndex]
+            val updatedEpisodes = motionComic.episodes.map { episode ->
+                if (episode.id == episodeId) updatedEpisode else episode
+            }
+            motionComics[motionComicIndex] = motionComic.copy(episodes = updatedEpisodes)
+            Log.d("MotionDummyData", "Episode $episodeId updated for comic $motionComicId")
+        } else {
+            Log.d("MotionDummyData", "Failed to update episode: MotionComic not found")
+        }
     }
 }

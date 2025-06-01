@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +36,16 @@ fun ComicDetailScreen(
     var isSubscribed by remember { mutableStateOf(DummyData.isUserSubscribed()) }
     var isFavorite by remember { mutableStateOf(DummyData.isFavoriteComic(comicId)) }
     val episodes by remember { derivedStateOf { DummyData.getEpisodesWithSubscription(comicId) } }
+
+    // State to trigger recomposition after unlocking an episode
+    var episodeListState by remember { mutableStateOf(episodes) }
+    // State for showing insufficient coins dialog
+    var showInsufficientCoinsDialog by remember { mutableStateOf(false) }
+
+    // Debug logs for initial state
+    Log.d("ComicDetailScreen", "isLoggedIn: ${DummyData.isLoggedIn}")
+    Log.d("ComicDetailScreen", "isSubscribed: $isSubscribed")
+    Log.d("ComicDetailScreen", "User alfaCoins: ${DummyData.getUserProfile().alfaCoins}")
 
     LazyColumn(
         modifier = Modifier
@@ -105,6 +117,7 @@ fun ComicDetailScreen(
                     onClick = {
                         DummyData.setUserSubscribed(true)
                         isSubscribed = true
+                        episodeListState = DummyData.getEpisodesWithSubscription(comicId)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFBB86FC),
@@ -162,7 +175,7 @@ fun ComicDetailScreen(
             )
         }
 
-        items(episodes) { episode ->
+        items(episodeListState) { episode ->
             EpisodeItem(
                 episode = episode,
                 isLocked = !episode.isFree && !isSubscribed,
@@ -170,9 +183,62 @@ fun ComicDetailScreen(
                     if (episode.isFree || isSubscribed) {
                         onEpisodeClick(episode.id)
                     }
+                },
+                onUnlockClick = {
+                    Log.d("ComicDetailScreen", "Unlock button clicked for episode ${episode.id}")
+                    if (!isSubscribed && !episode.isFree) {
+                        val success = DummyData.unlockEpisodeWithCoins(comicId, episode.id, 10)
+                        Log.d("ComicDetailScreen", "Unlock success: $success")
+                        if (success) {
+                            episodeListState = DummyData.getEpisodesWithSubscription(comicId)
+                            Log.d("ComicDetailScreen", "Episode list updated after unlock")
+                        } else {
+                            showInsufficientCoinsDialog = true
+                            Log.d("ComicDetailScreen", "Showing insufficient coins dialog")
+                        }
+                    }
                 }
             )
         }
+    }
+
+    // Insufficient Coins Dialog
+    if (showInsufficientCoinsDialog) {
+        Log.d("ComicDetailScreen", "Insufficient coins dialog shown")
+        AlertDialog(
+            onDismissRequest = { showInsufficientCoinsDialog = false },
+            title = {
+                Text(
+                    text = "Insufficient Coins",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+            },
+            text = {
+                Text(
+                    text = "You don't have enough coins to unlock this episode. You need 10 coins, but you have ${DummyData.getUserProfile().alfaCoins} coins.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showInsufficientCoinsDialog = false
+                        Log.d("ComicDetailScreen", "Dialog dismissed")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {},
+            containerColor = Color(0xFF1E1E1E),
+            shape = RoundedCornerShape(8.dp)
+        )
     }
 }
 
@@ -180,8 +246,12 @@ fun ComicDetailScreen(
 fun EpisodeItem(
     episode: Episode,
     isLocked: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onUnlockClick: () -> Unit
 ) {
+    // Debug log for isLocked state
+    Log.d("EpisodeItem", "Episode ${episode.id}: isLocked = $isLocked, isFree = ${episode.isFree}")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -194,46 +264,85 @@ fun EpisodeItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Placeholder for episode thumbnail
-            Box(
-                modifier = Modifier
-                    .size(80.dp, 50.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f) // Ensure the left content takes available space
             ) {
-                Text(
-                    text = "Thumb",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
-                )
+                // Placeholder for episode thumbnail
+                Box(
+                    modifier = Modifier
+                        .size(80.dp, 50.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Thumb",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Episode Title and Lock Status
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp) // Add padding to avoid overlap with button
+                ) {
+                    Text(
+                        text = episode.title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (isLocked) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Locked",
+                                tint = Color.Red,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Locked (10 Coins)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Red
+                            )
+                        } else {
+                            Text(
+                                text = "Free",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Green
+                            )
+                        }
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Episode Title and Lock Status
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = episode.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
-                )
-                if (isLocked) {
+            // Unlock Button (if locked)
+            if (isLocked) {
+                Button(
+                    onClick = onUnlockClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFBB86FC),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(horizontal = 8.dp)
+                        .wrapContentWidth() // Ensure button takes only necessary width
+                ) {
                     Text(
-                        text = "Locked - Subscribe to Unlock",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Red
-                    )
-                } else {
-                    Text(
-                        text = "Free",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Green
+                        text = "Unlock",
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
