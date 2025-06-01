@@ -128,9 +128,7 @@ fun ComicDetailScreen(
             if (!isSubscribed) {
                 Button(
                     onClick = {
-                        DummyData.setUserSubscribed(true)
-                        isSubscribed = true
-                        episodeListState = DummyData.getEpisodesWithSubscription(comicId)
+                        navController.navigate("premium")
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFBB86FC),
