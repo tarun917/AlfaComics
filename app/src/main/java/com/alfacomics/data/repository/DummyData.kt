@@ -493,7 +493,9 @@ object DummyData {
             aboutMe = "I love reading superhero comics!",
             alfaCoins = 500,
             followers = listOf("SuperheroLover", "FantasyReader", "Admin"),
-            following = listOf("SuperheroLover", "ActionHero")
+            following = listOf("SuperheroLover", "ActionHero"),
+            episodesRead = 60,
+            badges = listOf(Badge("Copper Star", Color(0xFFB87333)))
         ))
         put("SuperheroLover", UserProfile(
             userId = userIdCounter++,
@@ -515,7 +517,13 @@ object DummyData {
             aboutMe = "I enjoy fantasy worlds!",
             alfaCoins = 600,
             followers = listOf("ComicFan123", "SuperheroLover"),
-            following = listOf("SuperheroLover", "ActionHero")
+            following = listOf("SuperheroLover", "ActionHero"),
+            episodesRead = 300,
+            badges = listOf(
+                Badge("Copper Star", Color(0xFFB87333)),
+                Badge("Silver Star", Color(0xFFC0C0C0)),
+                Badge("Gold Star", Color(0xFFFFD700))
+            )
         ))
         put("Admin", UserProfile(
             userId = userIdCounter++,
@@ -526,7 +534,14 @@ object DummyData {
             aboutMe = "Administrator of Alfa Comics",
             alfaCoins = 1000,
             followers = listOf("ComicFan123"),
-            following = listOf("SuperheroLover", "FantasyReader")
+            following = listOf("SuperheroLover", "FantasyReader"),
+            episodesRead = 600,
+            badges = listOf(
+                Badge("Copper Star", Color(0xFFB87333)),
+                Badge("Silver Star", Color(0xFFC0C0C0)),
+                Badge("Gold Star", Color(0xFFFFD700)),
+                Badge("Platinum Star", Color(0xFF00C4B4))
+            )
         ))
         put("ActionHero", UserProfile(
             userId = userIdCounter++,
@@ -630,54 +645,13 @@ object DummyData {
         Log.d("DummyData", "Final userProfile alfaCoins: ${userProfile.alfaCoins}")
     }
 
-    fun getUserProfileByUsername(username: String): UserProfile? {
-        return userProfiles.find { it.username == username }
+    fun getUserProfile(): UserProfile {
+        return userProfile.copy(aboutMe = userAboutMeState.value)
     }
 
-    private val userProfiles = mutableListOf(
-        UserProfile(
-            userId = 102342,
-            username = "Admin",
-            email = "admin@alfacomics.com",
-            profilePictureResourceId = R.drawable.ic_launcher_background,
-            aboutMe = "Lover of comics and superheroes!",
-            alfaCoins = 1500,
-            followers = listOf("ComicFan123", "FantasyReader"),
-            episodesRead = 600,
-            badges = listOf(
-                Badge("Copper Star", Color(0xFFB87333)),
-                Badge("Silver Star", Color(0xFFC0C0C0)),
-                Badge("Gold Star", Color(0xFFFFD700)),
-                Badge("Platinum Star", Color(0xFF00C4B4))
-            )
-        ),
-        UserProfile(
-            userId = 102343,
-            username = "ComicFan123",
-            email = "comicfan123@alfacomics.com",
-            profilePictureResourceId = R.drawable.ic_launcher_background,
-            aboutMe = "I read comics all day!",
-            alfaCoins = 500,
-            followers = listOf("Admin"),
-            episodesRead = 60,
-            badges = listOf(Badge("Copper Star", Color(0xFFB87333)))
-        ),
-        UserProfile(
-            userId = 102344,
-            username = "FantasyReader",
-            email = "fantasyreader@alfacomics.com",
-            profilePictureResourceId = R.drawable.ic_launcher_background,
-            aboutMe = "Fantasy comics are the best!",
-            alfaCoins = 800,
-            followers = listOf("Admin"),
-            episodesRead = 300,
-            badges = listOf(
-                Badge("Copper Star", Color(0xFFB87333)),
-                Badge("Silver Star", Color(0xFFC0C0C0)),
-                Badge("Gold Star", Color(0xFFFFD700))
-            )
-        )
-    )
+    fun getUserProfileByUsername(username: String): UserProfile? {
+        return allUserProfiles[username]
+    }
 
     fun getComicsByCategory(category: String): List<Comic> {
         return comics.filter { comic -> comic.category == category }
@@ -824,13 +798,33 @@ object DummyData {
         if (!isLoggedIn) return
         val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
-        post?.comments?.add(
-            Comment(
-                username = userProfile.username,
-                content = comment,
-                timestamp = timestamp
+        post?.let {
+            it.comments.add(
+                Comment(
+                    username = userProfile.username,
+                    content = comment,
+                    timestamp = timestamp
+                )
             )
-        )
+        }
+    }
+
+    fun addReactionToPost(postId: Int, reactionType: String, userId: String) {
+        val post = communityPosts.find { it.id == postId }
+        post?.let {
+            val currentReactions = it.reactions.toMutableMap()
+            val userReactions = currentReactions[reactionType]?.toMutableList() ?: mutableListOf()
+            if (userId in userReactions) {
+                userReactions.remove(userId)
+            } else {
+                userReactions.add(userId)
+            }
+            currentReactions[reactionType] = userReactions
+            val index = communityPosts.indexOf(it)
+            if (index != -1) {
+                communityPosts[index] = it.copy(reactions = currentReactions)
+            }
+        }
     }
 
     fun getMockUsernames(): List<String> {
@@ -875,10 +869,6 @@ object DummyData {
 
     fun getFavoriteMotionComics(): List<MotionComic> {
         return MotionDummyData.getMotionComics().filter { motionComic -> favoriteMotionComicIds.contains(motionComic.id) }
-    }
-
-    fun getUserProfile(): UserProfile {
-        return userProfile.copy(aboutMe = userAboutMeState.value)
     }
 
     fun updateAboutMe(newAboutMe: String) {
@@ -971,24 +961,6 @@ object DummyData {
 
     fun setVotedOptionIndex(postId: Int, index: Int) {
         votedOptionMap[postId] = index
-    }
-
-    fun addReactionToPost(postId: Int, reactionType: String, userId: String) {
-        val post = communityPosts.find { it.id == postId }
-        post?.let {
-            val currentReactions = it.reactions.toMutableMap()
-            val userReactions = currentReactions[reactionType]?.toMutableList() ?: mutableListOf()
-            if (userId in userReactions) {
-                userReactions.remove(userId)
-            } else {
-                userReactions.add(userId)
-            }
-            currentReactions[reactionType] = userReactions
-            val index = communityPosts.indexOf(it)
-            if (index != -1) {
-                communityPosts[index] = it.copy(reactions = currentReactions)
-            }
-        }
     }
 
     fun getReadCountForHardCopyComic(hardCopyComicId: Int): Int {

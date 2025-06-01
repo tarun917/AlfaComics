@@ -2,9 +2,9 @@ package com.alfacomics.presentation.ui.screens.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -80,14 +81,46 @@ fun UserProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Profile Picture
-                Image(
-                    painter = painterResource(id = userProfile.profilePictureResourceId),
-                    contentDescription = "Profile Picture",
+                Box(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
-                )
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Show profile picture if available, otherwise show default resource
+                    if (userProfile.profilePictureBitmap != null) {
+                        Image(
+                            bitmap = userProfile.profilePictureBitmap!!,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                    ),
+                                    shape = CircleShape
+                                )
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = userProfile.profilePictureResourceId),
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                    ),
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

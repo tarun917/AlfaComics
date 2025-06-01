@@ -2,10 +2,12 @@ package com.alfacomics.presentation.ui.screens.community
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -69,8 +71,12 @@ fun CommunityPostItem(
         }
     }
 
-    // Fetch user profile to get badges
+    // Fetch user profile to get badges and profile picture
     val userProfile = DummyData.getUserProfileByUsername(post.username)
+    // Log to debug the issue
+    Log.d("CommunityPostItem", "UserProfile for ${post.username}: $userProfile")
+    Log.d("CommunityPostItem", "ProfilePictureBitmap for ${post.username}: ${userProfile?.profilePictureBitmap}")
+
     // Show only the highest-tier badge (if multiple badges exist)
     val highestBadge = userProfile?.badges?.maxByOrNull { badge ->
         when (badge.name) {
@@ -111,11 +117,29 @@ fun CommunityPostItem(
                             .clickable { onUsernameClick(post.username) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = post.username.first().toString(),
-                            color = Color.White,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        // Show profile picture if available, otherwise show default text
+                        if (userProfile != null && userProfile.profilePictureBitmap != null) {
+                            Image(
+                                bitmap = userProfile.profilePictureBitmap!!,
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = 1.dp,
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(Color(0xFFBB86FC), Color(0xFFFFD700))
+                                        ),
+                                        shape = CircleShape
+                                    )
+                            )
+                        } else {
+                            Text(
+                                text = post.username.first().toString(),
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
