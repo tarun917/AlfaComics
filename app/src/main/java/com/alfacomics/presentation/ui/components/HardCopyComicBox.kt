@@ -1,6 +1,5 @@
 package com.alfacomics.presentation.ui.components
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -15,7 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.AlfaStoreData
 
 @Composable
 fun HardCopyComicBox(
@@ -27,7 +26,7 @@ fun HardCopyComicBox(
     modifier: Modifier = Modifier,
     navController: NavController? = null
 ) {
-    val readCount = DummyData.getReadCountForHardCopyComic(comicId) // Placeholder for number of buyers
+    val readCount = AlfaStoreData.getReadCountForHardCopyComic(comicId) // Updated to use AlfaStoreData
 
     Card(
         modifier = modifier

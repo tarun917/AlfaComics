@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.HardCopyComic
 
@@ -20,7 +21,7 @@ fun OrderHistoryScreen(
 ) {
     val purchasedComics by remember {
         mutableStateOf(
-            DummyData.getAllHardCopyComics().filter { comic ->
+            AlfaStoreData.getAllHardCopyComics().filter { comic ->
                 DummyData.isComicPurchased(comic.id)
             }
         )

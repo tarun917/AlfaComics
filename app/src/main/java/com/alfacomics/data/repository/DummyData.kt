@@ -28,27 +28,6 @@ data class Comic(
     }
 )
 
-data class HardCopyComic(
-    val id: Int,
-    val title: String,
-    val coverImageUrl: String,
-    val price: Int,
-    val stockQuantity: Int,
-    val rating: Float,
-    val ratingsCount: Int,
-    val pages: Int,
-    val reviews: List<Review>,
-    val description: String = "This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts! This is a hard copy of a comic book, perfect for collectors and enthusiasts!",
-    val dimensions: String = "8.5 x 11 inches",
-    val weight: String = "300g"
-)
-
-data class Review(
-    val buyerName: String,
-    val comment: String,
-    val timestamp: String
-)
-
 data class Episode(
     val id: Int,
     val title: String,
@@ -124,16 +103,6 @@ data class UserProfile(
     val following: List<String> = emptyList(),
     val episodesRead: Int = 0,
     val badges: List<Badge> = emptyList()
-)
-
-data class BuyerDetails(
-    val comicId: Int,
-    val buyerName: String,
-    val email: String,
-    val mobileNumber: String,
-    val address: String,
-    val pinCode: String,
-    val purchaseTimestamp: String
 )
 
 data class PremiumSubscription(
@@ -285,143 +254,6 @@ object DummyData {
         Comic(100, "Fantasy Modern 10", R.drawable.ic_launcher_background, 4.6f, "Fantasy", "Modern", 469, 1650)
     )
 
-    private val hardCopyComics = listOf(
-        HardCopyComic(
-            1,
-            "Superhero Classic 1",
-            "placeholder_url_1",
-            599,
-            10,
-            4.5f,
-            1200,
-            120,
-            listOf(
-                Review("Amit Sharma", "Amazing comic with great artwork!", "2025-05-15 10:00 AM"),
-                Review("Priya Singh", "Loved the story, a must-buy for collectors!", "2025-05-16 02:30 PM")
-            )
-        ),
-        HardCopyComic(
-            2,
-            "Superhero Classic 2",
-            "placeholder_url_2",
-            649,
-            5,
-            4.2f,
-            900,
-            110,
-            listOf(
-                Review("Rahul Verma", "Good read, but the binding could be better.", "2025-05-14 09:15 AM")
-            )
-        ),
-        HardCopyComic(
-            3,
-            "Action Classic 1",
-            "placeholder_url_3",
-            579,
-            8,
-            4.0f,
-            1500,
-            130,
-            listOf(
-                Review("Sneha Gupta", "Thrilling action sequences!", "2025-05-13 11:45 AM"),
-                Review("Vikram Rao", "Worth every penny!", "2025-05-12 03:20 PM")
-            )
-        ),
-        HardCopyComic(
-            4,
-            "Action Classic 2",
-            "placeholder_url_4",
-            619,
-            3,
-            4.3f,
-            800,
-            125,
-            listOf(
-                Review("Anjali Mehta", "Really enjoyed this one!", "2025-05-11 08:50 AM")
-            )
-        ),
-        HardCopyComic(
-            5,
-            "Adventure Classic 1",
-            "placeholder_url_5",
-            799,
-            12,
-            4.7f,
-            2000,
-            150,
-            listOf(
-                Review("Karan Patel", "Epic adventure, great for collectors!", "2025-05-10 01:10 PM"),
-                Review("Neha Kapoor", "Loved the storyline!", "2025-05-09 04:00 PM")
-            )
-        ),
-        HardCopyComic(
-            6,
-            "Adventure Classic 2",
-            "placeholder_url_6",
-            589,
-            7,
-            4.1f,
-            600,
-            115,
-            listOf(
-                Review("Ravi Sharma", "Good but delivery took time.", "2025-05-08 10:30 AM")
-            )
-        ),
-        HardCopyComic(
-            7,
-            "Mystery Classic 1",
-            "placeholder_url_13",
-            629,
-            6,
-            4.4f,
-            1100,
-            140,
-            listOf(
-                Review("Suman Das", "Intriguing plot!", "2025-05-07 02:15 PM")
-            )
-        ),
-        HardCopyComic(
-            8,
-            "Mystery Classic 2",
-            "placeholder_url_14",
-            659,
-            4,
-            4.6f,
-            1400,
-            135,
-            listOf(
-                Review("Deepak Jain", "A masterpiece for mystery lovers!", "2025-05-06 09:00 AM"),
-                Review("Pooja Reddy", "Highly recommended!", "2025-05-05 05:45 PM")
-            )
-        ),
-        HardCopyComic(
-            9,
-            "Fantasy Classic 1",
-            "placeholder_url_15",
-            799,
-            9,
-            4.8f,
-            1700,
-            160,
-            listOf(
-                Review("Arjun Singh", "Magical and captivating!", "2025-05-04 11:20 AM")
-            )
-        ),
-        HardCopyComic(
-            10,
-            "Fantasy Classic 2",
-            "placeholder_url_16",
-            639,
-            2,
-            4.2f,
-            950,
-            145,
-            listOf(
-                Review("Meera Nair", "Good fantasy read, worth the price.", "2025-05-03 03:30 PM")
-            )
-        )
-    )
-
     private val episodeSocialDataMap = mutableMapOf<String, EpisodeSocialData>()
     private var isSubscribed = false
     private var premiumSubscription: PremiumSubscription? = null
@@ -432,7 +264,6 @@ object DummyData {
     private val favoriteMotionComicIds: SnapshotStateList<Int> = mutableStateListOf()
     private val pollVotesMap = mutableStateMapOf<Int, MutableList<Int>>()
     private val votedOptionMap = mutableStateMapOf<Int, Int>()
-    private val buyerDetailsList = mutableStateListOf<BuyerDetails>()
     private val notifications = mutableStateListOf<Notification>()
 
     private var userIdCounter: Long = 102342
@@ -671,10 +502,6 @@ object DummyData {
         return comics.find { comic -> comic.id == id }
     }
 
-    fun getHardCopyComicById(id: Int): HardCopyComic? {
-        return hardCopyComics.find { comic -> comic.id == id }
-    }
-
     fun getEpisodeSocialData(comicId: Int, episodeId: Int): EpisodeSocialData {
         val key = "$comicId-$episodeId"
         return episodeSocialDataMap.getOrPut(key) {
@@ -749,10 +576,6 @@ object DummyData {
 
     fun getAllComics(): List<Comic> {
         return comics
-    }
-
-    fun getAllHardCopyComics(): List<HardCopyComic> {
-        return hardCopyComics
     }
 
     fun isComicPurchased(comicId: Int): Boolean {
@@ -961,18 +784,6 @@ object DummyData {
 
     fun setVotedOptionIndex(postId: Int, index: Int) {
         votedOptionMap[postId] = index
-    }
-
-    fun getReadCountForHardCopyComic(hardCopyComicId: Int): Int {
-        return comics.find { it.id == hardCopyComicId }?.readCount ?: 0
-    }
-
-    fun saveBuyerDetails(details: BuyerDetails) {
-        buyerDetailsList.add(details)
-    }
-
-    fun getBuyerDetailsForComic(comicId: Int): List<BuyerDetails> {
-        return buyerDetailsList.filter { it.comicId == comicId }
     }
 
     fun getSelectedLanguage(): String = selectedLanguage

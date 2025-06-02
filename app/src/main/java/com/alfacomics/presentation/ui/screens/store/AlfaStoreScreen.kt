@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.HardCopyComic
 import com.alfacomics.presentation.ui.components.HardCopyComicBox
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +45,7 @@ fun AlfaStoreScreen(
     LaunchedEffect(Unit) {
         isLoading = true
         hardCopyComics = withContext(Dispatchers.IO) {
-            DummyData.getAllHardCopyComics()
+            AlfaStoreData.getAllHardCopyComics()
         }
         isLoading = false
     }
@@ -53,8 +53,8 @@ fun AlfaStoreScreen(
     // Gradient background for the screen with a subtle shine effect
     val gradientBackground = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF000000),
-            Color(0xFF000000)
+            Color(0xFF121212),
+            Color(0xFF1C2526)
         ),
         start = androidx.compose.ui.geometry.Offset(0f, 0f),
         end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
