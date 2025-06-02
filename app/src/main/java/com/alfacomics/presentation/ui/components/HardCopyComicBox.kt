@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.components
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
