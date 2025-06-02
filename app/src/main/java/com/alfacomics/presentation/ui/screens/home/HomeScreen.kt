@@ -35,8 +35,8 @@ fun HomeScreen(
     // Gradient background for the screen with a subtle shine effect
     val gradientBackground = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF000000).copy(alpha = 0.95f),
-            Color(0xFF000000).copy(alpha = 0.95f)
+            Color(0xFF000000).copy(alpha = 0.99f),
+            Color(0xFF000000).copy(alpha = 0.99f)
         ),
         start = androidx.compose.ui.geometry.Offset(0f, 0f),
         end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
@@ -49,7 +49,7 @@ fun HomeScreen(
         targetValue = 1500f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 5000,
+                durationMillis = 20000,
                 easing = LinearEasing
             ),
             repeatMode = RepeatMode.Restart
@@ -88,7 +88,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 24.dp),
+                    .padding(top = 8.dp, bottom = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
             }
