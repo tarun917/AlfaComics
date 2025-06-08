@@ -17,19 +17,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
-import com.alfacomics.data.repository.DummyData
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun SignUpScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var mobileNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var mobileNumber by remember { mutableStateOf("") }
     var termsAccepted by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showTermsDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(authViewModel.errorMessage) { errorMessage = authViewModel.errorMessage }
 
     Column(
         modifier = Modifier
@@ -39,7 +41,6 @@ fun SignUpScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Title
         Text(
             text = "Sign Up for Alfa Comics",
             style = MaterialTheme.typography.titleLarge,
@@ -48,13 +49,13 @@ fun SignUpScreen(
             textAlign = TextAlign.Center
         )
 
-        // Full Name Field
         OutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
             label = { Text("Full Name", color = Color.White) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = LocalTextStyle.current.copy(color = Color.White),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
@@ -65,7 +66,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Email Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -83,7 +83,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mobile Number Field
         OutlinedTextField(
             value = mobileNumber,
             onValueChange = { mobileNumber = it },
@@ -101,7 +100,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -120,7 +118,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Terms and Conditions Checkbox
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -145,7 +142,6 @@ fun SignUpScreen(
             )
         }
 
-        // Error Message (if any)
         errorMessage?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -159,29 +155,17 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Sign Up Button
         Button(
             onClick = {
-                // Validation checks
-                if (fullName.isBlank() || email.isBlank() || mobileNumber.isBlank() || password.isBlank()) {
-                    errorMessage = "Please fill all fields"
+                if (email.isBlank() || password.isBlank() || mobileNumber.isBlank() || fullName.isBlank()) {
+                    errorMessage = "Please fill all required fields"
                     return@Button
                 }
                 if (!termsAccepted) {
                     errorMessage = "Please accept the Terms and Conditions"
                     return@Button
                 }
-
-                // Attempt to sign up
-                val signUpSuccess = DummyData.signUpUser(fullName, email, mobileNumber, password)
-                if (signUpSuccess) {
-                    errorMessage = null
-                    navController.navigate("login") {
-                        popUpTo("signup") { inclusive = true }
-                    }
-                } else {
-                    errorMessage = "Email already exists"
-                }
+                authViewModel.signup(fullName, email, password, mobileNumber, navController)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -196,7 +180,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Back to Login Option
         TextButton(
             onClick = {
                 navController.navigate("login") {
@@ -212,7 +195,6 @@ fun SignUpScreen(
         }
     }
 
-    // Terms and Conditions Dialog
     if (showTermsDialog) {
         Dialog(onDismissRequest = { showTermsDialog = false }) {
             Card(

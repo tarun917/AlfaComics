@@ -111,6 +111,10 @@ dependencies {
     // Add ExoPlayer dependency
     implementation(libs.exoplayer)
 
+    // backend connection
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
 
 
 

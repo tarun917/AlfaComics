@@ -28,34 +28,33 @@ import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.community.LocalActivityResultLauncher
 import com.alfacomics.presentation.ui.screens.home.TopNavBar
 import com.alfacomics.presentation.ui.theme.AlfaComicsTheme
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
-// CompositionLocal to provide the Activity instance
 val LocalActivity = compositionLocalOf<Activity?> { null }
 
 class MainActivity : ComponentActivity() {
-    // Create the ViewModel instance using ViewModelProvider
-    private val viewModel: CommunityViewModel by viewModels()
+    private val communityViewModel: CommunityViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Set default orientation to portrait
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
-        // Register the ActivityResultLauncher before setContent
         val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            // Update the selectedImageUrl property directly
-            viewModel.selectedImageUrl = uri?.toString()
+            communityViewModel.selectedImageUrl = uri?.toString()
         }
 
         setContent {
             AlfaComicsTheme {
-                // Provide the Activity and launcher to the composable tree
                 CompositionLocalProvider(
                     LocalActivity provides this,
                     LocalActivityResultLauncher provides imagePickerLauncher
                 ) {
-                    AlfaComicsApp(viewModel = viewModel)
+                    AlfaComicsApp(
+                        communityViewModel = communityViewModel,
+                        authViewModel = authViewModel
+                    )
                 }
             }
         }
@@ -63,15 +62,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AlfaComicsApp(viewModel: CommunityViewModel) {
+fun AlfaComicsApp(communityViewModel: CommunityViewModel, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-    // Use rememberSavable to persist isLandscape across configuration changes
     var isLandscape by rememberSaveable { mutableStateOf(false) }
 
-    // Access the Activity from LocalActivity
     val activity = LocalActivity.current
 
-    // Handle orientation changes based on isLandscape state
     LaunchedEffect(isLandscape) {
         activity?.requestedOrientation = if (isLandscape) {
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -80,7 +76,6 @@ fun AlfaComicsApp(viewModel: CommunityViewModel) {
         }
     }
 
-    // Callback to toggle orientation
     val onOrientationChange: (Boolean) -> Unit = { landscape ->
         isLandscape = landscape
     }
@@ -89,7 +84,6 @@ fun AlfaComicsApp(viewModel: CommunityViewModel) {
     val currentDestination = currentBackStackEntry?.destination?.route
 
     val shouldShowTopBar = currentDestination == "home"
-    // Hide bottom navigation bar on login and signup screens, and in landscape mode
     val shouldShowBottomBar = currentDestination != "login" && currentDestination != "signup" && !isLandscape
 
     Scaffold(
@@ -111,7 +105,8 @@ fun AlfaComicsApp(viewModel: CommunityViewModel) {
         NavGraph(
             navController = navController,
             modifier = Modifier.padding(innerPadding),
-            viewModel = viewModel,
+            communityViewModel = communityViewModel,
+            authViewModel = authViewModel,
             isLandscape = isLandscape,
             onOrientationChange = onOrientationChange
         )

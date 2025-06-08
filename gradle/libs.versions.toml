@@ -8,6 +8,7 @@ androidxNavigationComposeVersion = "2.7.7"
 annotation = "1.9.1"
 appcompat = "1.7.0"
 composeBomVersion = "2025.05.00"
+converterGson = "2.9.0"
 coreKtxVersion = "1.16.0"
 kotlin = "2.0.20"
 composeCompiler = "1.5.15"
@@ -23,6 +24,7 @@ materialIconsExtended = "1.7.8"
 navigationCompose = "2.9.0"
 coilCompose = "2.7.0"
 navigationComposeVersion = "2.9.0"
+retrofit = "2.9.0"
 stripeAndroid = "21.14.0"
 stripeAndroidVersion = "21.12.0"
 supportAnnotations = "28.0.0"
@@ -66,6 +68,7 @@ androidx-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 annotation = { module = "androidx.annotation:annotation" }
 appcompat = { module = "androidx.appcompat:appcompat" }
 compose-bom-v20240903 = { module = "androidx.compose:compose-bom", version.ref = "androidxComposeBom" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 core-ktx = { module = "androidx.core:core-ktx" }
 kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 #noinspection SimilarGradleDependency
@@ -93,6 +96,7 @@ material3 = { module = "androidx.compose.material3:material3" }
 #noinspection SimilarGradleDependency
 navigation-compose = { module = "androidx.navigation:navigation-compose" }
 navigation-compose-v277 = { module = "androidx.navigation:navigation-compose", version.ref = "androidxNavigationComposeVersion" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 stripe-android = { module = "com.stripe:stripe-android", version.ref = "stripeAndroid" }
 #noinspection SimilarGradleDependency
 stripe-android-v20373 = { module = "com.stripe:stripe-android", version.ref = "stripeAndroidVersion" }

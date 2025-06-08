@@ -8,7 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.alfacomics.data.repository.DummyData
 import com.alfacomics.presentation.ui.screens.auth.LoginScreen
 import com.alfacomics.presentation.ui.screens.auth.SignUpScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityScreen
@@ -38,100 +37,56 @@ import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
 import com.alfacomics.presentation.ui.screens.store.OrderHistoryScreen
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    viewModel: CommunityViewModel,
+    communityViewModel: CommunityViewModel,
+    authViewModel: AuthViewModel, // Re-added parameter
     isLandscape: Boolean,
     onOrientationChange: (Boolean) -> Unit
 ) {
-    // Ensure Admin is logged in by default for testing
-    LaunchedEffect(Unit) {
-        if (!DummyData.isLoggedIn) {
-            DummyData.loginUser("admin@example.com", "Tarun123")
+    // Use AuthViewModel's isLoggedIn state for initial navigation
+    LaunchedEffect(authViewModel.isLoggedIn) {
+        if (authViewModel.isLoggedIn) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
         }
     }
 
     NavHost(
         navController = navController,
-        startDestination = if (DummyData.isLoggedIn) "home" else "login",
+        startDestination = if (authViewModel.isLoggedIn) "home" else "login",
         modifier = modifier
     ) {
         composable("login") {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("signup") {
-            SignUpScreen(navController = navController)
+            SignUpScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("home") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                }
-            }
             HomeScreen(navController = navController)
         }
         composable("alfaStore") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("alfaStore") { inclusive = true }
-                    }
-                }
-            }
             AlfaStoreScreen(navController = navController)
         }
         composable("community") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("community") { inclusive = true }
-                    }
-                }
-            }
-            CommunityScreen(navController = navController, viewModel = viewModel)
+            CommunityScreen(navController = navController, viewModel = communityViewModel)
         }
         composable("favourite") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("favourite") { inclusive = true }
-                    }
-                }
-            }
             FavouriteScreen(navController = navController)
         }
         composable("profile") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("profile") { inclusive = true }
-                    }
-                }
-            }
             ProfileScreen(navController = navController)
         }
         composable(
             route = "comic_detail/{comicId}",
             arguments = listOf(navArgument("comicId") { type = NavType.IntType })
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("comic_detail/{comicId}") { inclusive = true }
-                    }
-                }
-            }
             val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
             ComicDetailScreen(
                 navController = navController,
@@ -145,14 +100,6 @@ fun NavGraph(
             route = "motion_comic_detail/{motionComicId}",
             arguments = listOf(navArgument("motionComicId") { type = NavType.IntType })
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("motion_comic_detail/{motionComicId}") { inclusive = true }
-                    }
-                }
-            }
             val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
             MotionComicDetailScreen(
                 navController = navController,
@@ -162,14 +109,6 @@ fun NavGraph(
             )
         }
         composable("premium") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("premium") { inclusive = true }
-                    }
-                }
-            }
             PremiumScreen(navController = navController)
         }
         composable(
@@ -179,14 +118,6 @@ fun NavGraph(
                 navArgument("price") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("payment/{planDuration}/{price}") { inclusive = true }
-                    }
-                }
-            }
             val planDuration = backStackEntry.arguments?.getString("planDuration") ?: ""
             val price = backStackEntry.arguments?.getString("price") ?: ""
             PaymentOptionsScreen(
@@ -194,14 +125,10 @@ fun NavGraph(
                 planDuration = planDuration,
                 price = price,
                 onPaymentSuccess = {
-                    DummyData.subscribeToPremium(
-                        planDuration = planDuration,
-                        price = price,
-                        startDate = "2025-05-27 09:10 PM" // Updated to current date and time
-                    )
+                    // Handle subscription logic
                 },
                 onPaymentFailed = {
-                    // Handle payment failure (e.g., show error message)
+                    // Handle payment failure
                 }
             )
         }
@@ -212,14 +139,6 @@ fun NavGraph(
                 navArgument("price") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("coin_payment/{coins}/{price}") { inclusive = true }
-                    }
-                }
-            }
             val coins = backStackEntry.arguments?.getInt("coins") ?: 0
             val price = backStackEntry.arguments?.getInt("price") ?: 0
             CoinPurchasePaymentScreen(
@@ -227,59 +146,27 @@ fun NavGraph(
                 coins = coins,
                 price = price,
                 onPaymentSuccess = {
-                    // Handled in CoinPurchasePaymentScreen
+                    // Handle coin purchase logic
                 },
                 onPaymentFailed = {
-                    // Handle payment failure (e.g., show error message)
+                    // Handle payment failure
                 }
             )
         }
         composable("search") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("search") { inclusive = true }
-                    }
-                }
-            }
             SearchScreen(navController = navController)
         }
         composable("notifications") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("notifications") { inclusive = true }
-                    }
-                }
-            }
             NotificationScreen(navController = navController)
         }
         composable(
             route = "comic_purchase/{comicId}",
             arguments = listOf(navArgument("comicId") { type = NavType.IntType })
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("comic_purchase/{comicId}") { inclusive = true }
-                    }
-                }
-            }
             val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
             ComicPurchaseScreen(navController = navController, comicId = comicId)
         }
         composable("order_history") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("order_history") { inclusive = true }
-                    }
-                }
-            }
             OrderHistoryScreen(navController = navController)
         }
         composable(
@@ -289,14 +176,6 @@ fun NavGraph(
                 navArgument("episodeId") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("comic_reader/{comicId}/{episodeId}") { inclusive = true }
-                    }
-                }
-            }
             val comicId = backStackEntry.arguments?.getInt("comicId") ?: 0
             val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
             ComicReaderScreen(
@@ -311,14 +190,6 @@ fun NavGraph(
                 navArgument("episodeId") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("episode_player/{motionComicId}/{episodeId}") { inclusive = true }
-                    }
-                }
-            }
             val motionComicId = backStackEntry.arguments?.getInt("motionComicId") ?: 0
             val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: 0
             EpisodePlayerScreen(
@@ -329,118 +200,37 @@ fun NavGraph(
                 onOrientationChange = onOrientationChange
             )
         }
-        // Profile Tab Routes
         composable("edit_profile") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("edit_profile") { inclusive = true }
-                    }
-                }
-            }
             EditProfileScreen(navController = navController)
         }
         composable("settings") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("settings") { inclusive = true }
-                    }
-                }
-            }
             SettingsScreen(navController = navController)
         }
         composable("language_selection") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("language_selection") { inclusive = true }
-                    }
-                }
-            }
             LanguageSelectionScreen(navController = navController)
         }
         composable("support") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("support") { inclusive = true }
-                    }
-                }
-            }
             SupportScreen(navController = navController)
         }
         composable("share_and_reward") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("share_and_reward") { inclusive = true }
-                    }
-                }
-            }
             ShareAndRewardScreen(navController = navController)
         }
         composable("upload_comic") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("upload_comic") { inclusive = true }
-                    }
-                }
-            }
             UploadComicScreen(navController = navController)
         }
         composable("coin_purchase") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("coin_purchase") { inclusive = true }
-                    }
-                }
-            }
             CoinPurchaseScreen(navController = navController)
         }
         composable("follow_screen") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("follow_screen") { inclusive = true }
-                    }
-                }
-            }
             FollowScreen(navController = navController)
         }
         composable("user_posts") {
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("user_posts") { inclusive = true }
-                    }
-                }
-            }
             UserPostsScreen(navController = navController)
         }
         composable(
             route = "user_profile/{username}",
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
-            // Redirect to login if not logged in
-            LaunchedEffect(DummyData.isLoggedIn) {
-                if (!DummyData.isLoggedIn) {
-                    navController.navigate("login") {
-                        popUpTo("user_profile/{username}") { inclusive = true }
-                    }
-                }
-            }
             val username = backStackEntry.arguments?.getString("username") ?: ""
             UserProfileScreen(navController = navController, username = username)
         }

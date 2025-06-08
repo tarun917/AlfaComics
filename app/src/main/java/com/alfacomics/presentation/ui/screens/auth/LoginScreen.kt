@@ -15,25 +15,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.alfacomics.data.repository.DummyData
-import kotlinx.coroutines.delay
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel // Updated parameter
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // Check if user is already logged in (e.g., Admin during testing)
-    LaunchedEffect(Unit) {
-        if (DummyData.isLoggedIn) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
+    LaunchedEffect(authViewModel.errorMessage) { errorMessage = authViewModel.errorMessage }
 
     Column(
         modifier = Modifier
@@ -43,7 +35,6 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Title
         Text(
             text = "Login to Alfa Comics",
             style = MaterialTheme.typography.titleLarge,
@@ -52,7 +43,6 @@ fun LoginScreen(
             textAlign = TextAlign.Center
         )
 
-        // Email Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -70,7 +60,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -87,7 +76,6 @@ fun LoginScreen(
             )
         )
 
-        // Error Message (if any)
         errorMessage?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -101,24 +89,13 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Login Button
         Button(
             onClick = {
                 if (email.isBlank() || password.isBlank()) {
                     errorMessage = "Please enter email and password"
                     return@Button
                 }
-
-                // Simulate login with DummyData
-                val loginSuccess = DummyData.loginUser(email, password)
-                if (loginSuccess) {
-                    errorMessage = null
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                } else {
-                    errorMessage = "Invalid email or password"
-                }
+                authViewModel.login(email, password, navController)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -133,52 +110,17 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Skip Button (Login as Admin and skip to Home Screen)
         TextButton(
             onClick = {
-                // Simulate login as Admin for testing
-                val loginSuccess = DummyData.loginUser("admin@example.com", "112233")
-                if (loginSuccess) {
-                    // Ensure navigation happens after login state is updated
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                } else {
-                    errorMessage = "Failed to login as Admin"
-                }
+                navController.navigate("signup")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Skip (Login as Admin)",
+                text = "Don't have an account? Sign Up",
                 color = Color(0xFFBB86FC),
                 fontSize = 14.sp
             )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sign Up Option
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Don't have an account? ",
-                color = Color.White,
-                fontSize = 14.sp
-            )
-            TextButton(
-                onClick = {
-                    navController.navigate("signup")
-                }
-            ) {
-                Text(
-                    text = "Sign Up",
-                    color = Color(0xFFBB86FC),
-                    fontSize = 14.sp
-                )
-            }
         }
     }
 }
