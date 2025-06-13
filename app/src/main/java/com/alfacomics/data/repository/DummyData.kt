@@ -268,7 +268,7 @@ object DummyData {
 
     private var userIdCounter: Long = 102342
 
-    private var userProfile = UserProfile(
+    internal var userProfile = UserProfile(
         userId = userIdCounter++,
         username = "Guest",
         email = "guest@example.com",
@@ -314,7 +314,7 @@ object DummyData {
         put("SciFiGeek", R.drawable.ic_launcher_background)
     }
 
-    private val allUserProfiles = mutableMapOf<String, UserProfile>().apply {
+    internal val allUserProfiles = mutableMapOf<String, UserProfile>().apply {
         put("ComicFan123", UserProfile(
             userId = userIdCounter++,
             username = "ComicFan123",
@@ -920,4 +920,4 @@ object DummyData {
         val timestamp = "2025-05-26 09:45 PM"
         notifications.add(Notification(message, timestamp, targetUser, isRead = false))
     }
-}
+} 

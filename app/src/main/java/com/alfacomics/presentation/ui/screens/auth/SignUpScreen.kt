@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.alfacomics.presentation.viewmodel.AuthViewModel
+import java.util.regex.Pattern
 
 @Composable
 fun SignUpScreen(
@@ -86,7 +87,7 @@ fun SignUpScreen(
         OutlinedTextField(
             value = mobileNumber,
             onValueChange = { mobileNumber = it },
-            label = { Text("Mobile Number", color = Color.White) },
+            label = { Text("Mobile Number (e.g., +919876543210)", color = Color.White) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = LocalTextStyle.current.copy(color = Color.White),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -157,15 +158,21 @@ fun SignUpScreen(
 
         Button(
             onClick = {
-                if (email.isBlank() || password.isBlank() || mobileNumber.isBlank() || fullName.isBlank()) {
-                    errorMessage = "Please fill all required fields"
-                    return@Button
+                when {
+                    fullName.isBlank() || !Pattern.matches("^[A-Za-z\\s-]+$", fullName) ->
+                        errorMessage = "Full name must contain only letters, spaces, or hyphens."
+                    email.isBlank() || !Pattern.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", email) ->
+                        errorMessage = "Please enter a valid email address."
+                    mobileNumber.isBlank() || !Pattern.matches("^\\+?[1-9]\\d{1,14}$", mobileNumber) ->
+                        errorMessage = "Please enter a valid mobile number (e.g., +919876543210)."
+                    password.isBlank() || password.length < 8 ->
+                        errorMessage = "Password must be at least 8 characters long."
+                    !termsAccepted ->
+                        errorMessage = "Please accept the Terms and Conditions."
+                    else -> {
+                        authViewModel.signup(fullName, email, password, mobileNumber, termsAccepted, navController)
+                    }
                 }
-                if (!termsAccepted) {
-                    errorMessage = "Please accept the Terms and Conditions"
-                    return@Button
-                }
-                authViewModel.signup(fullName, email, password, mobileNumber, navController)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -218,7 +225,7 @@ fun SignUpScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "This is a dummy Terms and Conditions text. By signing up, you agree to our policies and terms of use. We respect your privacy and will not share your data without consent.",
+                        text = "By signing up, you agree to our policies and terms of use. We respect your privacy and will not share your data without consent.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.7f),
                         modifier = Modifier.fillMaxWidth(),

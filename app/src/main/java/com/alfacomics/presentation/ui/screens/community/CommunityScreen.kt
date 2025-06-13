@@ -47,17 +47,11 @@ fun CommunityScreen(
     val maxPollOptions = 6
     val mockUsernames = DummyData.getMockUsernames()
 
-    // Image selection launcher
-    val imagePickerLauncher = LocalActivityResultLauncher.current
-
-    // Calculate word count and detect tagging
     LaunchedEffect(newPostContent) {
-        // Word count
         val words = newPostContent.text.trim().split("\\s+".toRegex())
         wordCount = if (newPostContent.text.isBlank()) 0 else words.size
         showWordLimitError = wordCount > maxWordLimit
 
-        // Detect if user is typing a tag (starting with #)
         val cursorPosition = newPostContent.selection.start
         val lastHashIndex = newPostContent.text.lastIndexOf('#', cursorPosition - 1)
         if (lastHashIndex >= 0 && (cursorPosition == lastHashIndex + 1 || !newPostContent.text.substring(lastHashIndex + 1, cursorPosition).contains(" "))) {
@@ -78,7 +72,6 @@ fun CommunityScreen(
             .background(Color(0xFF121212))
             .padding(horizontal = 16.dp)
     ) {
-        // Post Creation Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,7 +104,7 @@ fun CommunityScreen(
                                 if (newPostContent.text.isNotBlank() && !showWordLimitError) {
                                     DummyData.addCommunityPost(newPostContent.text, viewModel.selectedImageUrl, null)
                                     newPostContent = TextFieldValue("")
-                                    viewModel.selectedImageUrl = null
+                                    viewModel.setSelectedImage(null)
                                 }
                             },
                             enabled = newPostContent.text.isNotBlank() && !showWordLimitError
@@ -131,7 +124,6 @@ fun CommunityScreen(
                     )
                 )
 
-                // Dropdown for User Tagging Suggestions
                 DropdownMenu(
                     expanded = showUserDropdown,
                     onDismissRequest = {
@@ -194,18 +186,15 @@ fun CommunityScreen(
                 }
             }
 
-            // Image Selection, Tagging, and Poll Icons (Down Left Corner)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Image Selection Icon
                 IconButton(
                     onClick = {
-                        // Launch image picker
-                        imagePickerLauncher?.launch("image/*")
+                        viewModel.launchImagePicker()
                     }
                 ) {
                     Icon(
@@ -217,7 +206,6 @@ fun CommunityScreen(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                // Tagging Button (# Symbol)
                 TextButton(
                     onClick = {
                         val newText = newPostContent.text + "#"
@@ -238,7 +226,6 @@ fun CommunityScreen(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                // Poll Creation Button
                 IconButton(
                     onClick = {
                         showPollDialog = true
@@ -253,7 +240,6 @@ fun CommunityScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Word Count and Error Message
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -276,7 +262,6 @@ fun CommunityScreen(
             }
         }
 
-        // Poll Creation Dialog
         if (showPollDialog) {
             AlertDialog(
                 onDismissRequest = {
@@ -376,7 +361,7 @@ fun CommunityScreen(
                                 )
                                 DummyData.addCommunityPost(newPostContent.text, viewModel.selectedImageUrl, poll)
                                 newPostContent = TextFieldValue("")
-                                viewModel.selectedImageUrl = null
+                                viewModel.setSelectedImage(null)
                                 showPollDialog = false
                                 pollQuestion = ""
                                 pollOptions = mutableListOf("", "")
@@ -412,7 +397,6 @@ fun CommunityScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Community Feed
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
