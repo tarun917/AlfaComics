@@ -6,8 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,14 +19,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.alfacomics.data.repository.ComicRepository
+import com.alfacomics.presentation.viewmodel.AuthViewModel
+import com.alfacomics.presentation.viewmodel.HomeViewModel
+import com.alfacomics.presentation.viewmodel.HomeViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
+    val viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(ComicRepository(authViewModel))
+    )
+    val comics by viewModel.comics.collectAsState()
+    val motionComics by viewModel.motionComics.collectAsState()
+    val error by viewModel.error.collectAsState()
+
     val tabs = listOf("Digital Comics", "Motion Comics")
     var selectedTabIndex by remember { mutableStateOf(0) }
 
@@ -82,7 +93,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 4.dp) // Reduced padding from 16.dp to 0.dp to minimize black space
+                .padding(horizontal = 4.dp)
         ) {
             // Header
             Row(
@@ -91,6 +102,7 @@ fun HomeScreen(
                     .padding(top = 8.dp, bottom = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Placeholder for future header content
             }
 
             // Tabs
@@ -110,10 +122,31 @@ fun HomeScreen(
                 }
             }
 
+            // Error message if API fails
+            if (error != null) {
+                Text(
+                    text = "Error: $error",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+
             // Content based on selected tab
             when (selectedTabIndex) {
-                0 -> ClassicTab(navController = navController)
-                1 -> ModernTab(navController = navController)
+                0 -> ClassicTab(
+                    navController = navController,
+                    comics = comics,
+                    modifier = Modifier.fillMaxSize()
+                )
+                1 -> ModernTab(
+                    navController = navController,
+                    motionComics = motionComics,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

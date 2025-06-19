@@ -1,6 +1,5 @@
 package com.alfacomics.presentation.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -13,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.alfacomics.data.repository.Episode
+import com.alfacomics.pratilipitv.data.repository.Episode
 
 @Composable
 fun EpisodeCard(
@@ -23,7 +22,7 @@ fun EpisodeCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { if (episode.isFree) onClick() }
+            .clickable { if (episode.is_free) onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -39,11 +38,11 @@ fun EpisodeCard(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = if (episode.isFree) "Free" else "Locked",
+                text = if (episode.is_free) "Free" else "Locked",
                 style = MaterialTheme.typography.labelMedium,
-                color = if (episode.isFree) Color.Green else Color.Red
+                color = if (episode.is_free) Color.Green else Color.Red
             )
-            if (!episode.isFree) {
+            if (!episode.is_free) {
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = "Locked",

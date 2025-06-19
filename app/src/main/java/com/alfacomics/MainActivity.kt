@@ -4,8 +4,9 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -17,10 +18,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.AuthRepository
+import com.alfacomics.data.repository.ComicRepository
 import com.alfacomics.presentation.ui.components.BottomNavBar
 import com.alfacomics.presentation.ui.navigation.NavGraph
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
@@ -28,7 +29,7 @@ import com.alfacomics.presentation.ui.screens.community.LocalActivityResultLaunc
 import com.alfacomics.presentation.ui.screens.home.TopNavBar
 import com.alfacomics.presentation.ui.theme.AlfaComicsTheme
 import com.alfacomics.presentation.viewmodel.AuthViewModel
-import androidx.activity.result.ActivityResultLauncher
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 val LocalActivity = compositionLocalOf<Activity?> { null }
 val LocalActivityResultLauncher = compositionLocalOf<ActivityResultLauncher<String>?> { null }
@@ -39,12 +40,8 @@ class MainActivity : ComponentActivity() {
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
-        // Initialize ViewModels
-        val communityViewModel = ViewModelProvider(this).get(CommunityViewModel::class.java)
-        val authViewModel = ViewModelProvider(this, AuthViewModelFactory(this)).get(AuthViewModel::class.java)
-
         val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            communityViewModel.setSelectedImage(uri?.toString())
+            // CommunityViewModel will handle image URI later
         }
 
         setContent {
@@ -53,10 +50,7 @@ class MainActivity : ComponentActivity() {
                     LocalActivity provides this,
                     LocalActivityResultLauncher provides imagePickerLauncher
                 ) {
-                    AlfaComicsApp(
-                        communityViewModel = communityViewModel,
-                        authViewModel = authViewModel
-                    )
+                    AlfaComicsApp()
                 }
             }
         }
@@ -64,10 +58,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AlfaComicsApp(communityViewModel: CommunityViewModel, authViewModel: AuthViewModel) {
+fun AlfaComicsApp() {
     val navController = rememberNavController()
-    var isLandscape by rememberSaveable { mutableStateOf(false) }
+    val communityViewModel: CommunityViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel(
+        factory = AuthViewModel.Factory(AuthRepository)
+    )
+    val comicRepository = ComicRepository(authViewModel)
 
+    LaunchedEffect(authViewModel.isLoggedIn) {
+        if (authViewModel.isLoggedIn.value) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+    var isLandscape by rememberSaveable { mutableStateOf(false) }
     val activity = LocalActivity.current
 
     LaunchedEffect(isLandscape) {
@@ -109,18 +116,9 @@ fun AlfaComicsApp(communityViewModel: CommunityViewModel, authViewModel: AuthVie
             modifier = Modifier.padding(innerPadding),
             communityViewModel = communityViewModel,
             authViewModel = authViewModel,
+            comicRepository = comicRepository,
             isLandscape = isLandscape,
             onOrientationChange = onOrientationChange
         )
-    }
-}
-
-class AuthViewModelFactory(private val context: android.content.Context) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(context) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

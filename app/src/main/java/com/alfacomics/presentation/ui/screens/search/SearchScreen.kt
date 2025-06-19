@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.pratilipitv.data.repository.Comic
 import com.alfacomics.presentation.ui.components.ComicBox
 
 @SuppressLint("UnrememberedMutableState")
@@ -28,10 +29,10 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedGenre by remember { mutableStateOf("") }
     val allComics = DummyData.getAllComics()
-    val genres = listOf("") + DummyData.getGenresByCategory("Classic") + DummyData.getGenresByCategory("Modern")
+    val genres = listOf("") + DummyData.getAllComics().map { it.genre }.distinct()
 
     // Filter comics based on search query and genre
-    val filteredComics by derivedStateOf {
+    val filteredComics: List<Comic> by derivedStateOf {
         allComics.filter { comic ->
             val matchesQuery = searchQuery.isEmpty() || comic.title.contains(searchQuery, ignoreCase = true)
             val matchesGenre = selectedGenre.isEmpty() || comic.genre == selectedGenre
@@ -108,13 +109,14 @@ fun SearchScreen(
                     .fillMaxWidth()
                     .background(Color(0xFF1E1E1E))
             ) {
-                genres.forEach { genre ->
+                genres.forEach { genre: String ->
                     DropdownMenuItem(
                         text = { Text(if (genre.isEmpty()) "All Genres" else genre, color = Color.White) },
                         onClick = {
                             selectedGenre = genre
                             expanded = false
-                        }
+                        },
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
             }
@@ -125,12 +127,13 @@ fun SearchScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filteredComics) { comic ->
+            items(filteredComics) { comic: Comic ->
                 ComicBox(
                     title = comic.title,
-                    coverImageResId = comic.coverImageResId,  // Updated to use coverImageResId
+                    imageUrl = comic.image_url,
                     rating = comic.rating,
-                    comicId = comic.id,
+                    comicId = comic.comic_id,
+                    price = comic.price,
                     navController = navController
                 )
             }

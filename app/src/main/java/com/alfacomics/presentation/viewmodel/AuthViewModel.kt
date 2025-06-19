@@ -1,130 +1,123 @@
 package com.alfacomics.presentation.viewmodel
 
-import android.content.Context
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.AuthRepository
-import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.UserProfile
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(context: Context) : ViewModel() {
-    private val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+class AuthViewModel internal constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
-    var isLoggedIn by mutableStateOf(loadLoginState())
-    var token: String? by mutableStateOf(loadToken())
-    var refreshToken: String? by mutableStateOf(loadRefreshToken())
-    var userId: Long? by mutableStateOf(loadUserId())
-    var username: String? by mutableStateOf(loadUsername())
-    var email: String? by mutableStateOf(loadEmail())
-    var errorMessage by mutableStateOf<String?>(null)
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
-    private fun saveLoginState(isLoggedIn: Boolean) {
-        prefs.edit().putBoolean("is_logged_in", isLoggedIn).apply()
-        this.isLoggedIn = isLoggedIn
-        DummyData.isLoggedIn = isLoggedIn
+    @Suppress("UNUSED") // Suppress until integrated with UI
+    private val _userId = mutableStateOf<String?>(null)
+    val userId: String? get() = _userId.value
+
+    private val _username = mutableStateOf<String?>(null)
+    val username: String? get() = _username.value
+
+    private val _email = mutableStateOf<String?>(null)
+    val email: String? get() = _email.value
+
+    private val _token = mutableStateOf<String?>(null)
+    val token: String? get() = _token.value
+
+    init {
+        checkLoginStatus()
     }
 
-    private fun saveAuthData(
-        token: String?,
-        refreshToken: String?,
-        userId: Long?,
-        username: String?,
-        email: String?
-    ) {
-        prefs.edit().apply {
-            putString("token", token)
-            putString("refresh_token", refreshToken)
-            putLong("user_id", userId ?: -1)
-            putString("username", username)
-            putString("email", email)
-            apply()
-        }
-        this.token = token
-        this.refreshToken = refreshToken
-        this.userId = userId
-        this.username = username
-        this.email = email
-
-        // Update DummyData.userProfile
-        if (userId != null && username != null && email != null) {
-            DummyData.userProfile = UserProfile(
-                userId = userId,
-                username = username,
-                email = email,
-                profilePictureResourceId = com.alfacomics.R.drawable.ic_launcher_background,
-                profilePictureBitmap = null,
-                aboutMe = "",
-                alfaCoins = 500,
-                followers = emptyList(),
-                following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
-            )
-            DummyData.allUserProfiles[username] = DummyData.userProfile
+    private fun checkLoginStatus() {
+        val token = authRepository.getToken()
+        if (token != null) {
+            _isLoggedIn.value = true
+            _userId.value = authRepository.getUserId()
+            _username.value = authRepository.getUsername()
+            _email.value = authRepository.getEmail()
+            _token.value = token
+        } else {
+            _isLoggedIn.value = false
+            _userId.value = null
+            _username.value = null
+            _email.value = null
+            _token.value = null
         }
     }
 
-    private fun loadLoginState(): Boolean = prefs.getBoolean("is_logged_in", false)
-
-    private fun loadToken(): String? = prefs.getString("token", null)
-
-    private fun loadRefreshToken(): String? = prefs.getString("refresh_token", null)
-
-    private fun loadUserId(): Long? {
-        val userId = prefs.getLong("user_id", -1)
-        return if (userId != -1L) userId else null
-    }
-
-    private fun loadUsername(): String? = prefs.getString("username", null)
-
-    private fun loadEmail(): String? = prefs.getString("email", null)
-
-    fun login(email: String, password: String, navController: NavHostController) {
+    fun login(usernameOrEmail: String, password: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
-            val result = AuthRepository.login(email, password)
-            result.onSuccess {
-                saveLoginState(true)
-                saveAuthData(it.token, it.refreshToken, it.userId.toLong(), it.username, email)
-                navController.navigate("home") {
-                    popUpTo("login") { inclusive = true }
-                }
-            }.onFailure {
-                errorMessage = it.message
+            val result = authRepository.login(usernameOrEmail, password)
+            if (result.isSuccess) {
+                val response = result.getOrThrow()
+                _isLoggedIn.value = true
+                _userId.value = response.userId.toString()
+                _username.value = response.username
+                _email.value = usernameOrEmail
+                _token.value = response.accessToken
+                onResult(true, null)
+            } else {
+                _isLoggedIn.value = false
+                _userId.value = null
+                _username.value = null
+                _email.value = null
+                _token.value = null
+                onResult(false, result.exceptionOrNull()?.message)
             }
         }
     }
 
     fun signup(
+        username: String,
         fullName: String,
         email: String,
         password: String,
         mobileNumber: String,
         termsAccepted: Boolean,
-        navController: NavHostController
+        onResult: (Boolean, String?) -> Unit
     ) {
         viewModelScope.launch {
-            val result = AuthRepository.signup(fullName, email, password, mobileNumber, termsAccepted)
-            result.onSuccess {
-                saveLoginState(true)
-                saveAuthData(it.token, it.refreshToken, it.userId.toLong(), it.username, email)
-                navController.navigate("home") {
-                    popUpTo("signup") { inclusive = true }
-                }
-            }.onFailure {
-                errorMessage = it.message ?: "Signup failed"
+            val result = authRepository.signup(username, fullName, email, mobileNumber, password, termsAccepted)
+            if (result.isSuccess) {
+                val response = result.getOrThrow()
+                _isLoggedIn.value = true
+                _userId.value = response.userId.toString()
+                _username.value = response.username
+                _email.value = email
+                _token.value = response.accessToken
+                onResult(true, null)
+            } else {
+                _isLoggedIn.value = false
+                _userId.value = null
+                _username.value = null
+                _email.value = null
+                _token.value = null
+                onResult(false, result.exceptionOrNull()?.message)
             }
         }
     }
 
-    fun logout(navController: NavHostController) {
-        saveLoginState(false)
-        saveAuthData(null, null, null, null, null)
-        DummyData.clearUserData()
-        navController.navigate("login") {
-            popUpTo("home") { inclusive = true }
+    fun logout() {
+        authRepository.logout()
+        _isLoggedIn.value = false
+        _userId.value = null
+        _username.value = null
+        _email.value = null
+        _token.value = null
+    }
+
+    class Factory(private val authRepository: AuthRepository) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+                return AuthViewModel(authRepository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

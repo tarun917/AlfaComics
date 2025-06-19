@@ -1,6 +1,7 @@
 package com.alfacomics.presentation.ui.components
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -22,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.alfacomics.R
 import com.alfacomics.data.repository.DummyData
 import java.text.DecimalFormat
 
@@ -29,22 +35,22 @@ import java.text.DecimalFormat
 @Composable
 fun ComicBox(
     title: String,
-    coverImageResId: Int,
+    imageUrl: String,
     rating: Float,
-    price: Int? = null,
+    price: Double, // Made non-nullable to align with Comic.price
     comicId: Int? = null,
-    navController: NavHostController? = null // Added navController parameter
+    navController: NavHostController? = null
 ) {
     // State for purchase confirmation and dialog visibility
     val showPurchaseMessageState = remember { mutableStateOf(false) }
     var showPurchaseMessage by showPurchaseMessageState
     val showPaymentDialog = remember { mutableStateOf(false) }
-    val isPurchased by derivedStateOf { comicId?.let { DummyData.isComicPurchased(it) } ?: false }
+    val isPurchased by derivedStateOf { comicId?.let { DummyData.isComicPurchased(it) } == true }
 
-    // Get readCount if comicId is provided
+    // Get read_count if comicId is provided
     val readCount by derivedStateOf {
         comicId?.let { id ->
-            DummyData.getComicById(id)?.readCount ?: 0
+            DummyData.getComicById(id)?.read_count ?: 0
         } ?: 0
     }
 
@@ -66,19 +72,34 @@ fun ComicBox(
                 .size(120.dp, 180.dp)
                 .clip(RoundedCornerShape(8.dp))
         ) {
-            // Placeholder for cover image
-            Box(
+            // Load cover image with Coil
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = imageUrl,
+                    error = painterResource(R.drawable.ic_launcher_background), // Fallback if image fails
+                    placeholder = painterResource(R.drawable.ic_launcher_background)
+                ),
+                contentDescription = "Comic Cover",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Cover\nPlaceholder",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center
-                )
+                    .fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Fallback placeholder if image is invalid
+            if (imageUrl.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cover\nPlaceholder",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             // Overlay for Rating (Top-Left)
@@ -137,19 +158,17 @@ fun ComicBox(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Price (if provided)
-        if (price != null) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "₹$price",
-                style = MaterialTheme.typography.labelMedium,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-        }
+        // Price
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "₹$price",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
 
-        // Buy Now Button (if price and comicId are provided and not purchased)
-        if (price != null && comicId != null && !isPurchased) {
+        // Buy Now Button (if not purchased)
+        if (comicId != null && !isPurchased) {
             Spacer(modifier = Modifier.height(4.dp))
             Button(
                 onClick = {
@@ -275,24 +294,24 @@ fun MockPaymentDialog(
                                 when (newText.length) {
                                     2 -> {
                                         // Auto-add '/' after MM and move cursor to the right
-                                        if (!newText.endsWith("/")) {
-                                            expiryDate = TextFieldValue(
+                                        expiryDate = if (!newText.endsWith("/")) {
+                                            TextFieldValue(
                                                 text = "$newText/",
-                                                selection = androidx.compose.ui.text.TextRange(3)
+                                                selection = TextRange(3)
                                             )
                                         } else {
-                                            expiryDate = newValue
+                                            newValue
                                         }
                                     }
                                     3 -> {
                                         // If user deletes '/' by backspacing, remove it
-                                        if (newText.endsWith("/")) {
-                                            expiryDate = TextFieldValue(
+                                        expiryDate = if (newText.endsWith("/")) {
+                                            TextFieldValue(
                                                 text = newText.dropLast(1),
-                                                selection = androidx.compose.ui.text.TextRange(2)
+                                                selection = TextRange(2)
                                             )
                                         } else {
-                                            expiryDate = newValue
+                                            newValue
                                         }
                                     }
                                     else -> {
@@ -301,7 +320,7 @@ fun MockPaymentDialog(
                                             val correctedText = newText.substring(0, 2) + "/" + newText.substring(3)
                                             expiryDate = TextFieldValue(
                                                 text = correctedText,
-                                                selection = androidx.compose.ui.text.TextRange(correctedText.length)
+                                                selection = TextRange(correctedText.length)
                                             )
                                         } else {
                                             expiryDate = newValue

@@ -1,4 +1,4 @@
-package com.alfacomics.presentation.ui.screens.profile
+/*package com.alfacomics.presentation.ui.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -147,4 +147,4 @@ fun UploadComicScreen(
             Text("Upload", fontSize = 16.sp)
         }
     }
-}
+}*/

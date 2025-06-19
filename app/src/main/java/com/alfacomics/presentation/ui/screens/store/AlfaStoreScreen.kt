@@ -1,6 +1,7 @@
 package com.alfacomics.presentation.ui.screens.store
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Receipt
@@ -19,16 +21,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.HardCopyComic
-import com.alfacomics.presentation.ui.components.HardCopyComicBox
+import com.alfacomics.pratilipitv.presentation.ui.components.HardCopyComicBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -37,11 +39,9 @@ import kotlinx.coroutines.withContext
 fun AlfaStoreScreen(
     navController: NavHostController
 ) {
-    // State to hold the list of hard copy comics
     var hardCopyComics by remember { mutableStateOf<List<HardCopyComic>?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Load hard copy comics asynchronously
     LaunchedEffect(Unit) {
         isLoading = true
         hardCopyComics = withContext(Dispatchers.IO) {
@@ -50,17 +50,15 @@ fun AlfaStoreScreen(
         isLoading = false
     }
 
-    // Gradient background for the screen with a subtle shine effect
     val gradientBackground = Brush.linearGradient(
         colors = listOf(
             Color(0xFF121212),
             Color(0xFF1C2526)
         ),
-        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-        end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+        start = Offset(0f, 0f),
+        end = Offset(1000f, 1000f)
     )
 
-    // Animated shine effect for background
     val infiniteTransition = rememberInfiniteTransition()
     val shineOffset by infiniteTransition.animateFloat(
         initialValue = -500f,
@@ -80,7 +78,6 @@ fun AlfaStoreScreen(
             .fillMaxSize()
             .background(gradientBackground)
     ) {
-        // Subtle shine overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -91,14 +88,13 @@ fun AlfaStoreScreen(
                             Color(0xFFBB86FC).copy(alpha = 0.1f),
                             Color.Transparent
                         ),
-                        start = androidx.compose.ui.geometry.Offset(shineOffset, shineOffset),
-                        end = androidx.compose.ui.geometry.Offset(shineOffset + 500f, shineOffset + 500f)
+                        start = Offset(shineOffset, shineOffset),
+                        end = Offset(shineOffset + 500f, shineOffset + 500f)
                     )
                 )
         )
 
         if (isLoading) {
-            // Show a loading indicator while fetching data
             Box(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -113,7 +109,7 @@ fun AlfaStoreScreen(
                             .size(48.dp)
                             .shadow(
                                 elevation = 8.dp,
-                                shape = androidx.compose.foundation.shape.CircleShape,
+                                shape = CircleShape,
                                 spotColor = Color(0xFFBB86FC).copy(alpha = 0.3f)
                             )
                     )
@@ -141,12 +137,10 @@ fun AlfaStoreScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Header Item (Title and Order History Button)
                     item(span = { GridItemSpan(2) }) {
                         HeaderSection(navController = navController)
                     }
 
-                    // Divider
                     item(span = { GridItemSpan(2) }) {
                         Box(
                             modifier = Modifier
@@ -163,7 +157,6 @@ fun AlfaStoreScreen(
                         )
                     }
 
-                    // Grid of Hard Copy Comics
                     items(comicList) { comic ->
                         HardCopyComicBox(
                             title = comic.title,
@@ -176,7 +169,6 @@ fun AlfaStoreScreen(
                     }
                 }
             } ?: run {
-                // Fallback UI if comics fail to load
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -199,14 +191,13 @@ fun AlfaStoreScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedButton(
                             onClick = {
-                                // Retry loading comics
                                 hardCopyComics = null
                                 isLoading = true
                             },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = Color.White
                             ),
-                            border = androidx.compose.foundation.BorderStroke(
+                            border = BorderStroke(
                                 width = 1.dp,
                                 brush = Brush.linearGradient(
                                     colors = listOf(Color(0xFFFFD700), Color(0xFFBB86FC))
@@ -228,7 +219,6 @@ fun AlfaStoreScreen(
 
 @Composable
 fun HeaderSection(navController: NavHostController) {
-    // Animation for history button
     var historyButtonPressed by remember { mutableStateOf(false) }
     val historyButtonScale by animateFloatAsState(
         targetValue = if (historyButtonPressed) 0.95f else 1f,
@@ -287,7 +277,7 @@ fun HeaderSection(navController: NavHostController) {
                     .size(40.dp)
                     .shadow(
                         elevation = 8.dp,
-                        shape = androidx.compose.foundation.shape.CircleShape,
+                        shape = CircleShape,
                         spotColor = Color(0xFFBB86FC).copy(alpha = glowAlpha),
                         ambientColor = Color(0xFFFFD700).copy(alpha = glowAlpha)
                     )
@@ -295,14 +285,14 @@ fun HeaderSection(navController: NavHostController) {
                         Brush.linearGradient(
                             colors = listOf(Color(0xFFFFD700), Color(0xFFBB86FC))
                         ),
-                        shape = androidx.compose.foundation.shape.CircleShape
+                        shape = CircleShape
                     )
                     .border(
                         width = 1.dp,
                         brush = Brush.linearGradient(
                             colors = listOf(Color(0xFFFFD700), Color(0xFFBB86FC))
                         ),
-                        shape = androidx.compose.foundation.shape.CircleShape
+                        shape = CircleShape
                     )
             ) {
                 IconButton(

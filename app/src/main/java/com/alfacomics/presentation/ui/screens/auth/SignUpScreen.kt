@@ -25,6 +25,7 @@ fun SignUpScreen(
     navController: NavHostController,
     authViewModel: AuthViewModel
 ) {
+    var username by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -32,7 +33,6 @@ fun SignUpScreen(
     var termsAccepted by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showTermsDialog by remember { mutableStateOf(false) }
-    LaunchedEffect(authViewModel.errorMessage) { errorMessage = authViewModel.errorMessage }
 
     Column(
         modifier = Modifier
@@ -49,6 +49,23 @@ fun SignUpScreen(
             modifier = Modifier.padding(bottom = 24.dp),
             textAlign = TextAlign.Center
         )
+
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username", color = Color.White) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(color = Color.White),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color(0xFFBB86FC),
+                unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f)
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = fullName,
@@ -87,7 +104,7 @@ fun SignUpScreen(
         OutlinedTextField(
             value = mobileNumber,
             onValueChange = { mobileNumber = it },
-            label = { Text("Mobile Number (e.g., +919876543210)", color = Color.White) },
+            label = { Text("Mobile Number", color = Color.White) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = LocalTextStyle.current.copy(color = Color.White),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -159,9 +176,11 @@ fun SignUpScreen(
         Button(
             onClick = {
                 when {
+                    username.isBlank() || !Pattern.matches("^[A-Za-z0-9_-]{3,16}$", username) ->
+                        errorMessage = "Username must be 3-16 characters, letters, numbers, underscores, or hyphens."
                     fullName.isBlank() || !Pattern.matches("^[A-Za-z\\s-]+$", fullName) ->
                         errorMessage = "Full name must contain only letters, spaces, or hyphens."
-                    email.isBlank() || !Pattern.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", email) ->
+                    email.isBlank() || !Pattern.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$", email) ->
                         errorMessage = "Please enter a valid email address."
                     mobileNumber.isBlank() || !Pattern.matches("^\\+?[1-9]\\d{1,14}$", mobileNumber) ->
                         errorMessage = "Please enter a valid mobile number (e.g., +919876543210)."
@@ -170,7 +189,22 @@ fun SignUpScreen(
                     !termsAccepted ->
                         errorMessage = "Please accept the Terms and Conditions."
                     else -> {
-                        authViewModel.signup(fullName, email, password, mobileNumber, termsAccepted, navController)
+                        authViewModel.signup(
+                            username = username,
+                            fullName = fullName,
+                            email = email,
+                            password = password,
+                            mobileNumber = mobileNumber,
+                            termsAccepted = termsAccepted
+                        ) { success, message ->
+                            if (success) {
+                                navController.navigate("home") {
+                                    popUpTo("signup") { inclusive = true }
+                                }
+                            } else {
+                                errorMessage = message ?: "Signup failed"
+                            }
+                        }
                     }
                 }
             },

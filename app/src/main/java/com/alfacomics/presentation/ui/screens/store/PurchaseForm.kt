@@ -157,11 +157,12 @@ fun PurchaseForm(
                     val buyerDetails = BuyerDetails(
                         comicId = comicId,
                         buyerName = buyerName,
-                        email = email,
                         mobileNumber = mobileNumber,
-                        address = address,
                         pinCode = pinCode,
-                        purchaseTimestamp = "2025-05-20 03:45 PM" // Updated to current date/time
+                        purchaseTimestamp = "2025-05-20 03:45 PM",
+                        email = email,
+                        buyerEmail = TODO(),
+                        buyerAddress = TODO() // Updated to current date/time
                     )
                     onBuyClicked(buyerDetails)
                 }
@@ -189,7 +190,7 @@ private fun validateForm(
 
     // Validate Email
     val emailPattern = Pattern.compile(
-        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
     )
     if (email.isBlank()) {
         return "Email is required"
@@ -198,7 +199,7 @@ private fun validateForm(
     }
 
     // Validate Mobile Number
-    val mobilePattern = Pattern.compile("^[0-9]{10}\$")
+    val mobilePattern = Pattern.compile("^[0-9]{10}$")
     if (mobileNumber.isBlank()) {
         return "Mobile Number is required"
     } else if (!mobilePattern.matcher(mobileNumber).matches()) {
@@ -211,7 +212,7 @@ private fun validateForm(
     }
 
     // Validate Pin Code
-    val pinCodePattern = Pattern.compile("^[0-9]{6}\$")
+    val pinCodePattern = Pattern.compile("^[0-9]{6}$")
     if (pinCode.isBlank()) {
         return "Pin Code is required"
     } else if (!pinCodePattern.matcher(pinCode).matches()) {

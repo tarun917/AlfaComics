@@ -12,16 +12,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.pratilipitv.data.repository.Comic
+import kotlin.collections.map
 
 @Composable
 fun ClassicTab(
     navController: NavHostController,
+    comics: List<Comic> = DummyData.getAllComics(),
     modifier: Modifier = Modifier
 ) {
-    val comics = DummyData.getComicsByCategory("Classic")
-    val genres = DummyData.getGenresByCategory("Classic")
+    val genres = comics.map { it.genre }.distinct()
     val groupedComics = genres.associateWith { genre ->
-        comics.filter { it.genre == genre.toString() }
+        comics.filter { it.genre == genre }
     }
 
     LazyColumn(
@@ -32,7 +34,7 @@ fun ClassicTab(
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
         items(groupedComics.entries.toList()) { entry ->
-            val genre = entry.key.toString()
+            val genre = entry.key
             val genreComics = entry.value
             ClassicComicScroll(
                 genre = genre,

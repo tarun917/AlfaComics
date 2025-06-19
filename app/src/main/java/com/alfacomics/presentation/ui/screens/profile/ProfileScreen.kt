@@ -37,18 +37,20 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.alfacomics.R
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun ProfileScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel
 ) {
     // State to hold the logged-in status
-    var isLoggedIn by remember { mutableStateOf(DummyData.isLoggedIn) }
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
     // Redirect to login if not logged in
     LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
+        if (isLoggedIn == false) {
             navController.navigate("login") {
                 popUpTo("profile") { inclusive = true }
             }
@@ -57,8 +59,8 @@ fun ProfileScreen(
 
     // State to hold the user profile and refresh it when needed
     var userProfile by remember { mutableStateOf(DummyData.getUserProfile()) }
-    val favoriteComicsCount by derivedStateOf { DummyData.getCommunityPostsCount() }
-    val followersCount by derivedStateOf { userProfile.followers.size }
+    val favoriteComicsCount: Int by derivedStateOf { DummyData.getCommunityPostsCount() }
+    val followersCount: Int by derivedStateOf { userProfile.followers.size }
     val context = LocalContext.current
 
     // State for profile picture selection dialog
@@ -175,7 +177,6 @@ fun ProfileScreen(
                                         .background(Color.Gray)
                                 )
                             } else {
-                                // Fallback placeholder if both bitmaps are null
                                 Box(
                                     modifier = Modifier
                                         .size(70.dp)
@@ -282,7 +283,6 @@ fun ProfileScreen(
                                     .clip(CircleShape)
                             )
                         } else {
-                            // Fallback placeholder for coin image
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
@@ -352,6 +352,7 @@ fun ProfileScreen(
                     aboutMe = userProfile.aboutMe,
                     onUpdateAboutMe = { newAboutMe ->
                         DummyData.updateAboutMe(newAboutMe)
+                        userProfile = DummyData.getUserProfile()
                     }
                 )
             }
@@ -459,7 +460,7 @@ fun ProfileScreen(
                     }
                 }
 
-                // Right Column: Support, Share And Reward, Upload Your Comic
+                // Right Column: Support, Share And Reward
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -543,49 +544,6 @@ fun ProfileScreen(
                         ) {
                             Text(
                                 text = "Share And Reward",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-                    }
-
-                    // Upload Your Comic
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp)
-                            .clickable {
-                                navController.navigate("upload_comic")
-                            }
-                            .border(
-                                width = 1.dp,
-                                color = Color(0xFFBB86FC),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            Color(0xFFBB86FC),
-                                            Color(0xFF4361EE)
-                                        )
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Upload Your Comic",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color.White,
                                 fontSize = 16.sp,
@@ -760,50 +718,6 @@ fun AboutMeSection(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ProfileOptionCard(
-    title: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2526))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
-            )
-            val iconBitmap = BitmapFactory.decodeResource(LocalContext.current.resources, R.drawable.ic_launcher_background)
-            if (iconBitmap != null) {
-                Icon(
-                    bitmap = iconBitmap.asImageBitmap(),
-                    contentDescription = "Option Icon",
-                    tint = Color(0xFFBB86FC),
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                // Fallback placeholder for icon
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(Color.Gray)
-                )
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,28 +19,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.alfacomics.data.repository.ComicRepository
 import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.MotionDummyData
-import com.alfacomics.data.repository.MotionEpisode
+import com.alfacomics.pratilipitv.data.repository.MotionEpisode
+import com.alfacomics.presentation.viewmodel.AuthViewModel
+import com.alfacomics.presentation.viewmodel.MotionComicViewModel
+import com.alfacomics.presentation.viewmodel.MotionComicViewModelFactory
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun MotionComicDetailScreen(
     navController: NavHostController,
     motionComicId: Int,
-    isLandscape: Boolean,
-    onOrientationChange: (Boolean) -> Unit
+    authViewModel: AuthViewModel,
+    onOrientationChange: (Boolean) -> Unit,
+    isLandscape: Boolean
 ) {
-    val motionComic = MotionDummyData.getMotionComicById(motionComicId)
+    val viewModel: MotionComicViewModel = viewModel(
+        factory = MotionComicViewModelFactory(ComicRepository(authViewModel), motionComicId)
+    )
+    val motionComic by viewModel.motionComic.collectAsState(initial = null)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var isFavorite by remember { mutableStateOf(DummyData.isFavoriteMotionComic(motionComicId)) }
     var isSubscribed by remember { mutableStateOf(DummyData.isUserSubscribed()) }
-    val episodes by remember { derivedStateOf { MotionDummyData.getMotionEpisodesWithSubscription(motionComicId) } }
+    val episodes by remember { derivedStateOf { viewModel.getMotionEpisodesWithSubscription() } }
 
     // State to trigger recomposition after unlocking an episode
     var episodeListState by remember { mutableStateOf(episodes) }
@@ -47,7 +56,7 @@ fun MotionComicDetailScreen(
     var showInsufficientCoinsDialog by remember { mutableStateOf(false) }
 
     // Debug logs for initial state
-    Log.d("MotionComicDetailScreen", "isLoggedIn: ${DummyData.isLoggedIn}")
+    Log.d("MotionComicDetailScreen", "isLoggedIn: ${authViewModel.isLoggedIn.value}")
     Log.d("MotionComicDetailScreen", "isSubscribed: $isSubscribed")
     Log.d("MotionComicDetailScreen", "User alfaCoins: ${DummyData.getUserProfile().alfaCoins}")
 
@@ -84,11 +93,11 @@ fun MotionComicDetailScreen(
             ) {
                 // Display the cover image
                 Image(
-                    painter = painterResource(id = motionComic.thumbnailUrl),
+                    painter = rememberAsyncImagePainter(model = motionComic!!.image_url),
                     contentDescription = "Motion Comic Cover",
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = ContentScale.Crop
                 )
 
                 // Favourite Button at Top-Right Corner
@@ -155,16 +164,16 @@ fun MotionComicDetailScreen(
                     .padding(vertical = 8.dp)
             ) {
                 // Count words in description
-                val wordCount = motionComic.description.split(" ").size
+                val wordCount = motionComic!!.description.split(" ").size
                 val isLongDescription = wordCount > 50
                 val truncatedDescription = if (isLongDescription) {
-                    motionComic.description.split(" ").take(50).joinToString(" ")
+                    motionComic!!.description.split(" ").take(50).joinToString(" ")
                 } else {
-                    motionComic.description
+                    motionComic!!.description
                 }
 
                 Text(
-                    text = if (isDescriptionExpanded) motionComic.description else truncatedDescription,
+                    text = if (isDescriptionExpanded) motionComic!!.description else truncatedDescription,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     maxLines = if (isDescriptionExpanded) Int.MAX_VALUE else 3,
@@ -197,22 +206,22 @@ fun MotionComicDetailScreen(
             )
         }
 
-        items(episodeListState) { episode ->
+        items(items = episodeListState, key = { episode -> episode.id }) { episode ->
             EpisodeItem(
                 episode = episode,
-                isLocked = !episode.isUnlocked && !isSubscribed,
+                isLocked = !episode.is_unlocked && !isSubscribed,
                 onPlayClick = {
-                    if (episode.isUnlocked || isSubscribed) {
+                    if (episode.is_unlocked || isSubscribed) {
                         navController.navigate("episode_player/$motionComicId/${episode.id}")
                     }
                 },
                 onUnlockClick = {
                     Log.d("MotionComicDetailScreen", "Unlock button clicked for episode ${episode.id}")
-                    if (!isSubscribed && !episode.isUnlocked) {
-                        val success = MotionDummyData.unlockMotionEpisodeWithCoins(motionComicId, episode.id, 50)
+                    if (!isSubscribed && !episode.is_unlocked) {
+                        val success = viewModel.unlockMotionEpisodeWithCoins(motionComicId, episode.id)
                         Log.d("MotionComicDetailScreen", "Unlock success: $success")
                         if (success) {
-                            episodeListState = MotionDummyData.getMotionEpisodesWithSubscription(motionComicId)
+                            episodeListState = viewModel.getMotionEpisodesWithSubscription()
                             Log.d("MotionComicDetailScreen", "Episode list updated after unlock")
                         } else {
                             showInsufficientCoinsDialog = true

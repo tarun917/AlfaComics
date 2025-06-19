@@ -20,10 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.BuyerDetails
-import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.Review
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -39,7 +38,7 @@ fun ComicPurchaseScreen(
     val userProfile = remember { DummyData.getUserProfile() }
     var purchaseError by remember { mutableStateOf<String?>(null) }
     var isPurchased by remember { mutableStateOf(DummyData.isComicPurchased(comicId)) }
-    val readCount = AlfaStoreData.getReadCountForHardCopyComic(comicId) // Placeholder for total buyers
+    val readCount by remember { mutableStateOf(AlfaStoreData.getReadCountForHardCopyComic(comicId)) } // Fixed to Long
     var showDescriptionModal by remember { mutableStateOf(false) }
     var showReviewsModal by remember { mutableStateOf(false) }
     var showPaymentModal by remember { mutableStateOf(false) }
@@ -65,7 +64,7 @@ fun ComicPurchaseScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
-            .imePadding() // Adjusts for keyboard height
+            .imePadding()
             .padding(16.dp),
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -94,7 +93,7 @@ fun ComicPurchaseScreen(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight() // Changed from wrapContentHeight to fillMaxHeight
+                        .fillMaxHeight()
                         .background(Color(0xFF1E1E1E), shape = MaterialTheme.shapes.medium)
                         .padding(8.dp)
                 ) {
@@ -104,12 +103,10 @@ fun ComicPurchaseScreen(
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    // Count words in the description
                     val wordCount = comic.description.split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
-                    val isLongDescription = wordCount > 20 // Threshold set to 15 words
+                    val isLongDescription = wordCount > 20
                     Log.d("ComicPurchaseScreen", "Description Word Count: $wordCount, isLongDescription: $isLongDescription")
                     val truncatedDescription = if (isLongDescription) {
-                        // Truncate to first 15 words for display
                         comic.description.split("\\s+".toRegex())
                             .filter { it.isNotEmpty() }
                             .take(20)
@@ -119,7 +116,7 @@ fun ComicPurchaseScreen(
                     }
                     Column(
                         modifier = Modifier
-                            .fillMaxHeight() // Ensure content takes full height
+                            .fillMaxHeight()
                     ) {
                         Text(
                             text = if (truncatedDescription.isEmpty()) "No description available." else truncatedDescription,
@@ -129,7 +126,7 @@ fun ComicPurchaseScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                         if (isLongDescription) {
-                            Spacer(modifier = Modifier.height(4.dp)) // Add space before "More..."
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "More...",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -151,21 +148,16 @@ fun ComicPurchaseScreen(
                         .padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Price
                     Text(
                         text = "Price: ₹${comic.price}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White
                     )
-
-                    // Pages
                     Text(
                         text = "Pages: ${comic.pages}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White
                     )
-
-                    // Ratings
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -182,15 +174,11 @@ fun ComicPurchaseScreen(
                             color = Color.White
                         )
                     }
-
-                    // Total Buyers
                     Text(
                         text = "Total Buyers: $readCount",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White
                     )
-
-                    // Reviews
                     ReviewsSection(
                         reviews = comic.reviews,
                         onReviewsClicked = { showReviewsModal = true }
@@ -204,14 +192,11 @@ fun ComicPurchaseScreen(
             PurchaseForm(
                 comicId = comicId,
                 onBuyClicked = { buyerDetails ->
-                    // Save buyer details
                     AlfaStoreData.saveBuyerDetails(buyerDetails)
-                    // Store pending buyer details and show payment options modal
                     pendingBuyerDetails = buyerDetails
                     showPaymentModal = true
-                    // Scroll to the top of the form to ensure visibility
                     coroutineScope.launch {
-                        listState.animateScrollToItem(index = 2) // Adjust index based on your layout
+                        listState.animateScrollToItem(index = 2)
                     }
                 }
             )
@@ -316,7 +301,7 @@ fun ComicPurchaseScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 400.dp), // Increased max height for better visibility
+                            .heightIn(max = 400.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         itemsIndexed(comic.reviews) { _, review ->
@@ -341,7 +326,6 @@ fun ComicPurchaseScreen(
         PaymentOptionsModal(
             onDismiss = { showPaymentModal = false },
             onPaymentSelected = { paymentMethod ->
-                // For now, we'll simulate a successful payment
                 if (comic.stockQuantity <= 0) {
                     purchaseError = "Out of stock!"
                     showPaymentModal = false
@@ -352,15 +336,12 @@ fun ComicPurchaseScreen(
                     showPaymentModal = false
                     return@PaymentOptionsModal
                 }
-
-                // Deduct AlfaCoins and confirm purchase
                 val newBalance = userProfile.alfaCoins - comic.price
                 DummyData.updateAlfaCoins(newBalance)
                 DummyData.confirmPurchase(comicId)
                 isPurchased = true
                 purchaseError = null
                 showPaymentModal = false
-                // Clear the navigation stack to avoid duplicate screens
                 navController.popBackStack("store", inclusive = false)
                 navController.navigate("order_confirmation")
             }

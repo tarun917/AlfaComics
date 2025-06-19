@@ -8,46 +8,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import com.alfacomics.R
-
-data class Comic(
-    val id: Int,
-    val title: String,
-    val coverImageResId: Int,  // Changed from coverImageUrl to coverImageResId
-    val rating: Float,
-    val genre: String,
-    val category: String,
-    val price: Int,
-    val readCount: Int,
-    val description: String = "This is a sample description for the comic. It includes exciting adventures, thrilling plots, and amazing characters that will keep you hooked!",
-    val episodes: List<Episode> = List(10) { index ->
-        Episode(
-            id = index + 1,
-            title = "Episode ${index + 1}",
-            isFree = index < 5
-        )
-    }
-)
-
-data class Episode(
-    val id: Int,
-    val title: String,
-    val isFree: Boolean,
-    val pages: List<EpisodePage> = List(10) { index ->
-        EpisodePage(
-            imageResourceId = R.drawable.ic_launcher_background,
-            text = when (index % 3) {
-                0 -> "Hero: I will save the city!"
-                1 -> "Villain: You’ll never stop me!"
-                else -> "Narrator: The battle intensifies..."
-            }
-        )
-    }
-)
-
-data class EpisodePage(
-    val imageResourceId: Int,
-    val text: String
-)
+import com.alfacomics.pratilipitv.data.repository.Comic
+import com.alfacomics.pratilipitv.data.repository.Episode
 
 data class EpisodeSocialData(
     val comicId: Int,
@@ -119,139 +81,167 @@ data class Notification(
 )
 
 object DummyData {
-    // Array of drawable resource IDs for cyclic mapping
-    private val coverImages = listOf(
-        R.drawable.image1,
-        R.drawable.image2,
-        R.drawable.image3,
-        R.drawable.image4,
-        R.drawable.image5,
-        R.drawable.image6,
-        R.drawable.image7
-    )
-
-    private val comics = mutableStateListOf(
-        // Classic Comics (50 comics: 10 per genre)
-        // Superhero (Classic)
-        Comic(1, "Superhero Classic 1", coverImages[0], 4.5f, "Superhero", "Classic", 299, 1200),
-        Comic(2, "Superhero Classic 2", coverImages[1], 4.2f, "Superhero", "Classic", 349, 900),
-        Comic(3, "Superhero Classic 3", coverImages[2], 4.7f, "Superhero", "Classic", 319, 1300),
-        Comic(4, "Superhero Classic 4", coverImages[3], 4.3f, "Superhero", "Classic", 329, 1100),
-        Comic(5, "Superhero Classic 5", coverImages[4], 4.6f, "Superhero", "Classic", 339, 1400),
-        Comic(6, "Superhero Classic 6", coverImages[5], 4.4f, "Superhero", "Classic", 309, 1000),
-        Comic(7, "Superhero Classic 7", coverImages[6], 4.8f, "Superhero", "Classic", 359, 1500),
-        Comic(8, "Superhero Classic 8", coverImages[0], 4.1f, "Superhero", "Classic", 299, 950),
-        Comic(9, "Superhero Classic 9", coverImages[1], 4.5f, "Superhero", "Classic", 319, 1250),
-        Comic(10, "Superhero Classic 10", coverImages[2], 4.9f, "Superhero", "Classic", 369, 1600),
-
-        // Action (Classic)
-        Comic(11, "Action Classic 1", coverImages[3], 4.0f, "Action", "Classic", 279, 1500),
-        Comic(12, "Action Classic 2", coverImages[4], 4.3f, "Action", "Classic", 319, 800),
-        Comic(13, "Action Classic 3", coverImages[5], 4.6f, "Action", "Classic", 299, 1200),
-        Comic(14, "Action Classic 4", coverImages[6], 4.2f, "Action", "Classic", 309, 900),
-        Comic(15, "Action Classic 5", coverImages[0], 4.7f, "Action", "Classic", 329, 1300),
-        Comic(16, "Action Classic 6", coverImages[1], 4.4f, "Action", "Classic", 339, 1100),
-        Comic(17, "Action Classic 7", coverImages[2], 4.8f, "Action", "Classic", 349, 1400),
-        Comic(18, "Action Classic 8", coverImages[3], 4.1f, "Action", "Classic", 289, 950),
-        Comic(19, "Action Classic 9", coverImages[4], 4.5f, "Action", "Classic", 319, 1250),
-        Comic(20, "Action Classic 10", coverImages[5], 4.9f, "Action", "Classic", 359, 1600),
-
-        // Adventure (Classic)
-        Comic(21, "Adventure Classic 1", coverImages[6], 4.7f, "Adventure", "Classic", 399, 2000),
-        Comic(22, "Adventure Classic 2", coverImages[0], 4.1f, "Adventure", "Classic", 289, 600),
-        Comic(23, "Adventure Classic 3", coverImages[1], 4.4f, "Adventure", "Classic", 339, 1100),
-        Comic(24, "Adventure Classic 4", coverImages[2], 4.8f, "Adventure", "Classic", 359, 1400),
-        Comic(25, "Adventure Classic 5", coverImages[3], 4.2f, "Adventure", "Classic", 299, 950),
-        Comic(26, "Adventure Classic 6", coverImages[4], 4.6f, "Adventure", "Classic", 319, 1300),
-        Comic(27, "Adventure Classic 7", coverImages[5], 4.3f, "Adventure", "Classic", 329, 1200),
-        Comic(28, "Adventure Classic 8", coverImages[6], 4.9f, "Adventure", "Classic", 369, 1500),
-        Comic(29, "Adventure Classic 9", coverImages[0], 4.1f, "Adventure", "Classic", 289, 900),
-        Comic(30, "Adventure Classic 10", coverImages[1], 4.7f, "Adventure", "Classic", 349, 1350),
-
-        // Mystery (Classic)
-        Comic(31, "Mystery Classic 1", coverImages[2], 4.4f, "Mystery", "Classic", 329, 1100),
-        Comic(32, "Mystery Classic 2", coverImages[3], 4.6f, "Mystery", "Classic", 359, 1400),
-        Comic(33, "Mystery Classic 3", coverImages[4], 4.2f, "Mystery", "Classic", 299, 950),
-        Comic(34, "Mystery Classic 4", coverImages[5], 4.8f, "Mystery", "Classic", 319, 1300),
-        Comic(35, "Mystery Classic 5", coverImages[6], 4.5f, "Mystery", "Classic", 339, 1200),
-        Comic(36, "Mystery Classic 6", coverImages[0], 4.7f, "Mystery", "Classic", 349, 1400),
-        Comic(37, "Mystery Classic 7", coverImages[1], 4.3f, "Mystery", "Classic", 309, 1000),
-        Comic(38, "Mystery Classic 8", coverImages[2], 4.9f, "Mystery", "Classic", 369, 1500),
-        Comic(39, "Mystery Classic 9", coverImages[3], 4.1f, "Mystery", "Classic", 289, 900),
-        Comic(40, "Mystery Classic 10", coverImages[4], 4.6f, "Mystery", "Classic", 329, 1250),
-
-        // Fantasy (Classic)
-        Comic(41, "Fantasy Classic 1", coverImages[5], 4.8f, "Fantasy", "Classic", 399, 1700),
-        Comic(42, "Fantasy Classic 2", coverImages[6], 4.2f, "Fantasy", "Classic", 339, 950),
-        Comic(43, "Fantasy Classic 3", coverImages[0], 4.5f, "Fantasy", "Classic", 369, 1300),
-        Comic(44, "Fantasy Classic 4", coverImages[1], 4.7f, "Fantasy", "Classic", 389, 1400),
-        Comic(45, "Fantasy Classic 5", coverImages[2], 4.3f, "Fantasy", "Classic", 359, 1200),
-        Comic(46, "Fantasy Classic 6", coverImages[3], 4.6f, "Fantasy", "Classic", 379, 1500),
-        Comic(47, "Fantasy Classic 7", coverImages[4], 4.4f, "Fantasy", "Classic", 349, 1100),
-        Comic(48, "Fantasy Classic 8", coverImages[5], 4.9f, "Fantasy", "Classic", 399, 1600),
-        Comic(49, "Fantasy Classic 9", coverImages[6], 4.1f, "Fantasy", "Classic", 329, 1000),
-        Comic(50, "Fantasy Classic 10", coverImages[0], 4.5f, "Fantasy", "Classic", 369, 1350),
-
-        // Modern Comics (50 comics: 10 per genre)
-        // Superhero (Modern)
-        Comic(51, "Superhero Modern 1", R.drawable.ic_launcher_background, 4.8f, "Superhero", "Modern", 499, 3000),
-        Comic(52, "Superhero Modern 2", R.drawable.ic_launcher_background, 4.6f, "Superhero", "Modern", 459, 1800),
-        Comic(53, "Superhero Modern 3", R.drawable.ic_launcher_background, 4.2f, "Superhero", "Modern", 439, 1500),
-        Comic(54, "Superhero Modern 4", R.drawable.ic_launcher_background, 4.7f, "Superhero", "Modern", 469, 2000),
-        Comic(55, "Superhero Modern 5", R.drawable.ic_launcher_background, 4.4f, "Superhero", "Modern", 449, 1700),
-        Comic(56, "Superhero Modern 6", R.drawable.ic_launcher_background, 4.9f, "Superhero", "Modern", 479, 2200),
-        Comic(57, "Superhero Modern 7", R.drawable.ic_launcher_background, 4.3f, "Superhero", "Modern", 429, 1400),
-        Comic(58, "Superhero Modern 8", R.drawable.ic_launcher_background, 4.5f, "Superhero", "Modern", 459, 1600),
-        Comic(59, "Superhero Modern 9", R.drawable.ic_launcher_background, 4.1f, "Superhero", "Modern", 419, 1300),
-        Comic(60, "Superhero Modern 10", R.drawable.ic_launcher_background, 4.6f, "Superhero", "Modern", 489, 1900),
-
-        // Action (Modern)
-        Comic(61, "Action Modern 1", R.drawable.ic_launcher_background, 4.4f, "Action", "Modern", 379, 1100),
-        Comic(62, "Action Modern 2", R.drawable.ic_launcher_background, 4.2f, "Action", "Modern", 339, 700),
-        Comic(63, "Action Modern 3", R.drawable.ic_launcher_background, 4.7f, "Action", "Modern", 359, 1300),
-        Comic(64, "Action Modern 4", R.drawable.ic_launcher_background, 4.3f, "Action", "Modern", 369, 1000),
-        Comic(65, "Action Modern 5", R.drawable.ic_launcher_background, 4.8f, "Action", "Modern", 389, 1500),
-        Comic(66, "Action Modern 6", R.drawable.ic_launcher_background, 4.5f, "Action", "Modern", 349, 1200),
-        Comic(67, "Action Modern 7", R.drawable.ic_launcher_background, 4.9f, "Action", "Modern", 399, 1700),
-        Comic(68, "Action Modern 8", R.drawable.ic_launcher_background, 4.1f, "Action", "Modern", 329, 900),
-        Comic(69, "Action Modern 9", R.drawable.ic_launcher_background, 4.6f, "Action", "Modern", 369, 1400),
-        Comic(70, "Action Modern 10", R.drawable.ic_launcher_background, 4.4f, "Action", "Modern", 379, 1600),
-
-        // Adventure (Modern)
-        Comic(71, "Adventure Modern 1", R.drawable.ic_launcher_background, 4.9f, "Adventure", "Modern", 599, 2500),
-        Comic(72, "Adventure Modern 2", R.drawable.ic_launcher_background, 4.5f, "Adventure", "Modern", 429, 1300),
-        Comic(73, "Adventure Modern 3", R.drawable.ic_launcher_background, 4.2f, "Adventure", "Modern", 439, 1400),
-        Comic(74, "Adventure Modern 4", R.drawable.ic_launcher_background, 4.7f, "Adventure", "Modern", 469, 1800),
-        Comic(75, "Adventure Modern 5", R.drawable.ic_launcher_background, 4.4f, "Adventure", "Modern", 449, 1500),
-        Comic(76, "Adventure Modern 6", R.drawable.ic_launcher_background, 4.8f, "Adventure", "Modern", 479, 2000),
-        Comic(77, "Adventure Modern 7", R.drawable.ic_launcher_background, 4.3f, "Adventure", "Modern", 459, 1600),
-        Comic(78, "Adventure Modern 8", R.drawable.ic_launcher_background, 4.6f, "Adventure", "Modern", 489, 1900),
-        Comic(79, "Adventure Modern 9", R.drawable.ic_launcher_background, 4.1f, "Adventure", "Modern", 419, 1200),
-        Comic(80, "Adventure Modern 10", R.drawable.ic_launcher_background, 4.5f, "Adventure", "Modern", 469, 1700),
-
-        // SciFi (Modern)
-        Comic(81, "SciFi Modern 1", R.drawable.ic_launcher_background, 4.7f, "SciFi", "Modern", 479, 2200),
-        Comic(82, "SciFi Modern 2", R.drawable.ic_launcher_background, 4.3f, "SciFi", "Modern", 439, 1600),
-        Comic(83, "SciFi Modern 3", R.drawable.ic_launcher_background, 4.8f, "SciFi", "Modern", 459, 1900),
-        Comic(84, "SciFi Modern 4", R.drawable.ic_launcher_background, 4.4f, "SciFi", "Modern", 469, 1700),
-        Comic(85, "SciFi Modern 5", R.drawable.ic_launcher_background, 4.9f, "SciFi", "Modern", 489, 2000),
-        Comic(86, "SciFi Modern 6", R.drawable.ic_launcher_background, 4.2f, "SciFi", "Modern", 429, 1400),
-        Comic(87, "SciFi Modern 7", R.drawable.ic_launcher_background, 4.6f, "SciFi", "Modern", 449, 1800),
-        Comic(88, "SciFi Modern 8", R.drawable.ic_launcher_background, 4.5f, "SciFi", "Modern", 469, 1600),
-        Comic(89, "SciFi Modern 9", R.drawable.ic_launcher_background, 4.1f, "SciFi", "Modern", 419, 1300),
-        Comic(90, "SciFi Modern 10", R.drawable.ic_launcher_background, 4.7f, "SciFi", "Modern", 479, 1950),
-
-        // Fantasy (Modern)
-        Comic(91, "Fantasy Modern 1", R.drawable.ic_launcher_background, 4.6f, "Fantasy", "Modern", 499, 1900),
-        Comic(92, "Fantasy Modern 2", R.drawable.ic_launcher_background, 4.4f, "Fantasy", "Modern", 459, 1250),
-        Comic(93, "Fantasy Modern 3", R.drawable.ic_launcher_background, 4.8f, "Fantasy", "Modern", 479, 1700),
-        Comic(94, "Fantasy Modern 4", R.drawable.ic_launcher_background, 4.2f, "Fantasy", "Modern", 439, 1400),
-        Comic(95, "Fantasy Modern 5", R.drawable.ic_launcher_background, 4.5f, "Fantasy", "Modern", 459, 1600),
-        Comic(96, "Fantasy Modern 6", R.drawable.ic_launcher_background, 4.7f, "Fantasy", "Modern", 469, 1800),
-        Comic(97, "Fantasy Modern 7", R.drawable.ic_launcher_background, 4.3f, "Fantasy", "Modern", 449, 1500),
-        Comic(98, "Fantasy Modern 8", R.drawable.ic_launcher_background, 4.9f, "Fantasy", "Modern", 489, 2000),
-        Comic(99, "Fantasy Modern 9", R.drawable.ic_launcher_background, 4.1f, "Fantasy", "Modern", 429, 1300),
-        Comic(100, "Fantasy Modern 10", R.drawable.ic_launcher_background, 4.6f, "Fantasy", "Modern", 469, 1650)
+    private val comics: List<Comic> = listOf(
+        Comic(
+            comic_id = 1,
+            title = "Devi Sati",
+            description = "loveable",
+            image_url = "http://192.168.1.4:8000/media/comics/images/aaa121_2QD3fre.jpeg",
+            genre = "Mystery",
+            rating = 4.0f,
+            ratings_count = 1,
+            read_count = 1,
+            price = 100.0,
+            episodes = listOf(
+                Episode(
+                    id = 1,
+                    comic_id = 1,
+                    title = "Devi Sati Episode 1",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/HVU_Qg6VQ1V.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                )
+            ),
+            is_unlocked = false
+        ),
+        Comic(
+            comic_id = 2,
+            title = "Murti",
+            description = "superb comic and super fantastic",
+            image_url = "http://192.168.1.4:8000/media/comics/images/anuragCoFounder.jpeg",
+            genre = "Mystery",
+            rating = 0.0f,
+            ratings_count = 0,
+            read_count = 0,
+            price = 80.0,
+            episodes = listOf(
+                Episode(
+                    id = 2,
+                    comic_id = 2,
+                    title = "Devi Sati Episode 1",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/HVU_yfoLVGt.pdf",
+                    is_free = true,
+                    is_unlocked = false
+                )
+            ),
+            is_unlocked = false
+        ),
+        Comic(
+            comic_id = 3,
+            title = "Alfa Centaury",
+            description = "superb story",
+            image_url = "http://192.168.1.4:8000/media/comics/images/chandrika_2.png",
+            genre = "Romance",
+            rating = 0.0f,
+            ratings_count = 0,
+            read_count = 0,
+            price = 90.0,
+            episodes = listOf(
+                Episode(
+                    id = 3,
+                    comic_id = 3,
+                    title = "Alfa Centaury Episode 1",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/108799156_8Rmk7ez.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                ),
+                Episode(
+                    id = 4,
+                    comic_id = 3,
+                    title = "Alfa Centaury Episode 2",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/HVU_wQIdk94_EHTmPUj.pdf",
+                    is_free = true,
+                    is_unlocked = false
+                ),
+                Episode(
+                    id = 5,
+                    comic_id = 3,
+                    title = "Alfa Centaury Episode 3",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/HVU_NzS5aNv_nfH8Yg5.pdf",
+                    is_free = true,
+                    is_unlocked = false
+                )
+            ),
+            is_unlocked = false
+        ),
+        Comic(
+            comic_id = 4,
+            title = "Maati",
+            description = "superb story",
+            image_url = "http://192.168.1.4:8000/media/comics/images/ic_coin_uehQnXw.png",
+            genre = "Fantasy",
+            rating = 0.0f,
+            ratings_count = 0,
+            read_count = 0,
+            price = 85.0,
+            episodes = listOf(
+                Episode(
+                    id = 6,
+                    comic_id = 4,
+                    title = "Maati 1",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/108799156_DmCgSag.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                ),
+                Episode(
+                    id = 7,
+                    comic_id = 4,
+                    title = "Maati 2",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/HVU_8lHblVK.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                ),
+                Episode(
+                    id = 8,
+                    comic_id = 4,
+                    title = "Maati 3",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/108799156_JOPl5Tv.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                )
+            ),
+            is_unlocked = false
+        ),
+        Comic(
+            comic_id = 5,
+            title = "Andhadhun",
+            description = "mind blowing",
+            image_url = "http://192.168.1.4:8000/media/comics/images/aaa11.jpeg",
+            genre = "Mystery",
+            rating = 0.0f,
+            ratings_count = 0,
+            read_count = 0,
+            price = 95.0,
+            episodes = listOf(
+                Episode(
+                    id = 9,
+                    comic_id = 5,
+                    title = "Andhadhun 1",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/108799156_7kT5VOY.pdf",
+                    is_free = true,
+                    is_unlocked = true
+                ),
+                Episode(
+                    id = 10,
+                    comic_id = 5,
+                    title = "Andhadhun 2",
+                    image_url = "",
+                    pdf_url = "http://192.168.1.4:8000/media/comics/pdfs/108799156_Lu0pxcE.pdf",
+                    is_free = true,
+                    is_unlocked = false
+                )
+            ),
+            is_unlocked = false
+        )
     )
 
     private val episodeSocialDataMap = mutableMapOf<String, EpisodeSocialData>()
@@ -279,29 +269,6 @@ object DummyData {
         followers = emptyList(),
         following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
     )
-
-    var isLoggedIn: Boolean = false
-    private val registeredUsers = mutableMapOf<String, String>().apply {
-        put("comicfan123@example.com", "password123")
-        put("superherolover@example.com", "super123")
-        put("fantasyreader@example.com", "fantasy123")
-        put("admin@example.com", "112233")
-        put("actionhero@example.com", "action123")
-        put("adventureseeker@example.com", "adventure123")
-        put("mysterysolver@example.com", "mystery123")
-        put("scifigeek@example.com", "scifi123")
-    }
-
-    private val userDetails = mutableMapOf<String, String>().apply {
-        put("comicfan123@example.com", "ComicFan123")
-        put("superherolover@example.com", "SuperheroLover")
-        put("fantasyreader@example.com", "FantasyReader")
-        put("admin@example.com", "Admin")
-        put("actionhero@example.com", "ActionHero")
-        put("adventureseeker@example.com", "AdventureSeeker")
-        put("mysterysolver@example.com", "MysterySolver")
-        put("scifigeek@example.com", "SciFiGeek")
-    }
 
     private val userProfilePictures = mutableMapOf<String, Int>().apply {
         put("ComicFan123", R.drawable.ic_launcher_background)
@@ -448,8 +415,7 @@ object DummyData {
     init {
         userProfile = allUserProfiles["Admin"] ?: userProfile
         Log.d("DummyData", "Initial userProfile alfaCoins: ${userProfile.alfaCoins}")
-        isLoggedIn = true
-        addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "placeholder_image_1", null)
+        addCommunityPost("Just finished reading Superhero Classic 1! Amazing story!", "https://example.com/post1.jpg", null)
         addCommunityPost("Any recommendations for Fantasy comics? #FantasyReader", null, null)
         addCommunityPost(
             content = "Which comic genre do you prefer?",
@@ -465,12 +431,12 @@ object DummyData {
 
         userProfile = allUserProfiles["ComicFan123"] ?: userProfile
         Log.d("DummyData", "After ComicFan123, userProfile alfaCoins: ${userProfile.alfaCoins}")
-        addCommunityPost("Loved the new Action Classic 2! #ActionFans", "placeholder_image_2", null)
+        addCommunityPost("Loved the new Action Classic 2! #ActionFans", "https://example.com/post2.jpg", null)
         addCommunityPost("Looking for some Adventure comics recommendations!", null, null)
 
         userProfile = allUserProfiles["FantasyReader"] ?: userProfile
         Log.d("DummyData", "After FantasyReader, userProfile alfaCoins: ${userProfile.alfaCoins}")
-        addCommunityPost("Fantasy Modern 1 is a must-read! #FantasyLovers", "placeholder_image_3", null)
+        addCommunityPost("Fantasy Modern 1 is a must-read! #FantasyLovers", "https://example.com/post3.jpg", null)
 
         userProfile = allUserProfiles["Admin"] ?: userProfile
         Log.d("DummyData", "Final userProfile alfaCoins: ${userProfile.alfaCoins}")
@@ -484,22 +450,8 @@ object DummyData {
         return allUserProfiles[username]
     }
 
-    fun getComicsByCategory(category: String): List<Comic> {
-        return comics.filter { comic -> comic.category == category }
-    }
-
-    fun getComicsByGenreAndCategory(genre: String, category: String): List<Comic> {
-        return comics.filter { comic -> comic.genre == genre && comic.category == category }
-    }
-
-    fun getGenresByCategory(category: String): List<String> {
-        return comics.filter { comic -> comic.category == category }
-            .map { comic -> comic.genre }
-            .distinct()
-    }
-
     fun getComicById(id: Int): Comic? {
-        return comics.find { comic -> comic.id == id }
+        return comics.find { comic -> comic.comic_id == id }
     }
 
     fun getEpisodeSocialData(comicId: Int, episodeId: Int): EpisodeSocialData {
@@ -536,9 +488,11 @@ object DummyData {
     fun getEpisodesWithSubscription(comicId: Int): List<Episode> {
         val comic = getComicById(comicId) ?: return emptyList()
         return if (isSubscribed) {
-            comic.episodes.map { episode -> episode.copy(isFree = true) }
+            comic.episodes.map { episode -> episode.copy(is_unlocked = true) }
         } else {
-            comic.episodes
+            comic.episodes.mapIndexed { index, episode ->
+                if (index < 5) episode.copy(is_unlocked = true) else episode
+            }
         }
     }
 
@@ -552,7 +506,7 @@ object DummyData {
         if (userProfile.alfaCoins >= coinsRequired) {
             userProfile = userProfile.copy(alfaCoins = userProfile.alfaCoins - coinsRequired)
             allUserProfiles[userProfile.username] = userProfile
-            val updatedEpisode = episode.copy(isFree = true)
+            val updatedEpisode = episode.copy(is_unlocked = true)
             updateEpisode(comicId, episodeId, updatedEpisode)
             Log.d("DummyData", "Episode unlocked successfully. New alfaCoins: ${userProfile.alfaCoins}")
             return true
@@ -563,15 +517,11 @@ object DummyData {
     }
 
     fun updateEpisode(comicId: Int, episodeId: Int, updatedEpisode: Episode) {
-        val comicIndex = comics.indexOfFirst { it.id == comicId }
-        if (comicIndex != -1) {
-            val comic = comics[comicIndex]
-            val updatedEpisodes = comic.episodes.map { episode ->
-                if (episode.id == episodeId) updatedEpisode else episode
-            }
-            comics[comicIndex] = comic.copy(episodes = updatedEpisodes)
-            Log.d("DummyData", "Episode $episodeId updated for comic $comicId")
+        val comic = getComicById(comicId) ?: return
+        val updatedEpisodes = comic.episodes.map { episode ->
+            if (episode.id == episodeId) updatedEpisode else episode
         }
+        Log.d("DummyData", "Episode $episodeId updated for comic $comicId")
     }
 
     fun getAllComics(): List<Comic> {
@@ -596,7 +546,6 @@ object DummyData {
     }
 
     fun addCommunityPost(content: String, imageUrl: String? = null, poll: Poll? = null) {
-        if (!isLoggedIn) return
         val timestamp = "2025-05-18 12:00 PM"
         val postId = postIdCounter++
         communityPosts.add(
@@ -618,7 +567,6 @@ object DummyData {
     }
 
     fun addCommentToPost(postId: Int, comment: String) {
-        if (!isLoggedIn) return
         val timestamp = "2025-05-18 12:05 PM"
         val post = communityPosts.find { it.id == postId }
         post?.let {
@@ -687,11 +635,7 @@ object DummyData {
     }
 
     fun getFavoriteComics(): List<Comic> {
-        return comics.filter { comic -> favoriteComicIds.contains(comic.id) }
-    }
-
-    fun getFavoriteMotionComics(): List<MotionComic> {
-        return MotionDummyData.getMotionComics().filter { motionComic -> favoriteMotionComicIds.contains(motionComic.id) }
+        return comics.filter { comic -> favoriteComicIds.contains(comic.comic_id) }
     }
 
     fun updateAboutMe(newAboutMe: String) {
@@ -728,6 +672,10 @@ object DummyData {
         allUserProfiles[userProfile.username] = userProfile
     }
 
+    fun updateUserCoins(newBalance: Int) {
+        updateAlfaCoins(newBalance)
+    }
+
     fun getNotificationsEnabled(): Boolean = notificationsEnabled
 
     fun setNotificationsEnabled(enabled: Boolean) {
@@ -753,7 +701,6 @@ object DummyData {
         purchaseConfirmations.clear()
         selectedLanguage = "en"
         referralRewards = 0
-        isLoggedIn = false
         isSubscribed = false
         premiumSubscription = null
     }
@@ -797,51 +744,6 @@ object DummyData {
     fun addReferralRewards(coins: Int) {
         referralRewards += coins
         addAlfaCoins(coins)
-    }
-
-    fun loginUser(email: String, password: String): Boolean {
-        val storedPassword = registeredUsers[email]
-        if (storedPassword != null && storedPassword == password) {
-            val username = userDetails[email] ?: "User"
-            userProfile = allUserProfiles[username] ?: UserProfile(
-                userId = userIdCounter++,
-                username = username,
-                email = email,
-                profilePictureResourceId = R.drawable.ic_launcher_background,
-                profilePictureBitmap = null,
-                aboutMe = "",
-                alfaCoins = 500,
-                followers = emptyList(),
-                following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
-            )
-            userAboutMeState.value = userProfile.aboutMe
-            isLoggedIn = true
-            return true
-        }
-        return false
-    }
-
-    fun signUpUser(fullName: String, email: String, mobileNumber: String, password: String): Boolean {
-        if (registeredUsers.containsKey(email)) {
-            return false
-        }
-        registeredUsers[email] = password
-        userDetails[email] = fullName
-        val newUserProfile = UserProfile(
-            userId = userIdCounter++,
-            username = fullName,
-            email = email,
-            profilePictureResourceId = R.drawable.ic_launcher_background,
-            profilePictureBitmap = null,
-            aboutMe = "",
-            alfaCoins = 500,
-            followers = emptyList(),
-            following = listOf("SuperheroLover", "FantasyReader", "ActionHero")
-        )
-        userProfile = newUserProfile
-        allUserProfiles[fullName] = newUserProfile
-        userAboutMeState.value = ""
-        return true
     }
 
     fun followUser(currentUser: String, targetUser: String) {
@@ -920,4 +822,4 @@ object DummyData {
         val timestamp = "2025-05-26 09:45 PM"
         notifications.add(Notification(message, timestamp, targetUser, isRead = false))
     }
-} 
+}

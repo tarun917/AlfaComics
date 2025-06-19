@@ -2,119 +2,121 @@ package com.alfacomics.presentation.ui.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.alfacomics.data.repository.DummyData
+import com.alfacomics.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun SettingsScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel
 ) {
-    val notificationsEnabled by remember { mutableStateOf(DummyData.getNotificationsEnabled()) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
             .padding(16.dp),
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Bar with Back Button and Title
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFFBB86FC)
-                )
-            }
             Text(
                 text = "Settings",
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
+                modifier = Modifier.padding(bottom = 24.dp)
             )
-            Spacer(modifier = Modifier.size(32.dp)) // Placeholder for symmetry
-        }
 
-        // Notifications Toggle
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2526)),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Row(
+            Text(
+                text = "Account",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Button(
+                onClick = { /* TODO: Navigate to account settings */ },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    .padding(vertical = 4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFBB86FC),
+                    contentColor = Color.White
+                )
             ) {
-                Text(
-                    text = "Notifications",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White,
-                    fontSize = 18.sp
+                Text("Edit Profile", fontSize = 16.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Preferences",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Button(
+                onClick = { /* TODO: Navigate to preferences */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFBB86FC),
+                    contentColor = Color.White
                 )
-                Switch(
-                    checked = notificationsEnabled,
-                    onCheckedChange = { enabled ->
-                        DummyData.setNotificationsEnabled(enabled)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFFBB86FC),
-                        checkedTrackColor = Color(0xFFBB86FC).copy(alpha = 0.5f),
-                        uncheckedThumbColor = Color.Gray,
-                        uncheckedTrackColor = Color.Gray.copy(alpha = 0.5f)
-                    )
+            ) {
+                Text("Reading Preferences", fontSize = 16.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Support",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Button(
+                onClick = { /* TODO: Navigate to support */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFBB86FC),
+                    contentColor = Color.White
                 )
+            ) {
+                Text("Contact Support", fontSize = 16.sp)
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Logout Button
         Button(
             onClick = {
-                DummyData.clearUserData()
+                authViewModel.logout()
                 navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Red,
+                containerColor = Color(0xFFF44336),
                 contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "Logout",
-                fontSize = 16.sp,
-                modifier = Modifier.padding(vertical = 8.dp)
             )
+        ) {
+            Text("Logout", fontSize = 16.sp)
         }
     }
 }

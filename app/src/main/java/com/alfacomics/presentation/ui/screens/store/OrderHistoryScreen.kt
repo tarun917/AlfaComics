@@ -1,4 +1,4 @@
-package com.alfacomics.presentation.ui.screens.store
+package com.alfacomics.pratilipitv.presentation.ui.screens.store
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,10 +9,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.AlfaStoreData
 import com.alfacomics.data.repository.HardCopyComic
 
 @Composable
@@ -40,7 +41,7 @@ fun OrderHistoryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
 
         if (purchasedComics.isEmpty()) {
@@ -61,7 +62,7 @@ fun OrderHistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(purchasedComics) { comic ->
-                    PurchasedComicItem(comic)
+                    PurchasedComicItem(comic = comic)
                 }
             }
         }
@@ -72,7 +73,11 @@ fun OrderHistoryScreen(
             onClick = {
                 navController.popBackStack()
             },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFBB86FC),
+                contentColor = Color.White
+            )
         ) {
             Text(text = "Back")
         }
@@ -99,7 +104,7 @@ fun PurchasedComicItem(comic: HardCopyComic) {
                     color = Color.White
                 )
                 Text(
-                    text = "Price: ${comic.price} AlfaCoins",
+                    text = "Price: ₹${comic.price}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )

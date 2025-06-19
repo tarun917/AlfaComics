@@ -25,14 +25,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.MotionDummyData
-import com.alfacomics.data.repository.MotionEpisode
+import com.alfacomics.pratilipitv.data.repository.MotionEpisode
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
@@ -51,20 +50,21 @@ import java.util.concurrent.TimeUnit
 val MotionEpisodeSaver: Saver<MotionEpisode?, List<Any?>> = Saver(
     save = { episode ->
         if (episode == null) {
-            listOf(null, null, null, null)
+            listOf(null, null, null, null, null)
         } else {
-            listOf(episode.id, episode.title, episode.videoUrl, episode.isUnlocked)
+            listOf(episode.id, episode.motion_comic_id, episode.title, episode.video_url, episode.is_unlocked)
         }
     },
     restore = { restored ->
-        if (restored[0] == null || restored[1] == null || restored[2] == null || restored[3] == null) {
+        if (restored[0] == null || restored[1] == null || restored[2] == null || restored[3] == null || restored[4] == null) {
             null
         } else {
             MotionEpisode(
                 id = restored[0] as Int,
-                title = restored[1] as String,
-                videoUrl = restored[2] as String,
-                isUnlocked = restored[3] as Boolean
+                motion_comic_id = restored[1] as Int,
+                title = restored[2] as String,
+                video_url = restored[3] as String,
+                is_unlocked = restored[4] as Boolean
             )
         }
     }
@@ -347,11 +347,9 @@ fun EpisodePlayerScreen(
                         )
                     },
                 update = { playerView ->
-                    // Since we've already returned if currentEpisode is null, it's safe to access properties here
-                    val mediaItem = MediaItem.fromUri(currentEpisode?.videoUrl.toString())
+                    val mediaItem = MediaItem.fromUri(currentEpisode?.video_url.toString())
                     exoPlayer.setMediaItem(mediaItem)
                     exoPlayer.prepare()
-                    // Seek and play only if the player is ready
                     if (exoPlayer.playbackState == Player.STATE_READY) {
                         exoPlayer.seekTo(videoPosition)
                         if (isPlaying) {
@@ -439,7 +437,7 @@ fun EpisodePlayerScreen(
                     .align(Alignment.Center)
                     .background(Color.Black.copy(alpha = 0.0f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .alpha(if (showControls || !isPlaying) 1f else 0f), // Show controls if paused
+                    .alpha(if (showControls || !isPlaying) 1f else 0f),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -467,7 +465,7 @@ fun EpisodePlayerScreen(
                         if (exoPlayer.isPlaying) {
                             exoPlayer.pause()
                             isPlaying = false
-                            showControls = true // Ensure controls stay visible when paused
+                            showControls = true
                         } else {
                             exoPlayer.play()
                             isPlaying = true
@@ -488,7 +486,7 @@ fun EpisodePlayerScreen(
                 IconButton(
                     onClick = {
                         val duration = exoPlayer.duration
-                        if (duration > 0) { // Ensure duration is valid
+                        if (duration > 0) {
                             val newPosition = (exoPlayer.currentPosition + 10000).coerceAtMost(duration)
                             exoPlayer.seekTo(newPosition)
                             videoPosition = newPosition
@@ -509,12 +507,12 @@ fun EpisodePlayerScreen(
             // Rotate Button (Top Right, to toggle orientation)
             IconButton(
                 onClick = {
-                    onOrientationChange(!isLandscape) // Toggle orientation
+                    onOrientationChange(!isLandscape)
                 },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
-                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+                    .alpha(if (showControls || !isPlaying) 1f else 0f)
             ) {
                 Icon(
                     imageVector = if (isLandscape) Icons.Default.ScreenRotation else Icons.Default.ScreenRotation,
@@ -552,7 +550,7 @@ fun EpisodePlayerScreen(
                     .align(Alignment.BottomCenter)
                     .background(Color.Black.copy(alpha = 0.0f))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+                    .alpha(if (showControls || !isPlaying) 1f else 0f)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -598,13 +596,12 @@ fun EpisodePlayerScreen(
             IconButton(
                 onClick = {
                     navController.popBackStack()
-                    // Reset to portrait when navigating back
                     onOrientationChange(false)
                 },
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(16.dp)
-                    .alpha(if (showControls || !isPlaying) 1f else 0f) // Show if paused
+                    .alpha(if (showControls || !isPlaying) 1f else 0f)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -638,9 +635,9 @@ fun EpisodePlayerScreen(
                     EpisodeItem(
                         episode = episode,
                         isPlaying = episode.id == currentEpisode?.id,
-                        isLocked = !episode.isUnlocked && !DummyData.isUserSubscribed(),
+                        isLocked = !episode.is_unlocked && !DummyData.isUserSubscribed(),
                         onPlayClick = {
-                            if (episode.isUnlocked || DummyData.isUserSubscribed()) {
+                            if (episode.is_unlocked || DummyData.isUserSubscribed()) {
                                 currentEpisodeIndex = episodes.indexOf(episode)
                                 currentEpisode = episode
                                 showNextButton = false
@@ -649,7 +646,7 @@ fun EpisodePlayerScreen(
                             }
                         },
                         onUnlockClick = {
-                            if (!DummyData.isUserSubscribed() && !episode.isUnlocked) {
+                            if (!DummyData.isUserSubscribed() && !episode.is_unlocked) {
                                 val success = MotionDummyData.unlockMotionEpisodeWithCoins(motionComicId, episode.id, 50)
                                 if (success) {
                                     episodeListState = MotionDummyData.getMotionEpisodesWithSubscription(motionComicId)

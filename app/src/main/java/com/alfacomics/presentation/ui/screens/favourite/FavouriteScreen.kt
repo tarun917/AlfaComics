@@ -18,13 +18,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.DummyData
+import com.alfacomics.data.repository.MotionDummyData
+import com.alfacomics.pratilipitv.data.repository.Comic
+import com.alfacomics.pratilipitv.data.repository.MotionComic
 
 @Composable
 fun FavouriteScreen(
     navController: NavHostController
 ) {
     val favoriteComics by remember { derivedStateOf { DummyData.getFavoriteComics() } }
-    val favoriteMotionComics by remember { derivedStateOf { DummyData.getFavoriteMotionComics() } } // Added to fetch favorited motion comics
+    val favoriteMotionComics by remember {
+        derivedStateOf { MotionDummyData.getMotionComics().filter { comic -> DummyData.isFavoriteMotionComic(comic.motion_comic_id) } }
+    }
     val comicsListState = rememberLazyListState()
     val motionComicsListState = rememberLazyListState()
 
@@ -56,12 +61,11 @@ fun FavouriteScreen(
                     state = comicsListState,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(favoriteComics) { comic ->
+                    items(items = favoriteComics, key = { it.comic_id }) { comic ->
                         FavoriteComicItem(
-                            comicId = comic.id,
-                            title = comic.title,
+                            comic = comic,
                             onClick = {
-                                navController.navigate("comic_detail/${comic.id}")
+                                navController.navigate("comic_detail/${comic.comic_id}")
                             }
                         )
                     }
@@ -103,12 +107,11 @@ fun FavouriteScreen(
                     state = motionComicsListState,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(favoriteMotionComics) { motionComic ->
+                    items(items = favoriteMotionComics, key = { it.motion_comic_id }) { motionComic ->
                         FavoriteMotionComicItem(
-                            motionComicId = motionComic.id,
-                            title = motionComic.title,
+                            motionComic = motionComic,
                             onClick = {
-                                navController.navigate("motion_comic_detail/${motionComic.id}")
+                                navController.navigate("motion_comic_detail/${motionComic.motion_comic_id}")
                             }
                         )
                     }
@@ -133,8 +136,7 @@ fun FavouriteScreen(
 
 @Composable
 fun FavoriteComicItem(
-    comicId: Int,
-    title: String,
+    comic: Comic,
     onClick: () -> Unit
 ) {
     Card(
@@ -170,7 +172,7 @@ fun FavoriteComicItem(
             Spacer(modifier = Modifier.height(8.dp))
             // Comic Title (below thumbnail)
             Text(
-                text = title,
+                text = comic.title,
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White,
                 textAlign = TextAlign.Center,
@@ -182,14 +184,13 @@ fun FavoriteComicItem(
 
 @Composable
 fun FavoriteMotionComicItem(
-    motionComicId: Int,
-    title: String,
+    motionComic: MotionComic,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp) // Matching height with FavoriteComicItem
+            .height(180.dp)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1E1E1E)
@@ -219,7 +220,7 @@ fun FavoriteMotionComicItem(
             Spacer(modifier = Modifier.height(8.dp))
             // Motion Comic Title (below thumbnail)
             Text(
-                text = title,
+                text = motionComic.title,
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White,
                 textAlign = TextAlign.Center,

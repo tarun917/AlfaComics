@@ -20,12 +20,12 @@ import com.alfacomics.presentation.viewmodel.AuthViewModel
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    authViewModel: AuthViewModel // Updated parameter
+    authViewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(authViewModel.errorMessage) { errorMessage = authViewModel.errorMessage }
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -95,17 +95,35 @@ fun LoginScreen(
                     errorMessage = "Please enter email and password"
                     return@Button
                 }
-                authViewModel.login(email, password, navController)
+                isLoading = true
+                authViewModel.login(email, password) { success, message ->
+                    isLoading = false
+                    if (success) {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        errorMessage = message ?: "Login failed. Please check your credentials or server configuration."
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
+            enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFBB86FC),
                 contentColor = Color.White
             )
         ) {
-            Text("Login", fontSize = 16.sp)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                Text("Login", fontSize = 16.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

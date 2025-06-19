@@ -1,4 +1,4 @@
-package com.alfacomics.presentation.ui.screens.home
+package com.alfacomics.pratilipitv.presentation.ui.screens.home
 
 import android.content.Intent
 import androidx.compose.foundation.Image
@@ -6,13 +6,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,12 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import coil.compose.rememberAsyncImagePainter
 import com.alfacomics.data.repository.DummyData
 import com.alfacomics.data.repository.EpisodeSocialData
 
@@ -57,29 +57,30 @@ fun ComicReaderScreen(
             )
         }
 
-        // Episode Pages (Vertical Scrolling)
-        items(episode.pages) { page ->
+        // Episode Content (Single PDF Image Placeholder)
+        item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Comic Panel (Drawable Image)
+                // Display PDF thumbnail or placeholder
                 Image(
-                    painter = painterResource(id = page.imageResourceId),
-                    contentDescription = "Comic Panel",
+                    painter = rememberAsyncImagePainter(model = episode.pdf_url),
+                    contentDescription = "Episode PDF",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Dialogue/Narration Text
+                // Note about PDF content
                 Text(
-                    text = page.text,
+                    text = "PDF content preview (full PDF viewing requires integration)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     modifier = Modifier
@@ -110,7 +111,7 @@ fun SocialFeaturesSection(
 ) {
     val context = LocalContext.current
     val isLiked = remember { mutableStateOf(socialData.isLiked) }
-    val likeCount = remember { mutableStateOf(socialData.likeCount) }
+    val likeCount = remember { mutableIntStateOf(socialData.likeCount) }
     val tags = remember { mutableStateListOf<String>().apply { addAll(socialData.tags) } }
     val comments = remember { mutableStateListOf<String>().apply { addAll(socialData.comments) } }
     val showTagDialog = remember { mutableStateOf(false) }
@@ -137,9 +138,9 @@ fun SocialFeaturesSection(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.clickable {
                     isLiked.value = !isLiked.value
-                    likeCount.value += if (isLiked.value) 1 else -1
+                    likeCount.intValue += if (isLiked.value) 1 else -1
                     socialData.isLiked = isLiked.value
-                    socialData.likeCount = likeCount.value
+                    socialData.likeCount = likeCount.intValue
                 }
             ) {
                 Icon(
@@ -149,7 +150,7 @@ fun SocialFeaturesSection(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "${likeCount.value}",
+                    text = "${likeCount.intValue}",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White
                 )
@@ -185,11 +186,11 @@ fun SocialFeaturesSection(
 
         // Display Tags
         if (tags.isNotEmpty()) {
-            LazyRow(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(tags) { tag ->
+                tags.forEach { tag ->
                     Text(
                         text = "#$tag",
                         style = MaterialTheme.typography.labelSmall,
@@ -204,60 +205,53 @@ fun SocialFeaturesSection(
 
         // Tag Input Dialog
         if (showTagDialog.value) {
-            Dialog(onDismissRequest = { showTagDialog.value = false }) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF121212))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Add a Tag",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
-                        OutlinedTextField(
-                            value = tagInput.value,
-                            onValueChange = { tagInput.value = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            textStyle = LocalTextStyle.current.copy(color = Color.White),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = {
-                                if (tagInput.value.isNotBlank()) {
-                                    tags.add(tagInput.value)
-                                    socialData.tags.add(tagInput.value)
-                                    tagInput.value = ""
-                                    showTagDialog.value = false
-                                }
-                            })
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            TextButton(onClick = { showTagDialog.value = false }) {
-                                Text("Cancel", color = Color.White)
+            AlertDialog(
+                onDismissRequest = { showTagDialog.value = false },
+                title = {
+                    Text(
+                        text = "Add a Tag",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
+                },
+                text = {
+                    OutlinedTextField(
+                        value = tagInput.value,
+                        onValueChange = { tagInput.value = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(color = Color.White),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            if (tagInput.value.isNotBlank()) {
+                                tags.add(tagInput.value)
+                                socialData.tags.add(tagInput.value)
+                                tagInput.value = ""
+                                showTagDialog.value = false
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            TextButton(onClick = {
-                                if (tagInput.value.isNotBlank()) {
-                                    tags.add(tagInput.value)
-                                    socialData.tags.add(tagInput.value)
-                                    tagInput.value = ""
-                                    showTagDialog.value = false
-                                }
-                            }) {
-                                Text("Add", color = Color(0xFFBB86FC))
-                            }
+                        })
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (tagInput.value.isNotBlank()) {
+                            tags.add(tagInput.value)
+                            socialData.tags.add(tagInput.value)
+                            tagInput.value = ""
+                            showTagDialog.value = false
                         }
+                    }) {
+                        Text("Add", color = Color(0xFFBB86FC))
                     }
-                }
-            }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTagDialog.value = false }) {
+                        Text("Cancel", color = Color.White)
+                    }
+                },
+                containerColor = Color(0xFF121212),
+                shape = RoundedCornerShape(8.dp)
+            )
         }
 
         // Comments Section
@@ -299,7 +293,7 @@ fun SocialFeaturesSection(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Submit Comment",
                         tint = Color(0xFFBB86FC)
                     )

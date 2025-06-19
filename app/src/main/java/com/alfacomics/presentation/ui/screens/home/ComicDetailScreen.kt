@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,34 +19,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.alfacomics.data.repository.ComicRepository
 import com.alfacomics.data.repository.DummyData
-import com.alfacomics.data.repository.Episode
+import com.alfacomics.pratilipitv.data.repository.Episode
+import com.alfacomics.presentation.viewmodel.AuthViewModel
+import com.alfacomics.presentation.viewmodel.ComicViewModel
+import com.alfacomics.presentation.viewmodel.ComicViewModelFactory
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ComicDetailScreen(
     navController: NavHostController,
     comicId: Int,
+    authViewModel: AuthViewModel,
+    comicRepository: ComicRepository,
     onEpisodeClick: (Int) -> Unit
 ) {
-    val comic = DummyData.getComicById(comicId)
+    val viewModel: ComicViewModel = viewModel(
+        factory = ComicViewModelFactory(comicRepository, comicId)
+    )
+    val comic by viewModel.comic.collectAsState(initial = null)
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var isSubscribed by remember { mutableStateOf(DummyData.isUserSubscribed()) }
     var isFavorite by remember { mutableStateOf(DummyData.isFavoriteComic(comicId)) }
-    val episodes by remember { derivedStateOf { DummyData.getEpisodesWithSubscription(comicId) } }
-
-    // State to trigger recomposition after unlocking an episode
-    var episodeListState by remember { mutableStateOf(episodes) }
-    // State for showing insufficient coins dialog
+    var episodes by remember { mutableStateOf(comic?.episodes ?: emptyList()) }
     var showInsufficientCoinsDialog by remember { mutableStateOf(false) }
 
-    // Debug logs for initial state
-    Log.d("ComicDetailScreen", "isLoggedIn: ${DummyData.isLoggedIn}")
+    LaunchedEffect(comic) {
+        episodes = comic?.episodes ?: emptyList()
+    }
+
+    Log.d("ComicDetailScreen", "isLoggedIn: ${authViewModel.isLoggedIn.value}")
     Log.d("ComicDetailScreen", "isSubscribed: $isSubscribed")
     Log.d("ComicDetailScreen", "User alfaCoins: ${DummyData.getUserProfile().alfaCoins}")
 
@@ -57,24 +69,21 @@ fun ComicDetailScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            // Cover Image with Favourite Button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
-                // Display the cover image
                 if (comic != null) {
                     Image(
-                        painter = painterResource(id = comic.coverImageResId),
+                        painter = rememberAsyncImagePainter(model = comic?.image_url),
                         contentDescription = "Comic Cover",
                         modifier = Modifier
                             .fillMaxSize(),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Fallback placeholder if comic is null
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -90,7 +99,6 @@ fun ComicDetailScreen(
                     }
                 }
 
-                // Favourite Button at Top-Right Corner
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -124,7 +132,6 @@ fun ComicDetailScreen(
         }
 
         item {
-            // Subscribe Button (if not subscribed)
             if (!isSubscribed) {
                 Button(
                     onClick = {
@@ -147,7 +154,6 @@ fun ComicDetailScreen(
         }
 
         item {
-            // Description (Expandable)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,7 +180,6 @@ fun ComicDetailScreen(
             }
         }
 
-        // Episode List
         item {
             Text(
                 text = "Episodes",
@@ -186,23 +191,29 @@ fun ComicDetailScreen(
             )
         }
 
-        items(episodeListState) { episode ->
+        items(items = episodes, key = { it.id }) { episode ->
             EpisodeItem(
                 episode = episode,
-                isLocked = !episode.isFree && !isSubscribed,
+                isLocked = !episode.is_unlocked && !isSubscribed,
                 onClick = {
-                    if (episode.isFree || isSubscribed) {
+                    if (episode.is_unlocked || isSubscribed) {
                         onEpisodeClick(episode.id)
                     }
                 },
                 onUnlockClick = {
                     Log.d("ComicDetailScreen", "Unlock button clicked for episode ${episode.id}")
-                    if (!isSubscribed && !episode.isFree) {
-                        val success = DummyData.unlockEpisodeWithCoins(comicId, episode.id, 10)
-                        Log.d("ComicDetailScreen", "Unlock success: $success")
-                        if (success) {
-                            episodeListState = DummyData.getEpisodesWithSubscription(comicId)
-                            Log.d("ComicDetailScreen", "Episode list updated after unlock")
+                    if (!isSubscribed && !episode.is_unlocked) {
+                        val userCoins = DummyData.getUserProfile().alfaCoins
+                        if (userCoins >= 10) {
+                            DummyData.updateUserCoins(userCoins - 10)
+                            episodes = episodes.map { ep ->
+                                if (ep.id == episode.id) {
+                                    ep.copy(is_unlocked = true)
+                                } else {
+                                    ep
+                                }
+                            }
+                            Log.d("ComicDetailScreen", "Episode ${episode.id} unlocked with coins")
                         } else {
                             showInsufficientCoinsDialog = true
                             Log.d("ComicDetailScreen", "Showing insufficient coins dialog")
@@ -213,7 +224,6 @@ fun ComicDetailScreen(
         }
     }
 
-    // Insufficient Coins Dialog
     if (showInsufficientCoinsDialog) {
         Log.d("ComicDetailScreen", "Insufficient coins dialog shown")
         AlertDialog(
@@ -260,8 +270,7 @@ fun EpisodeItem(
     onClick: () -> Unit,
     onUnlockClick: () -> Unit
 ) {
-    // Debug log for isLocked state
-    Log.d("EpisodeItem", "Episode ${episode.id}: isLocked = $isLocked, isFree = ${episode.isFree}")
+    Log.d("EpisodeItem", "Episode ${episode.id}: isLocked = $isLocked, is_unlocked = ${episode.is_unlocked}")
 
     Card(
         modifier = Modifier
@@ -280,9 +289,8 @@ fun EpisodeItem(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f) // Ensure the left content takes available space
+                modifier = Modifier.weight(1f)
             ) {
-                // Placeholder for episode thumbnail
                 Box(
                     modifier = Modifier
                         .size(80.dp, 50.dp)
@@ -300,11 +308,10 @@ fun EpisodeItem(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Episode Title and Lock Status
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp) // Add padding to avoid overlap with button
+                        .padding(end = 8.dp)
                 ) {
                     Text(
                         text = episode.title,
@@ -329,7 +336,7 @@ fun EpisodeItem(
                             )
                         } else {
                             Text(
-                                text = "Free",
+                                text = "Unlocked",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.Green
                             )
@@ -338,7 +345,6 @@ fun EpisodeItem(
                 }
             }
 
-            // Unlock Button (if locked)
             if (isLocked) {
                 Button(
                     onClick = onUnlockClick,
@@ -349,7 +355,7 @@ fun EpisodeItem(
                     modifier = Modifier
                         .height(32.dp)
                         .padding(horizontal = 8.dp)
-                        .wrapContentWidth() // Ensure button takes only necessary width
+                        .wrapContentWidth()
                 ) {
                     Text(
                         text = "Unlock",

@@ -1,145 +1,118 @@
-package com.alfacomics.presentation.ui.components
+package com.alfacomics.pratilipitv.presentation.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.alfacomics.data.repository.AlfaStoreData
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 
 @Composable
 fun HardCopyComicBox(
     title: String,
     coverImageUrl: String,
     price: Int,
-    comicId: Int,
     rating: Float,
-    modifier: Modifier = Modifier,
-    navController: NavController? = null
+    comicId: Int,
+    navController: NavHostController
 ) {
-    val readCount = AlfaStoreData.getReadCountForHardCopyComic(comicId) // Updated to use AlfaStoreData
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+    Column(
+        modifier = Modifier
+            .width(150.dp)
+            .padding(8.dp)
+            .clickable {
+                navController.navigate("comic_purchase/$comicId")
+            },
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .size(120.dp, 180.dp)
+                .clip(RoundedCornerShape(8.dp))
         ) {
-            // Comic Cover Image with Overlay for Rating and Buyers
-            Box(
+            Image(
+                painter = rememberAsyncImagePainter(model = coverImageUrl),
+                contentDescription = "Hard Copy Comic Cover",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                AsyncImage(
-                    model = coverImageUrl,
-                    contentDescription = "Comic Cover: $title",
+                    .fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+
+            if (coverImageUrl.isEmpty()) {
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Gray)
-                )
-
-                // Left Top Corner: Number of Buyers
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(Color.Black.copy(alpha = 0.7f), shape = MaterialTheme.shapes.small)
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Number of Buyers",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = readCount.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White
+                        text = "Cover\nPlaceholder",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
+            }
 
-                // Right Top Corner: Rating
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(4.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
                 Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .background(Color.Black.copy(alpha = 0.7f), shape = MaterialTheme.shapes.small)
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Rating",
                         tint = Color.Yellow,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(12.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                     Text(
-                        text = rating.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White
+                        text = "$rating",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Comic Title
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Price and Buy Button (Horizontally Aligned)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "₹$price",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White
-                )
-
-                Button(
-                    onClick = {
-                        navController?.navigate("comic_purchase/$comicId")
-                    },
-                    modifier = Modifier
-                        .width(80.dp) // Adjusted width for better alignment
-                ) {
-                    Text(text = "Buy")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
         }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "₹$price",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
     }
 }

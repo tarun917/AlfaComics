@@ -115,6 +115,14 @@ dependencies {
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
 
+    implementation(libs.hilt.android)
+
+
+    implementation (libs.retrofit.v2110)
+    implementation (libs.converter.gson.v2110)
+    implementation (libs.okhttp)
+    implementation (libs.gson)
+
 
 
 

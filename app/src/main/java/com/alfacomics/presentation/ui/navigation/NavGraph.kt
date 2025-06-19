@@ -1,5 +1,6 @@
 package com.alfacomics.presentation.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -8,13 +9,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.alfacomics.data.repository.ComicRepository
+import com.alfacomics.pratilipitv.presentation.ui.screens.home.ComicReaderScreen
+import com.alfacomics.pratilipitv.presentation.ui.screens.store.OrderHistoryScreen
 import com.alfacomics.presentation.ui.screens.auth.LoginScreen
 import com.alfacomics.presentation.ui.screens.auth.SignUpScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityScreen
 import com.alfacomics.presentation.ui.screens.community.CommunityViewModel
 import com.alfacomics.presentation.ui.screens.favourite.FavouriteScreen
 import com.alfacomics.presentation.ui.screens.home.ComicDetailScreen
-import com.alfacomics.presentation.ui.screens.home.ComicReaderScreen
 import com.alfacomics.presentation.ui.screens.home.EpisodePlayerScreen
 import com.alfacomics.presentation.ui.screens.home.HomeScreen
 import com.alfacomics.presentation.ui.screens.home.MotionComicDetailScreen
@@ -30,27 +33,26 @@ import com.alfacomics.presentation.ui.screens.profile.ProfileScreen
 import com.alfacomics.presentation.ui.screens.profile.SettingsScreen
 import com.alfacomics.presentation.ui.screens.profile.ShareAndRewardScreen
 import com.alfacomics.presentation.ui.screens.profile.SupportScreen
-import com.alfacomics.presentation.ui.screens.profile.UploadComicScreen
 import com.alfacomics.presentation.ui.screens.profile.UserPostsScreen
 import com.alfacomics.presentation.ui.screens.profile.UserProfileScreen
 import com.alfacomics.presentation.ui.screens.search.SearchScreen
 import com.alfacomics.presentation.ui.screens.store.AlfaStoreScreen
 import com.alfacomics.presentation.ui.screens.store.ComicPurchaseScreen
-import com.alfacomics.presentation.ui.screens.store.OrderHistoryScreen
 import com.alfacomics.presentation.viewmodel.AuthViewModel
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     communityViewModel: CommunityViewModel,
-    authViewModel: AuthViewModel, // Re-added parameter
+    authViewModel: AuthViewModel,
+    comicRepository: ComicRepository,
     isLandscape: Boolean,
     onOrientationChange: (Boolean) -> Unit
 ) {
-    // Use AuthViewModel's isLoggedIn state for initial navigation
-    LaunchedEffect(authViewModel.isLoggedIn) {
-        if (authViewModel.isLoggedIn) {
+    LaunchedEffect(authViewModel.isLoggedIn.value) {
+        if (authViewModel.isLoggedIn.value) {
             navController.navigate("home") {
                 popUpTo("login") { inclusive = true }
             }
@@ -59,7 +61,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = if (authViewModel.isLoggedIn) "home" else "login",
+        startDestination = if (authViewModel.isLoggedIn.value) "home" else "login",
         modifier = modifier
     ) {
         composable("login") {
@@ -69,7 +71,7 @@ fun NavGraph(
             SignUpScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("home") {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("alfaStore") {
             AlfaStoreScreen(navController = navController)
@@ -81,7 +83,7 @@ fun NavGraph(
             FavouriteScreen(navController = navController)
         }
         composable("profile") {
-            ProfileScreen(navController = navController)
+            ProfileScreen(navController = navController, authViewModel = authViewModel)
         }
         composable(
             route = "comic_detail/{comicId}",
@@ -91,6 +93,8 @@ fun NavGraph(
             ComicDetailScreen(
                 navController = navController,
                 comicId = comicId,
+                authViewModel = authViewModel,
+                comicRepository = comicRepository,
                 onEpisodeClick = { episodeId ->
                     navController.navigate("comic_reader/$comicId/$episodeId")
                 }
@@ -104,6 +108,7 @@ fun NavGraph(
             MotionComicDetailScreen(
                 navController = navController,
                 motionComicId = motionComicId,
+                authViewModel = authViewModel,
                 isLandscape = isLandscape,
                 onOrientationChange = onOrientationChange
             )
@@ -124,12 +129,8 @@ fun NavGraph(
                 navController = navController,
                 planDuration = planDuration,
                 price = price,
-                onPaymentSuccess = {
-                    // Handle subscription logic
-                },
-                onPaymentFailed = {
-                    // Handle payment failure
-                }
+                onPaymentSuccess = {},
+                onPaymentFailed = {}
             )
         }
         composable(
@@ -145,12 +146,8 @@ fun NavGraph(
                 navController = navController,
                 coins = coins,
                 price = price,
-                onPaymentSuccess = {
-                    // Handle coin purchase logic
-                },
-                onPaymentFailed = {
-                    // Handle payment failure
-                }
+                onPaymentSuccess = {},
+                onPaymentFailed = {}
             )
         }
         composable("search") {
@@ -203,9 +200,6 @@ fun NavGraph(
         composable("edit_profile") {
             EditProfileScreen(navController = navController)
         }
-        composable("settings") {
-            SettingsScreen(navController = navController)
-        }
         composable("language_selection") {
             LanguageSelectionScreen(navController = navController)
         }
@@ -214,9 +208,6 @@ fun NavGraph(
         }
         composable("share_and_reward") {
             ShareAndRewardScreen(navController = navController)
-        }
-        composable("upload_comic") {
-            UploadComicScreen(navController = navController)
         }
         composable("coin_purchase") {
             CoinPurchaseScreen(navController = navController)
@@ -233,6 +224,9 @@ fun NavGraph(
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             UserProfileScreen(navController = navController, username = username)
+        }
+        composable("settings") {
+            SettingsScreen(navController = navController, authViewModel = authViewModel)
         }
     }
 }

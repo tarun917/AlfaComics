@@ -12,15 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.alfacomics.data.repository.MotionDummyData
+import com.alfacomics.pratilipitv.data.repository.MotionComic
 
 @Composable
 fun ModernTab(
     navController: NavHostController,
+    motionComics: List<MotionComic> = MotionDummyData.getMotionComics(), // Default to MotionDummyData for now
     modifier: Modifier = Modifier
 ) {
-    val genres = MotionDummyData.getGenres()
+    val genres = motionComics.map { it.genre }.distinct()
     val groupedMotionComics = genres.associateWith { genre ->
-        MotionDummyData.getMotionComicsByGenre(genre)
+        motionComics.filter { it.genre == genre }
     }
 
     LazyColumn(
@@ -30,10 +32,10 @@ fun ModernTab(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        items(groupedMotionComics.entries.toList()) { (genre, genreMotionComics) ->
+        items(groupedMotionComics.entries.toList()) { entry ->
             ModernComicScroll(
-                genre = genre,
-                motionComics = genreMotionComics,
+                genre = entry.key,
+                motionComics = entry.value,
                 navController = navController
             )
         }
